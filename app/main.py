@@ -1,7 +1,6 @@
 """Main FastAPI application module."""
 
 from fastapi import FastAPI, Request, Depends
-from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
@@ -12,11 +11,11 @@ from app.auth.models import User
 from app.auth.config import auth_config
 from app.security.middleware import (
     SecurityHeadersMiddleware, 
-    RateLimitMiddleware, 
     InputValidationMiddleware
 )
 from app.security.session import session_config
 from app.security.cors import cors_config
+from app.template_utils import LocalizedTemplates
 
 app = FastAPI(
     title="Compass",
@@ -25,12 +24,6 @@ app = FastAPI(
 )
 
 app.add_middleware(InputValidationMiddleware)
-
-app.add_middleware(
-    RateLimitMiddleware,
-    requests_per_minute=60,
-    burst_requests=10
-)
 
 app.add_middleware(
     SecurityHeadersMiddleware,
@@ -49,7 +42,7 @@ app.add_middleware(
 # Include authentication routes
 app.include_router(auth_router)
 
-templates = Jinja2Templates(directory="./app/templates")
+templates = LocalizedTemplates(directory="./app/templates")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -59,10 +52,49 @@ async def welcome(
 ) -> HTMLResponse:
     """Render the welcome page."""
     return templates.TemplateResponse(
+        request,
         "index.html",
         {
             "request": request, 
-            "title": "Welcome to Compass",
+            "title": "welcome_title",  # Will be translated automatically in template
+            "user": current_user
+        }
+    )
+
+
+@app.get("/fr", response_class=HTMLResponse)
+async def welcome_french(
+    request: Request, 
+    current_user: Optional[User] = Depends(get_user_from_session)
+) -> HTMLResponse:
+    """Render the welcome page in French."""
+    from app.localization import configure_jinja_i18n
+    
+    # Force French localization
+    configure_jinja_i18n(templates.templates.env, 'fr')
+    
+    return templates.templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request, 
+            "title": "welcome_title",  # Will be translated automatically in template
+            "user": current_user
+        }
+    )
+
+
+@app.get("/security", response_class=HTMLResponse)
+async def security_page(
+    request: Request, 
+    current_user: Optional[User] = Depends(get_user_from_session)
+) -> HTMLResponse:
+    """Render the security assessment page with custom content."""
+    return templates.TemplateResponse(
+        request,
+        "security.html",
+        {
+            "request": request, 
+            "title": "security_assessment",  # Will be translated automatically in template
             "user": current_user
         }
     )

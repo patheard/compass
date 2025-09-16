@@ -1,0 +1,25 @@
+{% extends "index.html" %}
+
+{% block content %}
+<section>
+  <gcds-heading tag="h1">{{ _('security_assessment') }}</gcds-heading>
+  <gcds-text>
+    This is a custom content section that extends the main template.
+  </gcds-text>
+  
+  <gcds-grid columns="1fr 1fr" columns-tablet="1fr" columns-mobile="1fr">
+    <div>
+      <gcds-heading tag="h2">Assessment Tools</gcds-heading>
+      <gcds-text>
+        Access various security assessment tools and automated scans.
+      </gcds-text>
+    </div>
+    <div>
+      <gcds-heading tag="h2">Reports</gcds-heading>
+      <gcds-text>
+        View and download security assessment reports.
+      </gcds-text>
+    </div>
+  </gcds-grid>
+</section>
+{% endblock %}

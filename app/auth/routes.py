@@ -3,14 +3,40 @@
 from datetime import datetime, timezone
 from fastapi import APIRouter, Request, HTTPException, status, Depends
 from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
-from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from app.auth.config import auth_config
 from app.auth.models import User, Token, GoogleUserInfo
 from app.auth.oauth import google_oauth, jwt_handler
 from app.auth.middleware import get_current_user, get_user_from_session
+from app.localization import (
+    configure_jinja_i18n, 
+    get_user_preferred_language,
+    get_translation_function
+)
 
-templates = Jinja2Templates(directory="./app/templates")
+
+def get_localized_template_response(request: Request, template_name: str, context: dict) -> HTMLResponse:
+    """Get a template response with proper localization configured."""
+    from fastapi.templating import Jinja2Templates
+    
+    # Create templates instance
+    templates = Jinja2Templates(directory="./app/templates")
+    
+    # Get user's preferred language
+    accept_language = request.headers.get('accept-language', '')
+    language = get_user_preferred_language(accept_language)
+    
+    # Configure localization
+    configure_jinja_i18n(templates.env, language)
+    
+    # Get translation function
+    _ = get_translation_function(language)
+    
+    # Update context with translation function if title needs translation
+    if context.get("title") == "Welcome to Compass":
+        context["title"] = _("welcome_title")
+    
+    return templates.TemplateResponse(template_name, context)
 
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -26,7 +52,7 @@ async def login(request: Request) -> RedirectResponse:
 
 
 @router.get("/callback")
-async def callback(request: Request) -> HTMLResponse:
+async def callback(request: Request) -> RedirectResponse:
     """Handle Google OAuth callback."""
     try:
         # Get token from Google
@@ -53,15 +79,8 @@ async def callback(request: Request) -> HTMLResponse:
         # Store user in session
         request.session["user"] = user.model_dump(mode="json")
         
-        # Return the index template with user data
-        return templates.TemplateResponse(
-            "index.html",
-            {
-                "request": request,
-                "title": "Welcome to Compass",
-                "user": user
-            }
-        )
+        # Redirect to home page after successful login
+        return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
         
     except HTTPException:
         raise
@@ -87,14 +106,8 @@ async def get_token(
 
 
 @router.get("/logout")
-async def logout(request: Request) -> HTMLResponse:
+async def logout(request: Request) -> RedirectResponse:
     """Logout user and clear session."""
     request.session.clear()
-    return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
-            "title": "Welcome to Compass",
-            "user": None
-        }
-    )
+    # Redirect to home page after logout
+    return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
