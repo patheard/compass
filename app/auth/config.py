@@ -18,7 +18,7 @@ class AuthConfig:
     # JWT settings
     SECRET_KEY: str = os.getenv("SECRET_KEY")
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
    
     # Application settings
     BASE_URL: str = os.getenv("BASE_URL")
