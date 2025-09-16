@@ -1,0 +1,33 @@
+{
+	"name": "saap",
+	"image": "mcr.microsoft.com/devcontainers/base:bullseye@sha256:b387f798b9ee97144a126ba55ed92c8f2d3a8deceb8fe15e450645b307fee22a",
+	"containerEnv": {
+		"SHELL": "/bin/zsh"
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/aws-cli:1": {
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
+		"ghcr.io/devcontainers/features/python:1": {
+			"version": "3.13",
+			"installTools": false
+		},	
+		"ghcr.io/devcontainers/features/terraform:1": {
+			"version": "1.13.2",
+			"tflint": "latest",
+			"terragrunt": "0.87.2"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"hashicorp.hcl",
+				"hashicorp.terraform",
+				"github.vscode-github-actions",
+				"ms-python.python"
+			]
+		}
+	},
+	"remoteUser": "vscode"
+}

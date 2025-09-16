@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+
+    <link rel="stylesheet" href="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-utility@1.9.2/dist/gcds-utility.min.css">
+    <link rel="stylesheet" href="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-components@0.40.0/dist/gcds/gcds.css">
+    <script type="module" src="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-components@0.40.0/dist/gcds/gcds.esm.js"></script>
+
+  </head>
+
+  <body>
+    <gcds-header lang-href="#" skip-to-href="#main-content">
+      <gcds-top-nav slot="menu" label="Main menu" alignment="right">
+        <gcds-nav-link slot="home" href="/">SAAP</gcds-nav-link>
+        {% if user %}
+          <gcds-nav-link href="/auth/logout">Sign out</gcds-nav-link>
+        {% else %}
+          <gcds-nav-link href="/auth/login">Sign in</gcds-nav-link>
+        {% endif %}
+      </gcds-top-nav>
+
+      <gcds-breadcrumbs slot="breadcrumb">
+        <gcds-breadcrumbs-item href="#">Security Assessment</gcds-breadcrumbs-item>
+        <gcds-breadcrumbs-item href="#">Automation Platform</gcds-breadcrumbs-item>
+      </gcds-breadcrumbs>
+    </gcds-header>
+
+    <gcds-container id="main-content" main-container size="xl" centered tag="main">
+      <section>
+        <gcds-heading tag="h1">{{ title }}</gcds-heading>
+        {% if user %}
+          <gcds-text>
+            Welcome, {{ user.name }}! You are logged in with your @cds-snc.ca account.
+          </gcds-text>
+          <gcds-text>
+            This platform provides automated security assessment tools for the Canadian Digital Service.
+          </gcds-text>
+        {% else %}
+          <gcds-text>
+            Please log in with your @cds-snc.ca Google account to access the Security Assessment Automation Platform.
+          </gcds-text>
+          <div style="margin-top: 2rem;">
+            <gcds-button href="/auth/login" type="link">
+              Login
+            </gcds-button>
+          </div>
+        {% endif %}
+      </section>
+
+      <gcds-date-modified>2024-08-22</gcds-date-modified>
+    </gcds-container>
+
+    <gcds-footer display="full" contextual-heading="Canadian Digital Service"></gcds-footer>
+  </body>
+</html>
