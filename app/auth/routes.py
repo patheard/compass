@@ -58,7 +58,7 @@ async def callback(request: Request) -> HTMLResponse:
             "index.html",
             {
                 "request": request,
-                "title": "Welcome to SAAP",
+                "title": "Welcome to Compass",
                 "user": user
             }
         )
@@ -94,7 +94,7 @@ async def logout(request: Request) -> HTMLResponse:
         "index.html",
         {
             "request": request,
-            "title": "Welcome to SAAP",
+            "title": "Welcome to Compass",
             "user": None
         }
     )

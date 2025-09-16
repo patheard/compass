@@ -19,7 +19,7 @@ from app.security.session import session_config
 from app.security.cors import cors_config
 
 app = FastAPI(
-    title="Security Assessment Automation Platform",
+    title="Compass",
     description="A platform for automating security assessments",
     version="1.0.0"
 )
@@ -62,7 +62,7 @@ async def welcome(
         "index.html",
         {
             "request": request, 
-            "title": "Welcome to SAAP",
+            "title": "Welcome to Compass",
             "user": current_user
         }
     )

@@ -1,5 +1,5 @@
 [project]
-name = "security-assessment-automation-platform"
+name = "compass"
 version = "0.1.0"
 description = "A platform for automating security assessments"
 requires-python = ">=3.13"
