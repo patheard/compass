@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section>
+  <gcds-heading tag="h1">{{ _(title) }}</gcds-heading>
+  <gcds-text>
+    {{ _('login_prompt') }}
+  </gcds-text>
+  <div style="margin-top: 2rem;">
+    <gcds-button href="/auth/login" type="link">
+      {{ _('login_button') }}
+    </gcds-button>
+  </div>
+</section>
+{% endblock %}

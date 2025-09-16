@@ -53,7 +53,7 @@ async def welcome(
     """Render the welcome page."""
     return templates.TemplateResponse(
         request,
-        "index.html",
+        "pages/index.html",
         {
             "request": request, 
             "title": "welcome_title",  # Will be translated automatically in template
@@ -74,7 +74,7 @@ async def welcome_french(
     configure_jinja_i18n(templates.templates.env, 'fr')
     
     return templates.templates.TemplateResponse(
-        "index.html",
+        "pages/index.html",
         {
             "request": request, 
             "title": "welcome_title",  # Will be translated automatically in template
@@ -91,7 +91,7 @@ async def security_page(
     """Render the security assessment page with custom content."""
     return templates.TemplateResponse(
         request,
-        "security.html",
+        "pages/security.html",
         {
             "request": request, 
             "title": "security_assessment",  # Will be translated automatically in template

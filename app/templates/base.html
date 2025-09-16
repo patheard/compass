@@ -23,36 +23,14 @@
       </gcds-top-nav>
 
       <gcds-breadcrumbs slot="breadcrumb">
-        <gcds-breadcrumbs-item href="#">{{ _('security_assessment') }}</gcds-breadcrumbs-item>
-        <gcds-breadcrumbs-item href="#">{{ _('automation_platform') }}</gcds-breadcrumbs-item>
       </gcds-breadcrumbs>
     </gcds-header>
 
     <gcds-container id="main-content" main-container size="xl" centered tag="main">
       {% block content %}
-      <section>
-        <gcds-heading tag="h1">{{ _(title) }}</gcds-heading>
-        {% if user %}
-          <gcds-text>
-            {{ _('welcome_message_logged_in')|replace('{{user_name}}', user.name) }}
-          </gcds-text>
-          <gcds-text>
-            {{ _('platform_description') }}
-          </gcds-text>
-        {% else %}
-          <gcds-text>
-            {{ _('login_prompt') }}
-          </gcds-text>
-          <div style="margin-top: 2rem;">
-            <gcds-button href="/auth/login" type="link">
-              {{ _('login_button') }}
-            </gcds-button>
-          </div>
-        {% endif %}
-      </section>
       {% endblock %}
 
-      <gcds-date-modified>2024-08-22</gcds-date-modified>
+      <div class="mt-600 mb-300">{{ _('version') }}: {{ version }}</div>
     </gcds-container>
 
     <gcds-footer display="full" contextual-heading="{{ _('cds_footer') }}"></gcds-footer>

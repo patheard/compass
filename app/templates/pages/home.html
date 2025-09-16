@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section>
+  <gcds-heading tag="h1">{{ _(title) }}</gcds-heading>
+  <gcds-text>
+    {{ _('welcome_message_logged_in')|replace('{{user_name}}', user.name) }}
+  </gcds-text>
+  <gcds-text>
+    {{ _('platform_description') }}
+  </gcds-text>
+</section>
+{% endblock %}
