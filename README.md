@@ -1,4 +1,4 @@
-# Compass
+# Compass :compass:
 
 A platform that will provide automated security assessment tools. For now it does next to nothing since it's very much a work in progress.
 
