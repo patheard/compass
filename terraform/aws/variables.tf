@@ -1,13 +1,3 @@
-variable "env" {
-  description = "Environment name (e.g. prod, staging)."
-  type        = string
-}
-
-variable "region" {
-  description = "AWS region."
-  type        = string
-}
-
 variable "account_id" {
   description = "AWS account ID."
   type        = string
@@ -18,7 +8,40 @@ variable "billing_code" {
   type        = string
 }
 
-variable "product_name" {
-  description = "(Required) The name of the product you are deploying."
+variable "domain" {
+  description = "Base URL for Compass (e.g. compass.canada.ca)."
   type        = string
+}
+
+variable "env" {
+  description = "Environment name (e.g. prod, staging)."
+  type        = string
+}
+
+variable "google_oauth_client_id" {
+  description = "Google OAuth Client ID."
+  type        = string
+  sensitive   = true
+}
+
+variable "google_oauth_client_secret" {
+  description = "Google OAuth Client Secret."
+  type        = string
+  sensitive   = true
+}
+
+variable "product_name" {
+  description = "The name of the product you are deploying."
+  type        = string
+}
+
+variable "region" {
+  description = "AWS region."
+  type        = string
+}
+
+variable "secret_key" {
+  description = "Session secret key."
+  type        = string
+  sensitive   = true
 }
