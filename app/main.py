@@ -14,7 +14,7 @@ from app.security.session import session_config
 from app.security.cors import cors_config
 from app.localization.middleware import LocalizationMiddleware
 from app.localization.utils import LANGUAGES
-from app.template_utils import LocalizedTemplates
+from app.templates.utils import LocalizedTemplates
 
 app = FastAPI(
     title="Compass",
