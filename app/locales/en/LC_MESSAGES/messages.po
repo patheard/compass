@@ -34,16 +34,16 @@ msgid "automation_platform"
 msgstr "Automation Platform"
 
 msgid "welcome_message_logged_in"
-msgstr "Welcome, {{user_name}}! You are logged in with your @cds-snc.ca account."
+msgstr "Welcome, {{user_name}}! You are logged in with your account."
 
 msgid "platform_description"
-msgstr "This platform provides automated security assessment tools for the Canadian Digital Service."
+msgstr "This platform provides automated security assessment tools."
 
 msgid "login_prompt"
-msgstr "Please log in with your @cds-snc.ca Google account to access Compass."
+msgstr "Please log in with your Google account to access Compass."
 
 msgid "login_button"
 msgstr "Login"
 
-msgid "cds_footer"
-msgstr "Canadian Digital Service"
+msgid "version"
+msgstr "Version:"

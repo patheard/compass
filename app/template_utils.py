@@ -1,13 +1,12 @@
 """Template utilities for localized responses."""
 
+import os
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from typing import Any, Dict
-from app.localization import (
-    configure_jinja_i18n, 
-    get_user_preferred_language
-)
+from app.localization.utils import configure_jinja_i18n
+from app.localization.middleware import get_request_locale
 
 
 class LocalizedTemplates:
@@ -23,12 +22,14 @@ class LocalizedTemplates:
         context: Dict[str, Any]
     ) -> HTMLResponse:
         """Create a template response with automatic localization."""
-        # Get user's preferred language
-        accept_language = request.headers.get('accept-language', '')
-        language = get_user_preferred_language(accept_language)
+        # Get user's preferred language from request state (set by middleware)
+        language = get_request_locale(request)
         
         # Configure Jinja2 environment with localization
         configure_jinja_i18n(self.templates.env, language)
+        
+        # Add version from environment variable
+        context['version'] = os.getenv('APP_VERSION', '1.0.0')
         
         # The translation function is now available globally in templates as '_'
         return self.templates.TemplateResponse(name, context)

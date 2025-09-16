@@ -34,16 +34,16 @@ msgid "automation_platform"
 msgstr "Plateforme d'automatisation"
 
 msgid "welcome_message_logged_in"
-msgstr "Bienvenue, {{user_name}}! Vous êtes connecté avec votre compte @cds-snc.ca."
+msgstr "Bienvenue, {{user_name}}! Vous êtes connecté avec votre compte Google."
 
 msgid "platform_description"
-msgstr "Cette plateforme fournit des outils d'évaluation de sécurité automatisés pour le Service numérique canadien."
+msgstr "Cette plateforme fournit des outils d'évaluation de sécurité automatisés."
 
 msgid "login_prompt"
-msgstr "Veuillez vous connecter avec votre compte Google @cds-snc.ca pour accéder à Compass."
+msgstr "Veuillez vous connecter avec votre compte Google pour accéder à Compass."
 
 msgid "login_button"
 msgstr "Se connecter"
 
-msgid "cds_footer"
-msgstr "Service numérique canadien"
+msgid "version"
+msgstr "Version :"
