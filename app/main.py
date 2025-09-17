@@ -1,5 +1,6 @@
 """Main FastAPI application module."""
 
+import logging
 from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +16,15 @@ from app.security.cors import cors_config
 from app.localization.middleware import LocalizationMiddleware
 from app.localization.utils import LANGUAGES
 from app.templates.utils import LocalizedTemplates
+from app.database import DatabaseManager
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s: %(name)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Compass",
@@ -22,6 +32,22 @@ app = FastAPI(
     version="1.0.0",
 )
 handler = Mangum(app)
+
+
+@app.on_event("startup")
+async def startup_event() -> None:
+    """Initialize database tables on application startup."""
+    try:
+        logger.info("Initializing database tables...")
+        success = DatabaseManager.initialize_tables()
+        if success:
+            logger.info("Database initialization completed successfully")
+        else:
+            logger.error("Database initialization completed with errors")
+    except Exception as e:
+        logger.error(f"Failed to initialize database tables: {e}")
+        raise e
+
 
 # Middleware
 app.add_middleware(
@@ -106,3 +132,17 @@ async def set_language(
 async def health_check() -> dict[str, str]:
     """Health check endpoint."""
     return {"status": "healthy"}
+
+
+@app.get("/health/database")
+async def database_health_check() -> dict[str, object]:
+    """Database health check endpoint."""
+    try:
+        is_healthy = DatabaseManager.check_table_health()
+        return {
+            "status": "healthy" if is_healthy else "unhealthy",
+            "database": "accessible" if is_healthy else "issues_detected",
+        }
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        return {"status": "unhealthy", "database": "error", "error": str(e)}

@@ -1,4 +1,4 @@
-.PHONY: local run install test fmt lint security i18n-extract i18n-update i18n-compile
+.PHONY: dynamodb-admin local run install test fmt lint security i18n-extract i18n-update i18n-compile db-init db-health db-delete
 
 run: local
 	uv run uvicorn app.main:app --reload --host localhost
@@ -26,3 +26,10 @@ i18n-update:
 
 i18n-compile:
 	uv run pybabel compile -d app/locales
+
+dynamodb-admin:
+	AWS_REGION=ca-central-1 \
+	AWS_ACCESS_KEY_ID=dummy \
+	AWS_SECRET_ACCESS_KEY=dummy \
+	DYNAMO_ENDPOINT=http://localhost:9000 \
+	dynamodb-admin
