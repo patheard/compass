@@ -20,15 +20,15 @@ class DatabaseOperations:
 
     @staticmethod
     def get_user_assessments(user_id: str) -> List[SecurityAssessment]:
-        """Get user's accessible assessments (primary access pattern #3)."""
-        return SecurityAssessment.get_by_collaborator(user_id)
+        """Get user's owned assessments (primary access pattern #3)."""
+        return SecurityAssessment.get_by_owner(user_id)
 
     @staticmethod
     def check_user_assessment_access(user_id: str, assessment_id: str) -> bool:
-        """Check user access to assessment (primary access pattern #4)."""
+        """Check user ownership of assessment (primary access pattern #4)."""
         try:
             assessment = SecurityAssessment.get(assessment_id)
-            return assessment.has_access(user_id)
+            return assessment.is_owner(user_id)
         except SecurityAssessment.DoesNotExist:
             return False
 
