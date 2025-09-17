@@ -7,7 +7,7 @@ Add your secrets to a `.env` file.
 
 ```sh
 cp .env.example .env
-make dev
+make run
 ```
 
 ## Google OAuth

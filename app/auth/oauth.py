@@ -6,12 +6,12 @@ from fastapi import HTTPException, status
 from authlib.integrations.starlette_client import OAuth
 from jose import JWTError, jwt
 from app.auth.config import auth_config
-from app.auth.models import Token, TokenData, User, GoogleUserInfo
+from app.auth.models import Token, TokenData, User
 
 
 class GoogleOAuth:
     """Google OAuth handler."""
-    
+
     def __init__(self) -> None:
         """Initialize OAuth client."""
         self.oauth = OAuth()
@@ -24,7 +24,7 @@ class GoogleOAuth:
                 "scope": "openid email profile",
             },
         )
-    
+
     def get_client(self) -> OAuth:
         """Get OAuth client."""
         return self.oauth.google
@@ -32,9 +32,11 @@ class GoogleOAuth:
 
 class JWTHandler:
     """JWT token handler."""
-    
+
     @staticmethod
-    def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    def create_access_token(
+        data: dict, expires_delta: Optional[timedelta] = None
+    ) -> str:
         """Create JWT access token."""
         to_encode = data.copy()
         if expires_delta:
@@ -48,7 +50,7 @@ class JWTHandler:
             to_encode, auth_config.SECRET_KEY, algorithm=auth_config.ALGORITHM
         )
         return encoded_jwt
-    
+
     @staticmethod
     def verify_token(token: str) -> TokenData:
         """Verify JWT token and return token data."""
@@ -69,18 +71,20 @@ class JWTHandler:
         except JWTError:
             raise credentials_exception
         return token_data
-    
+
     @staticmethod
     def create_token_for_user(user: User) -> Token:
         """Create JWT token for authenticated user."""
-        access_token_expires = timedelta(minutes=auth_config.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token_expires = timedelta(
+            minutes=auth_config.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
         access_token = JWTHandler.create_access_token(
             data={"sub": user.email, "google_id": user.google_id},
-            expires_delta=access_token_expires
+            expires_delta=access_token_expires,
         )
         return Token(
             access_token=access_token,
-            expires_in=auth_config.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+            expires_in=auth_config.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
 
 

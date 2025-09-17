@@ -7,7 +7,7 @@ from pydantic import BaseModel, EmailStr
 
 class User(BaseModel):
     """User model."""
-    
+
     email: EmailStr
     name: str
     picture: Optional[str] = None
@@ -18,7 +18,7 @@ class User(BaseModel):
 
 class Token(BaseModel):
     """JWT token model."""
-    
+
     access_token: str
     token_type: str = "bearer"
     expires_in: int
@@ -26,14 +26,14 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     """Token data for JWT payload."""
-    
+
     email: Optional[str] = None
     google_id: Optional[str] = None
 
 
 class GoogleUserInfo(BaseModel):
     """Google user information from OAuth."""
-    
+
     email: EmailStr
     name: str
     picture: Optional[str] = None

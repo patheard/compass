@@ -1,39 +1,35 @@
 """Security middleware for FastAPI application."""
 
-import time
-from collections import defaultdict
-from typing import Dict, Tuple
-from fastapi import Request, Response, HTTPException, status
+from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response as StarletteResponse
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Middleware to add security headers to all responses."""
-    
+
     def __init__(
-        self, 
+        self,
         app,
         enforce_https: bool = True,
         max_age: int = 31536000,  # 1 year
-        include_subdomains: bool = True
+        include_subdomains: bool = True,
     ) -> None:
         super().__init__(app)
         self.enforce_https = enforce_https
         self.max_age = max_age
         self.include_subdomains = include_subdomains
-    
+
     async def dispatch(self, request: Request, call_next) -> Response:
         """Add security headers to response."""
         response: Response = await call_next(request)
-        
+
         # HSTS - Enforce HTTPS
         if self.enforce_https:
             hsts_value = f"max-age={self.max_age}"
             if self.include_subdomains:
                 hsts_value += "; includeSubDomains"
             response.headers["Strict-Transport-Security"] = hsts_value
-        
+
         # Content Security Policy - Prevent XSS
         csp_policy = (
             "default-src 'self'; "
@@ -48,7 +44,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "form-action 'self'"
         )
         response.headers["Content-Security-Policy"] = csp_policy
-        
+
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-XSS-Protection"] = "1; mode=block"
@@ -57,11 +53,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "accelerometer=(), camera=(), geolocation=(), gyroscope=(), "
             "magnetometer=(), microphone=(), payment=(), usb=()"
         )
-        
+
         # Cache-Control for sensitive pages
         if request.url.path.startswith("/auth") or request.url.path == "/":
             response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
-        
+
         return response

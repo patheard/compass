@@ -2,12 +2,11 @@
 
 import os
 from typing import Optional
-from starlette.middleware.sessions import SessionMiddleware
 
 
 class SecureSessionConfig:
     """Configuration for secure session middleware."""
-    
+
     # Session settings
     SESSION_COOKIE_NAME: str = "session"
     SESSION_MAX_AGE: int = 900  # 15 minutes
@@ -16,10 +15,10 @@ class SecureSessionConfig:
     SESSION_COOKIE_SAMESITE: str = "strict"  # CSRF protection
     SESSION_COOKIE_PATH: str = "/"
     SESSION_COOKIE_DOMAIN: Optional[str] = None
-    
+
     # JWT token lifetime
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
-    
+
     @classmethod
     def get_session_middleware_kwargs(cls) -> dict:
         """Get kwargs for SessionMiddleware configuration."""

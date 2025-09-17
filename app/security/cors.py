@@ -1,20 +1,19 @@
 """CORS configuration for the application."""
 
-from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 
 
 class CORSConfig:
     """Configuration for CORS middleware."""
-    
+
     # Allowed origins (restrict to your domains in production)
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:8000",
     ]
-    
+
     # Allowed methods
     ALLOWED_METHODS: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    
+
     # Allowed headers
     ALLOWED_HEADERS: List[str] = [
         "Accept",
@@ -24,13 +23,13 @@ class CORSConfig:
         "Authorization",
         "X-Requested-With",
     ]
-    
+
     # Whether to allow credentials
     ALLOW_CREDENTIALS: bool = True
-    
+
     # Max age for preflight requests
     MAX_AGE: int = 300  # 5 minutes
-    
+
     @classmethod
     def get_cors_kwargs(cls) -> dict:
         """Get kwargs for CORSMiddleware configuration."""
