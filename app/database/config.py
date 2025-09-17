@@ -1,8 +1,8 @@
 """Database configuration for DynamoDB."""
 
-import logging
 import os
 from typing import Optional
+
 
 class DatabaseConfig:
     """Configuration for DynamoDB connection."""
