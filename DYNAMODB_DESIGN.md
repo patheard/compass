@@ -23,7 +23,7 @@
 | Attribute | Type | Key | Description |
 |-----------|------|-----|-------------|
 | assessment_id | String | PK | Primary key (UUID) |
-| collaborator_ids | StringSet | GSI1-PK | Set of all user IDs with access (including creator) |
+| owner_id | String | GSI1-PK | User ID of the assessment creator |
 | product_name | String | - | Product being assessed |
 | product_description | String | - | Detailed description |
 | status | String | - | draft/in_progress/completed |
@@ -31,7 +31,7 @@
 | updated_at | String | - | ISO timestamp |
 
 **Indexes**:
-- GSI1: collaborator_ids (PK), created_at (SK) - for user's accessible assessments ordered by date
+- GSI1: owner_id (PK), created_at (SK) - for user's owned assessments ordered by date
 
 ### 3. Controls Table
 **Purpose**: Store NIST 800-53 controls within assessments
@@ -72,8 +72,8 @@
 ### Primary Patterns
 1. **Get user by Google ID**: Users.user_id = google_id
 2. **Get user by email**: Users.GSI1 where email = ?
-3. **Get user's accessible assessments**: SecurityAssessments.GSI1 where collaborator_ids = user_id
-4. **Check user access to assessment**: Get assessment by PK, check if user_id in collaborator_ids
+3. **Get user's owned assessments**: SecurityAssessments.GSI1 where owner_id = user_id
+4. **Check user ownership of assessment**: Get assessment by PK, check if owner_id = user_id
 5. **Get assessment controls**: Controls.GSI1 where assessment_id = ?
 6. **Get control evidence**: Evidence.GSI1 where control_id = ?
 

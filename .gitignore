@@ -5,3 +5,4 @@ __pycache__
 *.tfstate.backup
 .terraform/
 .terragrunt-cache/
+*_DESIGN.md
