@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: compass-dynamodb-local
+    ports:
+      - "9000:8000"
+    volumes:
+      - dynamodb-data:/home/dynamodblocal
+
+volumes:
+  dynamodb-data:
