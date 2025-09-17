@@ -1,55 +1,9 @@
 """Authentication middleware and dependencies."""
 
 from typing import Optional
-from fastapi import Depends, HTTPException, status, Request
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from app.auth.models import User, TokenData
-from app.auth.oauth import jwt_handler
+from fastapi import HTTPException, status, Request
+from app.database.models.users import User
 import time
-
-
-security = HTTPBearer(auto_error=False)
-
-
-async def get_current_user(
-    request: Request,
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-) -> Optional[User]:
-    """Get current authenticated user from JWT token."""
-    if not credentials:
-        return None
-
-    try:
-        token_data: TokenData = jwt_handler.verify_token(credentials.credentials)
-        if token_data.email is None or token_data.google_id is None:
-            return None
-
-        # Check if token is expired with some buffer time
-        current_time = time.time()
-        if hasattr(token_data, "exp") and token_data.exp < current_time:
-            return None
-
-        user = User(
-            email=token_data.email,
-            name=token_data.email.split("@")[0],  # Simple name extraction
-            google_id=token_data.google_id,
-        )
-        return user
-    except HTTPException:
-        return None
-
-
-async def require_auth(
-    current_user: Optional[User] = Depends(get_current_user),
-) -> User:
-    """Require authentication - raise exception if not authenticated."""
-    if current_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return current_user
 
 
 async def get_user_from_session(request: Request) -> Optional[User]:
@@ -77,7 +31,8 @@ async def get_user_from_session(request: Request) -> Optional[User]:
         request.session["timestamp"] = time.time()
 
     try:
-        return User(**user_data)
+        # Reconstruct User object from session data
+        return User.from_dict(user_data)
     except Exception:
         # Clear invalid session data
         request.session.clear()

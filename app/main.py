@@ -9,7 +9,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from typing import Optional
 from app.auth.routes import router as auth_router
 from app.auth.middleware import get_user_from_session
-from app.auth.models import User
+from app.database.models.users import User
 from app.security.middleware import SecurityHeadersMiddleware
 from app.security.session import session_config
 from app.security.cors import cors_config

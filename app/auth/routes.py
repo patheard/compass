@@ -1,12 +1,12 @@
 """Authentication routes."""
 
 from datetime import datetime, timezone
-from fastapi import APIRouter, Request, HTTPException, status, Depends
+from fastapi import APIRouter, Request, HTTPException, status
 from fastapi.responses import RedirectResponse, HTMLResponse
 from app.auth.config import auth_config
-from app.auth.models import User, Token, GoogleUserInfo
-from app.auth.oauth import google_oauth, jwt_handler
-from app.auth.middleware import get_user_from_session
+from app.auth.models import GoogleUserInfo
+from app.database.models.users import User
+from app.auth.oauth import google_oauth
 from app.localization import (
     configure_jinja_i18n,
     get_user_preferred_language,
@@ -69,16 +69,23 @@ async def callback(request: Request) -> RedirectResponse:
 
         # Create user object
         user_info = GoogleUserInfo(**user_info_dict)
-        user = User(
-            email=user_info.email,
-            name=user_info.name,
-            picture=user_info.picture,
-            google_id=user_info.sub,
-            last_login=datetime.now(timezone.utc),
-        )
 
-        # Store user in session
-        request.session["user"] = user.model_dump(mode="json")
+        # Get or create user in database
+        user = User.get_by_google_id(user_info.sub)
+        if user:
+            # Update existing user's last login
+            user.update_last_login()
+        else:
+            # Create new user
+            user = User.create_user(
+                google_id=user_info.sub,
+                email=user_info.email,
+                name=user_info.name,
+                last_login=datetime.now(timezone.utc),
+            )
+
+        # Store user in session (convert to dict for session storage)
+        request.session["user"] = user.to_dict()
 
         # Redirect to home page after successful login
         return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
@@ -90,17 +97,6 @@ async def callback(request: Request) -> RedirectResponse:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Authentication failed: {str(e)}",
         )
-
-
-@router.post("/token")
-async def get_token(current_user: User = Depends(get_user_from_session)) -> Token:
-    """Get JWT token for authenticated user."""
-    if not current_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authenticated"
-        )
-
-    return jwt_handler.create_token_for_user(current_user)
 
 
 @router.get("/logout")

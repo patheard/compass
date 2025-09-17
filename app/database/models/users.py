@@ -49,9 +49,9 @@ class User(BaseModel):
 
     def __init__(
         self,
-        user_id: str,
-        email: str,
-        name: str,
+        user_id: Optional[str] = None,
+        email: Optional[str] = None,
+        name: Optional[str] = None,
         google_id: Optional[str] = None,
         **kwargs,
     ) -> None:
@@ -60,7 +60,7 @@ class User(BaseModel):
             user_id=user_id,
             email=email,
             name=name,
-            google_id=google_id or user_id,
+            google_id=google_id,
             **kwargs,
         )
 
@@ -86,8 +86,20 @@ class User(BaseModel):
             return None
 
     @classmethod
-    def create_user(cls, google_id: str, email: str, name: str) -> "User":
+    def create_user(
+        cls,
+        google_id: str,
+        email: str,
+        name: str,
+        last_login: Optional[datetime] = None,
+    ) -> "User":
         """Create a new user."""
-        user = cls(user_id=google_id, email=email, name=name, google_id=google_id)
+        user = cls(
+            user_id=google_id,
+            email=email,
+            name=name,
+            google_id=google_id,
+            last_login=last_login,
+        )
         user.save()
         return user
