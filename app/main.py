@@ -3,6 +3,7 @@
 from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+from mangum import Mangum
 from starlette.middleware.sessions import SessionMiddleware
 from typing import Optional
 from app.auth.routes import router as auth_router
@@ -21,6 +22,7 @@ app = FastAPI(
     description="A platform for automating security assessments",
     version="1.0.0"
 )
+handler = Mangum(app)
 
 # Middleware
 app.add_middleware(

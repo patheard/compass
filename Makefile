@@ -1,10 +1,10 @@
 .PHONY: dev run install i18n-extract i18n-update i18n-compile
 
 dev:
-	uv run uvicorn app.main:app --reload --host localhost --port 8000
+	uv run uvicorn app.main:app --reload --host localhost
 
 run:
-	uv run uvicorn app.main:app --host localhost --port 8000
+	uv run uvicorn app.main:app --host localhost
 
 install:
 	uv sync
