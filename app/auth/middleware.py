@@ -19,8 +19,8 @@ async def get_user_from_session(request: Request) -> Optional[User]:
         current_time = time.time()
         session_age = current_time - session_timestamp
 
-        # Session timeout: 15 minutes (900 seconds)
-        if session_age > 900:
+        # Session timeout: 8 hours
+        if session_age > 28800:
             # Clear expired session
             request.session.clear()
             return None
