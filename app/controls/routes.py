@@ -46,6 +46,13 @@ async def create_control_page(
                 "assessment": assessment,
                 "csrf_token": csrf_token,
                 "is_edit": False,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                    {
+                        "label": assessment.product_name,
+                        "link": f"/assessments/{assessment.assessment_id}",
+                    },
+                ],
             },
         )
     except HTTPException as e:
@@ -115,6 +122,13 @@ async def create_control(
                     "nist_control_id": nist_control_id,
                     "control_title": control_title,
                     "control_description": control_description,
+                    "breadcrumbs": [
+                        {"label": "Compass", "link": "/"},
+                        {
+                            "label": assessment.product_name,
+                            "link": f"/assessments/{assessment.assessment_id}",
+                        },
+                    ],
                 },
             )
         except Exception:
@@ -154,6 +168,13 @@ async def control_detail_page(
                 "assessment": assessment,
                 "control": control,
                 "evidences": evidences,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                    {
+                        "label": assessment.product_name,
+                        "link": f"/assessments/{assessment.assessment_id}",
+                    },
+                ],
             },
         )
     except HTTPException as e:
@@ -197,6 +218,17 @@ async def edit_control_page(
                 "csrf_token": csrf_token,
                 "is_edit": True,
                 "control": control,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                    {
+                        "label": assessment.product_name,
+                        "link": f"/assessments/{assessment.assessment_id}",
+                    },
+                    {
+                        "label": control.nist_control_id,
+                        "link": f"/assessments/{assessment.assessment_id}/controls/{control.control_id}",
+                    },
+                ],
             },
         )
     except HTTPException as e:
@@ -268,6 +300,17 @@ async def update_control(
                     "is_edit": True,
                     "control": control,
                     "error": str(e),
+                    "breadcrumbs": [
+                        {"label": "Compass", "link": "/"},
+                        {
+                            "label": assessment.product_name,
+                            "link": f"/assessments/{assessment.assessment_id}",
+                        },
+                        {
+                            "label": control.nist_control_id,
+                            "link": f"/assessments/{assessment.assessment_id}/controls/{control.control_id}",
+                        },
+                    ],
                 },
             )
         except Exception:

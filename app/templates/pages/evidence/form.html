@@ -72,7 +72,7 @@
         {{ _("Create") }}
       {% endif %}
     </gcds-button>
-    <gcds-button href="{% if is_edit %}/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}{% else %}/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{% endif %}" type="link" button-role="secondary">
+    <gcds-button href="{% if is_edit %}/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}{% else %}/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}{% endif %}" type="link" button-role="secondary">
       {{ _('Cancel') }}
     </gcds-button>
 

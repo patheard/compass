@@ -26,6 +26,11 @@
       </gcds-top-nav>
 
       <gcds-breadcrumbs slot="breadcrumb">
+        {% if breadcrumbs %}
+          {% for breadcrumb in breadcrumbs %}
+            <gcds-breadcrumbs-item href="{{ breadcrumb.link }}">{{ _(breadcrumb.label) }}</gcds-breadcrumbs-item>
+          {% endfor %}
+        {% endif %}
       </gcds-breadcrumbs>
     </gcds-header>
 

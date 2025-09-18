@@ -53,6 +53,17 @@ async def create_evidence_page(
                 "control": control,
                 "csrf_token": csrf_token,
                 "is_edit": False,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                    {
+                        "label": assessment.product_name,
+                        "link": f"/assessments/{assessment.assessment_id}",
+                    },
+                    {
+                        "label": control.nist_control_id,
+                        "link": f"/assessments/{assessment.assessment_id}/controls/{control.control_id}",
+                    },
+                ],
             },
         )
     except HTTPException as e:
@@ -122,6 +133,17 @@ async def create_evidence(
                     "title_value": title,
                     "description": description,
                     "evidence_type": evidence_type,
+                    "breadcrumbs": [
+                        {"label": "Compass", "link": "/"},
+                        {
+                            "label": assessment.product_name,
+                            "link": f"/assessments/{assessment.assessment_id}",
+                        },
+                        {
+                            "label": control.nist_control_id,
+                            "link": f"/assessments/{assessment.assessment_id}/controls/{control.control_id}",
+                        },
+                    ],
                 },
             )
         except Exception:
@@ -161,6 +183,17 @@ async def evidence_detail_page(
                 "assessment": assessment,
                 "control": control,
                 "evidence": evidence,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                    {
+                        "label": assessment.product_name,
+                        "link": f"/assessments/{assessment.assessment_id}",
+                    },
+                    {
+                        "label": control.nist_control_id,
+                        "link": f"/assessments/{assessment.assessment_id}/controls/{control.control_id}",
+                    },
+                ],
             },
         )
     except HTTPException as e:
@@ -208,6 +241,21 @@ async def edit_evidence_page(
                 "csrf_token": csrf_token,
                 "is_edit": True,
                 "evidence": evidence,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                    {
+                        "label": assessment.product_name,
+                        "link": f"/assessments/{assessment.assessment_id}",
+                    },
+                    {
+                        "label": control.nist_control_id,
+                        "link": f"/assessments/{assessment.assessment_id}/controls/{control.control_id}",
+                    },
+                    {
+                        "label": evidence.title,
+                        "link": f"/assessments/{assessment.assessment_id}/controls/{control.control_id}/evidence/{evidence.evidence_id}",
+                    },
+                ],
             },
         )
     except HTTPException as e:
@@ -277,6 +325,21 @@ async def update_evidence(
                     "is_edit": True,
                     "evidence": evidence,
                     "error": str(e),
+                    "breadcrumbs": [
+                        {"label": "Compass", "link": "/"},
+                        {
+                            "label": assessment.product_name,
+                            "link": f"/assessments/{assessment.assessment_id}",
+                        },
+                        {
+                            "label": control.nist_control_id,
+                            "link": f"/assessments/{assessment.assessment_id}/controls/{control.control_id}",
+                        },
+                        {
+                            "label": evidence.title,
+                            "link": f"/assessments/{assessment.assessment_id}/controls/{control.control_id}/evidence/{evidence.evidence_id}",
+                        },
+                    ],
                 },
             )
         except Exception:

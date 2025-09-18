@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<gcds-heading tag="h1">{{ control.nist_control_id }}: {{ control.control_title }}</gcds-heading>
+<gcds-heading tag="h1">{{ control.nist_control_id }}</gcds-heading>
+<gcds-heading tag="h2">{{ control.control_title }}</gcds-heading>
 <gcds-text>
     {{ control.control_description }}
 </gcds-text>
@@ -12,9 +13,6 @@
 
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit" type="link" button-role="primary">
     {{ _("Edit") }}
-</gcds-button>
-<gcds-button href="/assessments/{{ assessment.assessment_id }}" type="link" button-role="secondary">
-    {{ _("Back") }}
 </gcds-button>
 
 <gcds-heading tag="h2">{{ _("Evidence") }}</gcds-heading>

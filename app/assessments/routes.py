@@ -35,6 +35,9 @@ async def create_assessment_page(
             "user": current_user,
             "csrf_token": csrf_token,
             "is_edit": False,
+            "breadcrumbs": [
+                {"label": "Compass", "link": "/"},
+            ],
         },
     )
 
@@ -89,6 +92,9 @@ async def create_assessment(
                 "error": str(e),
                 "product_name": product_name,
                 "product_description": product_description,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                ],
             },
         )
 
@@ -117,6 +123,9 @@ async def assessment_detail_page(
                 "user": current_user,
                 "assessment": assessment,
                 "controls": controls,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                ],
             },
         )
     except HTTPException as e:
@@ -151,6 +160,13 @@ async def edit_assessment_page(
                 "csrf_token": csrf_token,
                 "is_edit": True,
                 "assessment": assessment,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                    {
+                        "label": assessment.product_name,
+                        "link": f"/assessments/{assessment.assessment_id}",
+                    },
+                ],
             },
         )
     except HTTPException as e:
@@ -216,6 +232,13 @@ async def update_assessment(
                     "is_edit": True,
                     "assessment": assessment,
                     "error": str(e),
+                    "breadcrumbs": [
+                        {"label": "Compass", "link": "/"},
+                        {
+                            "label": assessment.product_name,
+                            "link": f"/assessments/{assessment.assessment_id}",
+                        },
+                    ],
                 },
             )
         except Exception:
