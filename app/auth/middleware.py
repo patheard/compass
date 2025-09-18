@@ -63,7 +63,10 @@ async def require_authenticated_user(request: Request) -> User:
     """Dependency that requires an authenticated user."""
     user = await get_user_from_session(request)
     if not user:
-        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
 
     # Additional security checks
     await check_session_security(request)
