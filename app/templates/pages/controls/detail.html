@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<gcds-heading tag="h1">{{ control.nist_control_id }}: {{ control.control_title }}</gcds-heading>
+<gcds-text>
+    {{ control.control_description }}
+</gcds-text>
+<gcds-text text-role="secondary" size="small">
+    <em>{{ _('Status:') }} {{ _(control.implementation_status) }}
+    </em>
+</gcds-text>
+
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit" type="link" button-role="primary">
+    {{ _("Edit") }}
+</gcds-button>
+<gcds-button href="/assessments/{{ assessment.assessment_id }}" type="link" button-role="secondary">
+    {{ _("Back") }}
+</gcds-button>
+
+<gcds-heading tag="h2">{{ _("Evidence") }}</gcds-heading>
+
+{% if evidences %}
+<section class="table-container mb-300">
+    <table>
+        <thead>
+            <tr>
+                <th>{{ _('Title') }}</th>
+                <th>{{ _('Description') }}</th>
+                <th>{{ _('Type') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evidence in evidences %}
+                <tr>
+                    <td>
+                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}">{{ evidence.title }}</gcds-link>
+                    </td>
+                    <td>{{ evidence.description }}</td>
+                    <td>{{ _(evidence.evidence_type) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/new" type="link">
+    {{ _("Add") }}
+</gcds-button>
+
+{% endblock %}

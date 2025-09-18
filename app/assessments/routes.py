@@ -1,0 +1,249 @@
+"""Assessment routes for web interface and API endpoints."""
+
+from fastapi import APIRouter, Request, Depends, Form, HTTPException
+from fastapi.responses import HTMLResponse, RedirectResponse
+from app.auth.middleware import require_authenticated_user
+from app.database.models.users import User
+from app.templates.utils import LocalizedTemplates
+from app.assessments.services import AssessmentService
+from app.assessments.validation import AssessmentCreateRequest, AssessmentUpdateRequest
+from app.assessments.base import CSRFTokenManager
+from app.controls.services import ControlService
+
+router = APIRouter(prefix="/assessments", tags=["assessments"])
+templates = LocalizedTemplates(directory="./app/templates")
+assessment_service = AssessmentService()
+control_service = ControlService()
+csrf_manager = CSRFTokenManager()
+
+
+@router.get("/new", response_class=HTMLResponse)
+async def create_assessment_page(
+    request: Request, current_user: User = Depends(require_authenticated_user)
+) -> HTMLResponse:
+    """Display form to create new assessment."""
+    # Generate CSRF token for form
+    csrf_token = csrf_manager.generate_csrf_token()
+    request.session["csrf_token"] = csrf_token
+
+    return templates.TemplateResponse(
+        request,
+        "pages/assessments/form.html",
+        {
+            "request": request,
+            "title": "create_assessment_title",
+            "user": current_user,
+            "csrf_token": csrf_token,
+            "is_edit": False,
+        },
+    )
+
+
+@router.post("/new")
+async def create_assessment(
+    request: Request,
+    product_name: str = Form(...),
+    product_description: str = Form(...),
+    csrf_token: str = Form(...),
+    current_user: User = Depends(require_authenticated_user),
+) -> RedirectResponse:
+    """Handle assessment creation form submission."""
+    # Validate CSRF token
+    session_token = request.session.get("csrf_token")
+    if not csrf_manager.validate_csrf_token(session_token, csrf_token):
+        raise HTTPException(status_code=403, detail="Invalid CSRF token")
+
+    try:
+        # Validate input data
+        create_data = AssessmentCreateRequest(
+            product_name=product_name, product_description=product_description
+        )
+
+        # Create assessment
+        assessment = assessment_service.create_assessment(
+            current_user.user_id, create_data
+        )
+
+        # Clear CSRF token
+        request.session.pop("csrf_token", None)
+
+        # Redirect to assessment detail page
+        return RedirectResponse(
+            url=f"/assessments/{assessment.assessment_id}", status_code=303
+        )
+
+    except ValueError as e:
+        # Validation error - redisplay form with error
+        csrf_token = csrf_manager.generate_csrf_token()
+        request.session["csrf_token"] = csrf_token
+
+        return templates.TemplateResponse(
+            request,
+            "pages/assessments/form.html",
+            {
+                "request": request,
+                "title": "create_assessment_title",
+                "user": current_user,
+                "csrf_token": csrf_token,
+                "is_edit": False,
+                "error": str(e),
+                "product_name": product_name,
+                "product_description": product_description,
+            },
+        )
+
+
+@router.get("/{assessment_id}", response_class=HTMLResponse)
+async def assessment_detail_page(
+    assessment_id: str,
+    request: Request,
+    current_user: User = Depends(require_authenticated_user),
+) -> HTMLResponse:
+    """Display assessment details."""
+    try:
+        assessment = assessment_service.get_assessment(
+            assessment_id, current_user.user_id
+        )
+        controls = control_service.list_controls_by_assessment(
+            assessment_id, current_user.user_id
+        )
+
+        return templates.TemplateResponse(
+            request,
+            "pages/assessments/detail.html",
+            {
+                "request": request,
+                "title": "assessment_detail_title",
+                "user": current_user,
+                "assessment": assessment,
+                "controls": controls,
+            },
+        )
+    except HTTPException as e:
+        if e.status_code == 404:
+            raise HTTPException(status_code=404, detail="Assessment not found")
+        raise
+
+
+@router.get("/{assessment_id}/edit", response_class=HTMLResponse)
+async def edit_assessment_page(
+    assessment_id: str,
+    request: Request,
+    current_user: User = Depends(require_authenticated_user),
+) -> HTMLResponse:
+    """Display form to edit assessment."""
+    try:
+        assessment = assessment_service.get_assessment(
+            assessment_id, current_user.user_id
+        )
+
+        # Generate CSRF token for form
+        csrf_token = csrf_manager.generate_csrf_token()
+        request.session["csrf_token"] = csrf_token
+
+        return templates.TemplateResponse(
+            request,
+            "pages/assessments/form.html",
+            {
+                "request": request,
+                "title": "edit_assessment_title",
+                "user": current_user,
+                "csrf_token": csrf_token,
+                "is_edit": True,
+                "assessment": assessment,
+            },
+        )
+    except HTTPException as e:
+        if e.status_code == 404:
+            raise HTTPException(status_code=404, detail="Assessment not found")
+        raise
+
+
+@router.post("/{assessment_id}/edit")
+async def update_assessment(
+    assessment_id: str,
+    request: Request,
+    product_name: str = Form(...),
+    product_description: str = Form(...),
+    status: str = Form(...),
+    csrf_token: str = Form(...),
+    current_user: User = Depends(require_authenticated_user),
+) -> RedirectResponse:
+    """Handle assessment update form submission."""
+    # Validate CSRF token
+    session_token = request.session.get("csrf_token")
+    if not csrf_manager.validate_csrf_token(session_token, csrf_token):
+        raise HTTPException(status_code=403, detail="Invalid CSRF token")
+
+    try:
+        # Validate input data
+        update_data = AssessmentUpdateRequest(
+            product_name=product_name,
+            product_description=product_description,
+            status=status,
+        )
+
+        # Update assessment
+        assessment = assessment_service.update_assessment(
+            assessment_id, current_user.user_id, update_data
+        )
+
+        # Clear CSRF token
+        request.session.pop("csrf_token", None)
+
+        # Redirect to assessment detail page
+        return RedirectResponse(
+            url=f"/assessments/{assessment.assessment_id}", status_code=303
+        )
+
+    except (ValueError, HTTPException) as e:
+        # Error - redisplay form with error
+        try:
+            assessment = assessment_service.get_assessment(
+                assessment_id, current_user.user_id
+            )
+            csrf_token = csrf_manager.generate_csrf_token()
+            request.session["csrf_token"] = csrf_token
+
+            return templates.TemplateResponse(
+                request,
+                "pages/assessments/form.html",
+                {
+                    "request": request,
+                    "title": "edit_assessment_title",
+                    "user": current_user,
+                    "csrf_token": csrf_token,
+                    "is_edit": True,
+                    "assessment": assessment,
+                    "error": str(e),
+                },
+            )
+        except Exception:
+            raise HTTPException(status_code=404, detail="Assessment not found")
+
+
+@router.post("/{assessment_id}/delete")
+async def delete_assessment(
+    assessment_id: str,
+    request: Request,
+    csrf_token: str = Form(...),
+    current_user: User = Depends(require_authenticated_user),
+) -> RedirectResponse:
+    """Handle assessment deletion."""
+    # Validate CSRF token
+    session_token = request.session.get("csrf_token")
+    if not csrf_manager.validate_csrf_token(session_token, csrf_token):
+        raise HTTPException(status_code=403, detail="Invalid CSRF token")
+
+    try:
+        assessment_service.delete_assessment(assessment_id, current_user.user_id)
+
+        # Clear CSRF token
+        request.session.pop("csrf_token", None)
+
+        return RedirectResponse(url="/assessments/", status_code=303)
+
+    except HTTPException as e:
+        if e.status_code == 404:
+            raise HTTPException(status_code=404, detail="Assessment not found")
+        raise

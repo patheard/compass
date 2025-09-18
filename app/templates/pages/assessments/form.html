@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<gcds-heading tag="h1">
+    {% if is_edit %}
+        {{ _("Edit assessment") }}
+    {% else %}
+        {{ _("Create assessment") }}
+    {% endif %}
+</gcds-heading>
+<gcds-text>
+    {% if is_edit %}
+        {{ _("Update the details of your security assessment.") }}
+    {% else %}
+        {{ _("Fill out the form below to create a new security assessment.") }}
+    {% endif %}
+</gcds-text>
+
+{% if error %}
+<gcds-notice type="danger" notice-title-tag="h2" notice-title="{{ _('Error') }}">
+  <gcds-text>{{ error }}</gcds-text>
+</gcds-notice>
+{% endif %}
+
+
+<form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <gcds-input
+        name="product_name"
+        input-id="product_name"
+        label="{{ _('Product name') }}"
+        required="true"
+        minlength="2"
+        maxlength="200"
+        value="{% if is_edit %}{{ assessment.product_name }}{% else %}{{ product_name or '' }}{% endif %}">
+    </gcds-input>
+
+    <gcds-textarea
+        name="product_description"
+        textarea-id="product_description"
+        label="{{ _('Product description') }}"
+        required="true"
+        minlength="10"
+        maxlength="2000"
+        value="{% if is_edit %}{{ assessment.product_description }}{% else %}{{ product_description or '' }}{% endif %}">
+    </gcds-textarea>
+
+    {% if is_edit %}
+        <gcds-select
+            name="status"
+            select-id="status"
+            label="{{ _('Status') }}"
+            default-value="Select option."
+            required="true">
+            <option value="draft" {% if assessment.status == 'draft' %}selected{% endif %}>{{ _("Draft") }}</option>
+            <option value="in_progress" {% if assessment.status == 'in_progress' %}selected{% endif %}>{{ _("In Progress") }}</option>
+            <option value="completed" {% if assessment.status == 'completed' %}selected{% endif %}>{{ _("Completed") }}</option>
+        </gcds-select>
+    {% endif %}
+
+    <gcds-button type="submit" button-role="primary">
+      {% if is_edit %}
+        {{ _("Update") }}
+      {% else %}
+        {{ _("Create") }}
+      {% endif %}
+    </gcds-button>
+    <gcds-button href="{% if is_edit %}/assessments/{{ assessment.assessment_id }}{% else %}/{% endif %}" type="link" button-role="secondary">
+      {{ _('Cancel') }}
+    </gcds-button>
+
+</form>
+
+{% endblock %}

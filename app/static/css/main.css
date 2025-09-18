@@ -1,0 +1,15 @@
+.table-container table {
+    min-width: 100%;
+}
+
+.table-container table th,
+.table-container table td {
+    text-align: left;
+    padding: var(--gcds-spacing-200);
+    border-bottom: 1px solid var(--gcds-border-default);
+}
+
+.table-container table th {
+    background-color: var(--gcds-color-grayscale-50);
+    border-bottom-width: 2px;
+}

@@ -56,3 +56,17 @@ async def check_session_security(request: Request) -> None:
     # Store user agent for future checks
     if not stored_user_agent:
         request.session["user_agent"] = user_agent
+
+
+async def require_authenticated_user(request: Request) -> User:
+    """Dependency that requires an authenticated user."""
+    user = await get_user_from_session(request)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required"
+        )
+
+    # Additional security checks
+    await check_session_security(request)
+
+    return user

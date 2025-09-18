@@ -2,12 +2,29 @@
 
 {% block content %}
 <section>
-  <gcds-heading tag="h1">{{ _(title) }}</gcds-heading>
+  <gcds-heading tag="h1">{{ _('Compass') }} 🧭</gcds-heading>
   <gcds-text>
-    {{ _('welcome_message_logged_in')|replace('{{user_name}}', user.name) }}
+    {{ _('Create and manage security assessments for your products.') }}
   </gcds-text>
-  <gcds-text>
-    {{ _('platform_description') }}
-  </gcds-text>
+  <gcds-button href="/assessments/new" type="link" button-role="secondary">
+    {{ _('Get started') }}
+  </gcds-button>
 </section>
+
+{% if assessments %}
+<section>
+  <gcds-heading tag="h2">{{ _('Security assessments') }}</gcds-heading>
+  <gcds-grid tag="article" columns-desktop="1fr 1fr 1fr" columns-tablet="1fr 1fr" columns="1fr">
+  {% for assessment in assessments %}
+    <gcds-card
+      card-title="{{ assessment.product_name }}"
+      href="/assessments/{{ assessment.assessment_id }}">
+      <gcds-text class="mt-200">{{ assessment.product_description | truncate(100) }}</gcds-text>
+      <gcds-text text-role="secondary" size="small"><em>{{ _('Status:') }} {{ _(assessment.status) }}</em></gcds-text>
+    </gcds-card>
+  {% endfor %}
+  </gcds-grid>
+</section>
+{% endif %}
+
 {% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<gcds-heading tag="h1">{{ evidence.title }}</gcds-heading>
+<gcds-text>
+    {{ evidence.description }}
+</gcds-text>
+<gcds-text text-role="secondary" size="small">
+    <em>{{ _('Type:') }} {{ _(evidence.evidence_type|title) }}</em>
+</gcds-text>
+
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit" type="link" button-role="primary">
+    {{ _("Edit") }}
+</gcds-button>
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/" type="link" button-role="secondary">
+    {{ _("Back to Evidence") }}
+</gcds-button>
+
+<gcds-heading tag="h3">{{ _('Control Information') }}</gcds-heading>
+<gcds-text><strong>{{ _('NIST Control ID:') }}</strong> {{ control.nist_control_id }}</gcds-text>
+<gcds-text><strong>{{ _('Control Title:') }}</strong> {{ control.control_title }}</gcds-text>
+<gcds-text><strong>{{ _('Implementation Status:') }}</strong> {{ _(control.implementation_status) }}</gcds-text>
+
+
+{% endblock %}

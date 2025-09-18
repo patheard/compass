@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<gcds-heading tag="h1">{{ assessment.product_name }}</gcds-heading>
+<gcds-text>
+    {{ assessment.product_description }}
+</gcds-text>
+<gcds-text text-role="secondary" size="small">
+    <em>{{ _('Status:') }} {{ _(assessment.status) }}</em>
+</gcds-text>
+
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/edit" type="link" button-role="primary">
+    {{ _("Edit") }}
+</gcds-button>
+<gcds-button href="/" type="link" button-role="secondary">
+    {{ _("Home") }}
+</gcds-button>
+
+<gcds-heading tag="h2">{{ 'Security controls' }}</gcds-heading>
+
+{% if controls %}
+<section class="table-container mb-300">
+    <table>
+        <thead>
+            <tr>
+                <th>{{ _('ID') }}</th>
+                <th>{{ _('Title') }}</th>
+                <th>{{ _('Status') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for control in controls %}
+                <tr>
+                    <td>
+                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}">{{ control.nist_control_id }}</gcds-link>
+                    </td>
+                    <td>{{ control.control_title }}</td>
+                    <td>{{ _(control.implementation_status) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/new" type="link">
+    {{ _('Add') }}
+</gcds-button>
+
+{% endblock %}

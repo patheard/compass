@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<gcds-heading tag="h1">
+    {% if is_edit %}
+        {{ _("Edit evidence") }}
+    {% else %}
+        {{ _("Create evidence") }}
+    {% endif %}
+</gcds-heading>
+<gcds-text>
+    {% if is_edit %}
+        {{ _("Update the details of your evidence.") }}
+    {% else %}
+        {{ _("Fill out the form below to create new evidence.") }}
+    {% endif %}
+</gcds-text>
+<gcds-text text-role="secondary" size="small">
+    {{ _("Control") }}: {{ control.nist_control_id }} - {{ control.control_title }}
+</gcds-text>
+
+{% if error %}
+<gcds-notice type="danger" notice-title-tag="h2" notice-title="{{ _('Error') }}">
+  <gcds-text>{{ error }}</gcds-text>
+</gcds-notice>
+{% endif %}
+
+<form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <gcds-input
+        name="title"
+        input-id="title"
+        label="{{ _('Evidence title') }}"
+        required="true"
+        minlength="3"
+        maxlength="200"
+        value="{% if is_edit %}{{ evidence.title }}{% else %}{{ title_value or '' }}{% endif %}">
+    </gcds-input>
+
+    <gcds-select
+        name="evidence_type"
+        select-id="evidence_type"
+        label="{{ _('Evidence type') }}"
+        default-value="Select option."
+        required="true">
+        <option value="document" {% if (is_edit and evidence.evidence_type == 'document') or (evidence_type == 'document') %}selected{% endif %}>{{ _("Document") }}</option>
+        <option value="screenshot" {% if (is_edit and evidence.evidence_type == 'screenshot') or (evidence_type == 'screenshot') %}selected{% endif %}>{{ _("Screenshot") }}</option>
+        <option value="policy" {% if (is_edit and evidence.evidence_type == 'policy') or (evidence_type == 'policy') %}selected{% endif %}>{{ _("Policy") }}</option>
+        <option value="procedure" {% if (is_edit and evidence.evidence_type == 'procedure') or (evidence_type == 'procedure') %}selected{% endif %}>{{ _("Procedure") }}</option>
+        <option value="log" {% if (is_edit and evidence.evidence_type == 'log') or (evidence_type == 'log') %}selected{% endif %}>{{ _("Log File") }}</option>
+        <option value="configuration" {% if (is_edit and evidence.evidence_type == 'configuration') or (evidence_type == 'configuration') %}selected{% endif %}>{{ _("Configuration") }}</option>
+        <option value="certificate" {% if (is_edit and evidence.evidence_type == 'certificate') or (evidence_type == 'certificate') %}selected{% endif %}>{{ _("Certificate") }}</option>
+        <option value="report" {% if (is_edit and evidence.evidence_type == 'report') or (evidence_type == 'report') %}selected{% endif %}>{{ _("Report") }}</option>
+        <option value="other" {% if (is_edit and evidence.evidence_type == 'other') or (evidence_type == 'other') %}selected{% endif %}>{{ _("Other") }}</option>
+    </gcds-select>
+
+    <gcds-textarea
+        name="description"
+        textarea-id="description"
+        label="{{ _('Evidence description') }}"
+        required="true"
+        minlength="10"
+        maxlength="2000"
+        value="{% if is_edit %}{{ evidence.description }}{% else %}{{ description or '' }}{% endif %}">
+    </gcds-textarea>
+
+    <gcds-button type="submit" button-role="primary">
+      {% if is_edit %}
+        {{ _("Update") }}
+      {% else %}
+        {{ _("Create") }}
+      {% endif %}
+    </gcds-button>
+    <gcds-button href="{% if is_edit %}/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}{% else %}/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{% endif %}" type="link" button-role="secondary">
+      {{ _('Cancel') }}
+    </gcds-button>
+
+</form>
+
+{% endblock %}

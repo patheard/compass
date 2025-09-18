@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<gcds-heading tag="h1">
+    {% if is_edit %}
+        {{ _("Edit control") }}
+    {% else %}
+        {{ _("Create control") }}
+    {% endif %}
+</gcds-heading>
+<gcds-text>
+    {% if is_edit %}
+        {{ _("Update the details of your security control.") }}
+    {% else %}
+        {{ _("Fill out the form below to create a new security control.") }}
+    {% endif %}
+</gcds-text>
+<gcds-text text-role="secondary" size="small">
+    <em>{{ _('Assessment:') }} {{ assessment.product_name }}</em>
+</gcds-text>
+
+{% if error %}
+<gcds-notice type="danger" notice-title-tag="h2" notice-title="{{ _('Error') }}">
+  <gcds-text>{{ error }}</gcds-text>
+</gcds-notice>
+{% endif %}
+
+<form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <gcds-input
+        name="nist_control_id"
+        input-id="nist_control_id"
+        label="{{ _('NIST Control ID') }}"
+        required="true"
+        maxlength="20"
+        value="{% if is_edit %}{{ control.nist_control_id }}{% else %}{{ nist_control_id or '' }}{% endif %}">
+    </gcds-input>
+
+    <gcds-input
+        name="control_title"
+        input-id="control_title"
+        label="{{ _('Control title') }}"
+        required="true"
+        minlength="3"
+        maxlength="200"
+        value="{% if is_edit %}{{ control.control_title }}{% else %}{{ control_title or '' }}{% endif %}">
+    </gcds-input>
+
+    <gcds-textarea
+        name="control_description"
+        textarea-id="control_description"
+        label="{{ _('Control description') }}"
+        required="true"
+        minlength="10"
+        maxlength="5000"
+        value="{% if is_edit %}{{ control.control_description }}{% else %}{{ control_description or '' }}{% endif %}">
+    </gcds-textarea>
+
+    {% if is_edit %}
+        <gcds-select
+            name="implementation_status"
+            select-id="implementation_status"
+            label="{{ _('Implementation status') }}"
+            default-value="Select option."
+            hint="{{ _('Current implementation status of this security control') }}">
+            <option value="not_started" {% if control.implementation_status == 'not_started' %}selected{% endif %}>{{ _("Not Started") }}</option>
+            <option value="partial" {% if control.implementation_status == 'partial' %}selected{% endif %}>{{ _("Partially Implemented") }}</option>
+            <option value="implemented" {% if control.implementation_status == 'implemented' %}selected{% endif %}>{{ _("Fully Implemented") }}</option>
+        </gcds-select>
+    {% endif %}
+
+    <gcds-button type="submit" button-role="primary">
+      {% if is_edit %}
+        {{ _("Update") }}
+      {% else %}
+        {{ _("Create") }}
+      {% endif %}
+    </gcds-button>
+    <gcds-button href="/assessments/{{ assessment.assessment_id }}" type="link" button-role="secondary">
+      {{ _('Cancel') }}
+    </gcds-button>
+
+</form>
+
+{% endblock %}

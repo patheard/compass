@@ -3,11 +3,16 @@
 import logging
 from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from starlette.middleware.sessions import SessionMiddleware
 from typing import Optional
 from app.auth.routes import router as auth_router
+from app.assessments.routes import router as assessment_router
+from app.assessments.services import AssessmentService
+from app.controls.routes import router as control_router
+from app.evidence.routes import router as evidence_router
 from app.auth.middleware import get_user_from_session
 from app.database.models.users import User
 from app.security.middleware import SecurityHeadersMiddleware
@@ -66,9 +71,15 @@ app.add_middleware(SessionMiddleware, **session_config.get_session_middleware_kw
 
 # Routes
 app.include_router(auth_router)
+app.include_router(assessment_router)
+app.include_router(control_router)
+app.include_router(evidence_router)
 
-# Templates
+# Static files
+app.mount("/static", StaticFiles(directory="./app/static"), name="static")
+
 templates = LocalizedTemplates(directory="./app/templates")
+assessment_service = AssessmentService()
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -78,10 +89,16 @@ async def root(
     """Route users to appropriate page based on session status."""
     if current_user:
         # Authenticated user - show home page
+        assessments = assessment_service.list_assessments(current_user.user_id)
         return templates.TemplateResponse(
             request,
             "pages/home.html",
-            {"request": request, "title": "welcome_title", "user": current_user},
+            {
+                "request": request,
+                "title": "welcome_title",
+                "user": current_user,
+                "assessments": assessments,
+            },
         )
     else:
         # Unauthenticated user - show login page
