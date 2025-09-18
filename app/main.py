@@ -34,6 +34,10 @@ app = FastAPI(
 handler = Mangum(app)
 
 
+#
+# TODO: Come up with a less hacky way to do this or just assume the tables will exist
+# in the expected state because they're managed in Terraform.
+#
 @app.on_event("startup")
 async def startup_event() -> None:
     """Initialize database tables on application startup."""
@@ -129,20 +133,18 @@ async def set_language(
 
 
 @app.get("/health")
-async def health_check() -> dict[str, str]:
-    """Health check endpoint."""
-    return {"status": "healthy"}
-
-
-@app.get("/health/database")
 async def database_health_check() -> dict[str, object]:
     """Database health check endpoint."""
+    is_healthy = False
     try:
         is_healthy = DatabaseManager.check_table_health()
-        return {
-            "status": "healthy" if is_healthy else "unhealthy",
-            "database": "accessible" if is_healthy else "issues_detected",
-        }
     except Exception as e:
         logger.error(f"Database health check failed: {e}")
-        return {"status": "unhealthy", "database": "error", "error": str(e)}
+
+    if is_healthy:
+        return {"status": "healthy"}
+    else:
+        raise HTTPException(
+            status_code=503,
+            detail={"status": "unhealthy"},
+        )
