@@ -7,43 +7,299 @@ msgid ""
 msgstr ""
 "Project-Id-Version: compass 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-16 12:00+0000\n"
+"POT-Creation-Date: 2025-09-18 15:06-0400\n"
 "PO-Revision-Date: 2025-09-16 12:00+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.16.0\n"
+"Generated-By: Babel 2.17.0\n"
 
+#: app/auth/routes.py:38
 msgid "welcome_title"
 msgstr "Welcome to Compass"
 
+#: app/templates/base.html:22
 msgid "sign_out"
 msgstr "Sign out"
 
+#: app/templates/base.html:24
 msgid "sign_in"
 msgstr "Sign in"
 
-msgid "security_assessment"
-msgstr "Security Assessment"
-
-msgid "automation_platform"
-msgstr "Automation Platform"
-
-msgid "welcome_message_logged_in"
-msgstr "Welcome, {{user_name}}! You are logged in with your account."
-
-msgid "platform_description"
-msgstr "This platform provides automated security assessment tools."
-
-msgid "login_prompt"
-msgstr "Please log in with your Google account to access Compass."
-
-msgid "login_button"
-msgstr "Login"
-
+#: app/templates/base.html:41
 msgid "version"
 msgstr "Version:"
+
+#: app/templates/pages/home.html:5 app/templates/pages/login.html:5
+msgid "Compass"
+msgstr ""
+
+#: app/templates/pages/home.html:7
+msgid "Create and manage security assessments for your products."
+msgstr ""
+
+#: app/templates/pages/home.html:10
+msgid "Get started"
+msgstr ""
+
+#: app/templates/pages/home.html:16
+#, fuzzy
+msgid "Security assessments"
+msgstr "Security Assessment"
+
+#: app/templates/pages/assessments/detail.html:9
+#: app/templates/pages/controls/detail.html:10 app/templates/pages/home.html:23
+msgid "Status:"
+msgstr ""
+
+#: app/templates/pages/login.html:7
+msgid "To get started, login with your Google account."
+msgstr ""
+
+#: app/templates/pages/login.html:10
+msgid "Login"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:13
+#: app/templates/pages/controls/detail.html:15
+#: app/templates/pages/evidence/detail.html:13
+msgid "Edit"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:23
+msgid "ID"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:24
+#: app/templates/pages/controls/detail.html:25
+msgid "Title"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:25
+#: app/templates/pages/assessments/form.html:53
+msgid "Status"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:44
+#: app/templates/pages/controls/detail.html:46
+msgid "Add"
+msgstr ""
+
+#: app/templates/pages/assessments/form.html:6
+#, fuzzy
+msgid "Edit assessment"
+msgstr "Security Assessment"
+
+#: app/templates/pages/assessments/form.html:8
+#, fuzzy
+msgid "Create assessment"
+msgstr "Security Assessment"
+
+#: app/templates/pages/assessments/form.html:13
+msgid "Update the details of your security assessment."
+msgstr ""
+
+#: app/templates/pages/assessments/form.html:15
+msgid "Fill out the form below to create a new security assessment."
+msgstr ""
+
+#: app/templates/pages/assessments/form.html:20
+#: app/templates/pages/controls/form.html:23
+#: app/templates/pages/evidence/form.html:23
+msgid "Error"
+msgstr ""
+
+#: app/templates/pages/assessments/form.html:32
+msgid "Product name"
+msgstr ""
+
+#: app/templates/pages/assessments/form.html:42
+#, fuzzy
+msgid "Product description"
+msgstr "This platform provides automated security assessment tools."
+
+#: app/templates/pages/assessments/form.html:56
+msgid "Draft"
+msgstr ""
+
+#: app/templates/pages/assessments/form.html:57
+msgid "In Progress"
+msgstr ""
+
+#: app/templates/pages/assessments/form.html:58
+msgid "Completed"
+msgstr ""
+
+#: app/templates/pages/assessments/form.html:64
+#: app/templates/pages/controls/form.html:75
+#: app/templates/pages/evidence/form.html:70
+msgid "Update"
+msgstr ""
+
+#: app/templates/pages/assessments/form.html:66
+#: app/templates/pages/controls/form.html:77
+#: app/templates/pages/evidence/form.html:72
+msgid "Create"
+msgstr ""
+
+#: app/templates/pages/assessments/form.html:70
+#: app/templates/pages/controls/form.html:81
+#: app/templates/pages/evidence/form.html:76
+msgid "Cancel"
+msgstr ""
+
+#: app/templates/pages/controls/detail.html:18
+msgid "Evidence"
+msgstr ""
+
+#: app/templates/pages/controls/detail.html:26
+#, fuzzy
+msgid "Description"
+msgstr "This platform provides automated security assessment tools."
+
+#: app/templates/pages/controls/detail.html:27
+msgid "Type"
+msgstr ""
+
+#: app/templates/pages/controls/form.html:6
+msgid "Edit control"
+msgstr ""
+
+#: app/templates/pages/controls/form.html:8
+msgid "Create control"
+msgstr ""
+
+#: app/templates/pages/controls/form.html:13
+msgid "Update the details of your security control."
+msgstr ""
+
+#: app/templates/pages/controls/form.html:15
+msgid "Fill out the form below to create a new security control."
+msgstr ""
+
+#: app/templates/pages/controls/form.html:19
+#, fuzzy
+msgid "Assessment:"
+msgstr "Security Assessment"
+
+#: app/templates/pages/controls/form.html:34
+msgid "NIST Control ID"
+msgstr ""
+
+#: app/templates/pages/controls/form.html:43
+msgid "Control title"
+msgstr ""
+
+#: app/templates/pages/controls/form.html:53
+#, fuzzy
+msgid "Control description"
+msgstr "This platform provides automated security assessment tools."
+
+#: app/templates/pages/controls/form.html:64
+msgid "Implementation status"
+msgstr ""
+
+#: app/templates/pages/controls/form.html:66
+msgid "Current implementation status of this security control"
+msgstr ""
+
+#: app/templates/pages/controls/form.html:67
+msgid "Not Started"
+msgstr ""
+
+#: app/templates/pages/controls/form.html:68
+msgid "Partially Implemented"
+msgstr ""
+
+#: app/templates/pages/controls/form.html:69
+msgid "Fully Implemented"
+msgstr ""
+
+#: app/templates/pages/evidence/detail.html:9
+msgid "Type:"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:6
+msgid "Edit evidence"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:8
+msgid "Create evidence"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:13
+msgid "Update the details of your evidence."
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:15
+msgid "Fill out the form below to create new evidence."
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:19
+msgid "Control"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:34
+msgid "Evidence title"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:44
+msgid "Evidence type"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:47
+msgid "Document"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:48
+msgid "Screenshot"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:49
+msgid "Policy"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:50
+msgid "Procedure"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:51
+msgid "Log File"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:52
+msgid "Configuration"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:53
+msgid "Certificate"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:54
+msgid "Report"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:55
+msgid "Other"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:61
+msgid "Evidence description"
+msgstr ""
+
+#~ msgid "automation_platform"
+#~ msgstr "Automation Platform"
+
+#~ msgid "welcome_message_logged_in"
+#~ msgstr "Welcome, {{user_name}}! You are logged in with your account."
+
+#~ msgid "login_prompt"
+#~ msgstr "Please log in with your Google account to access Compass."
+
+#~ msgid "login_button"
+#~ msgstr "Login"
+
