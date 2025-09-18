@@ -2,7 +2,6 @@
 
 from typing import Optional
 from fastapi import HTTPException, status, Request
-from fastapi.responses import RedirectResponse
 from app.database.models.users import User
 import time
 
@@ -64,8 +63,7 @@ async def require_authenticated_user(request: Request) -> User:
     user = await get_user_from_session(request)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required"
         )
 
     # Additional security checks

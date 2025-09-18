@@ -69,14 +69,18 @@ app.add_middleware(CORSMiddleware, **cors_config.get_cors_kwargs())
 app.add_middleware(LocalizationMiddleware)
 app.add_middleware(SessionMiddleware, **session_config.get_session_middleware_kwargs())
 
+
 # Exception handlers
 @app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException) -> RedirectResponse:
+async def http_exception_handler(
+    request: Request, exc: HTTPException
+) -> RedirectResponse:
     """Handle HTTP exceptions, redirecting to login for 401 errors."""
     if exc.status_code == status.HTTP_401_UNAUTHORIZED:
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     # Re-raise other HTTP exceptions to be handled by default handler
     raise exc
+
 
 # Routes
 app.include_router(auth_router)
