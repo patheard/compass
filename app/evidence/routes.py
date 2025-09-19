@@ -105,7 +105,7 @@ async def create_evidence(
 
         # Redirect to evidence detail page
         return RedirectResponse(
-            url=f"/assessments/{assessment_id}/controls/{control_id}/evidence/{evidence.evidence_id}",
+            url=f"/assessments/{assessment_id}/controls/{control_id}",
             status_code=303,
         )
 
@@ -173,6 +173,10 @@ async def evidence_detail_page(
                 status_code=404, detail="Control not found in assessment"
             )
 
+        # Generate CSRF token for delete functionality
+        csrf_token = csrf_manager.generate_csrf_token()
+        request.session["csrf_token"] = csrf_token
+
         return templates.TemplateResponse(
             request,
             "pages/evidence/detail.html",
@@ -183,6 +187,7 @@ async def evidence_detail_page(
                 "assessment": assessment,
                 "control": control,
                 "evidence": evidence,
+                "csrf_token": csrf_token,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {
@@ -368,7 +373,7 @@ async def delete_evidence(
         request.session.pop("csrf_token", None)
 
         return RedirectResponse(
-            url=f"/assessments/{assessment_id}/controls/{control_id}/evidence/",
+            url=f"/assessments/{assessment_id}/controls/{control_id}",
             status_code=303,
         )
 

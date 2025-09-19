@@ -114,6 +114,10 @@ async def assessment_detail_page(
             assessment_id, current_user.user_id
         )
 
+        # Generate CSRF token for delete functionality
+        csrf_token = csrf_manager.generate_csrf_token()
+        request.session["csrf_token"] = csrf_token
+
         return templates.TemplateResponse(
             request,
             "pages/assessments/detail.html",
@@ -123,6 +127,7 @@ async def assessment_detail_page(
                 "user": current_user,
                 "assessment": assessment,
                 "controls": controls,
+                "csrf_token": csrf_token,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                 ],
@@ -264,7 +269,7 @@ async def delete_assessment(
         # Clear CSRF token
         request.session.pop("csrf_token", None)
 
-        return RedirectResponse(url="/assessments/", status_code=303)
+        return RedirectResponse(url="/", status_code=303)
 
     except HTTPException as e:
         if e.status_code == 404:

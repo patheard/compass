@@ -38,6 +38,16 @@
         value="{% if is_edit %}{{ evidence.title }}{% else %}{{ title_value or '' }}{% endif %}">
     </gcds-input>
 
+    <gcds-textarea
+        name="description"
+        textarea-id="description"
+        label="{{ _('Evidence description') }}"
+        required="true"
+        minlength="10"
+        maxlength="2000"
+        value="{% if is_edit %}{{ evidence.description }}{% else %}{{ description or '' }}{% endif %}">
+    </gcds-textarea>
+
     <gcds-select
         name="evidence_type"
         select-id="evidence_type"
@@ -55,17 +65,7 @@
         <option value="other" {% if (is_edit and evidence.evidence_type == 'other') or (evidence_type == 'other') %}selected{% endif %}>{{ _("Other") }}</option>
     </gcds-select>
 
-    <gcds-textarea
-        name="description"
-        textarea-id="description"
-        label="{{ _('Evidence description') }}"
-        required="true"
-        minlength="10"
-        maxlength="2000"
-        value="{% if is_edit %}{{ evidence.description }}{% else %}{{ description or '' }}{% endif %}">
-    </gcds-textarea>
-
-    <gcds-button type="submit" button-role="primary">
+    <gcds-button type="submit" button-role="primary" class="mt-300">
       {% if is_edit %}
         {{ _("Update") }}
       {% else %}

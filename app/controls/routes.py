@@ -95,7 +95,7 @@ async def create_control(
 
         # Redirect to control detail page
         return RedirectResponse(
-            url=f"/assessments/{assessment_id}/controls/{control.control_id}",
+            url=f"/assessments/{assessment_id}",
             status_code=303,
         )
 
@@ -158,6 +158,10 @@ async def control_detail_page(
                 status_code=404, detail="Control not found in assessment"
             )
 
+        # Generate CSRF token for delete functionality
+        csrf_token = csrf_manager.generate_csrf_token()
+        request.session["csrf_token"] = csrf_token
+
         return templates.TemplateResponse(
             request,
             "pages/controls/detail.html",
@@ -168,6 +172,7 @@ async def control_detail_page(
                 "assessment": assessment,
                 "control": control,
                 "evidences": evidences,
+                "csrf_token": csrf_token,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {
@@ -338,7 +343,7 @@ async def delete_control(
         request.session.pop("csrf_token", None)
 
         return RedirectResponse(
-            url=f"/assessments/{assessment_id}/controls/", status_code=303
+            url=f"/assessments/{assessment_id}", status_code=303
         )
 
     except HTTPException as e:
