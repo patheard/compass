@@ -1,8 +1,4 @@
 /**
- * Main JavaScript functionality for the Compass application
- */
-
-/**
  * Delete an item by sending a POST request to the delete endpoint
  * @param {string} deleteUrl - The URL of the delete endpoint
  * @param {string} csrfToken - The CSRF token for the request
@@ -31,6 +27,48 @@ async function deleteItem(deleteUrl, csrfToken) {
 }
 
 /**
+ * Show confirmation modal
+ * @param {Function} onConfirm - Callback function when confirmed
+ */
+function showConfirmModal(onConfirm) {
+    const modal = document.getElementById('confirmModal');
+    const confirmBtn = document.getElementById('modalConfirm');
+    const cancelBtn = document.getElementById('modalCancel');
+
+    // Show modal
+    modal.classList.add('show');
+    
+    // Handle confirm
+    confirmBtn.onclick = function() {
+        hideConfirmModal();
+        onConfirm();
+    };
+    
+    // Handle cancel
+    cancelBtn.onclick = hideConfirmModal;
+    
+    // Handle clicking outside modal
+    modal.onclick = function(event) {
+        if (event.target === modal) {
+            hideConfirmModal();
+        }
+    };
+}
+
+/**
+ * Hide confirmation modal
+ */
+function hideConfirmModal() {
+    const modal = document.getElementById('confirmModal');
+    modal.classList.remove('show');
+    
+    // Clear event handlers;
+    document.getElementById('modalConfirm').onclick = null;
+    document.getElementById('modalCancel').onclick = null;
+    modal.onclick = null;
+}
+
+/**
  * Initialize event handlers when the DOM is loaded
  */
 document.addEventListener('DOMContentLoaded', function() {
@@ -41,7 +79,10 @@ document.addEventListener('DOMContentLoaded', function() {
             event.preventDefault(); // Prevent default link behavior
             const deleteUrl = this.getAttribute('href');
             const csrfToken = this.getAttribute('data-csrf-token');
-            deleteItem(deleteUrl, csrfToken);
+            
+            showConfirmModal(function() {
+                deleteItem(deleteUrl, csrfToken);
+            });
         });
     });
 });

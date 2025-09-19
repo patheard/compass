@@ -14,8 +14,7 @@
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit" type="link" button-role="primary">
     {{ _("Edit") }}
 </gcds-button>
-
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/delete" type="link" button-role="danger" data-csrf-token="{{ csrf_token }}" class="delete-item">
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
     {{ _("Delete") }}
 </gcds-button>
 

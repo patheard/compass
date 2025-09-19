@@ -43,5 +43,14 @@
     </gcds-container>
 
     <gcds-footer display="full"></gcds-footer>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay">
+      <div class="modal-content">
+        <gcds-text id="modalMessage">{{ _('Are you sure you want to continue? This action cannot be undone.') }}</gcds-text>
+        <gcds-button id="modalConfirm" button-role="danger">{{ _('Yes') }}</gcds-button>
+        <gcds-button id="modalCancel" button-role="secondary">{{ _('Cancel') }}</gcds-button>
+      </div>
+    </div>
   </body>
 </html>
