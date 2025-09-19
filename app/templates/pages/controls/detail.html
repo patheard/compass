@@ -6,17 +6,26 @@
 <gcds-text>
     {{ control.control_description }}
 </gcds-text>
-<gcds-text text-role="secondary" size="small">
-    <em>{{ _('Status:') }} {{ _(control.implementation_status) }}
-    </em>
-</gcds-text>
 
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit" type="link" button-role="primary">
+<ul class="list-disc mb-300" class="sm">
+    <li>
+        <strong>{{ _('Status:') }}</strong>
+        {{ _(control.implementation_status) }}
+    </li>
+    <li>
+        <strong>{{ _('Assessment:') }}</strong>
+        <gcds-link href="/assessments/{{ assessment.assessment_id }}">{{ assessment.product_name }}</gcds-link>
+    </li>
+</ul>
+
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit" type="link" button-role="primary" class="mt-300">
     {{ _("Edit") }}
 </gcds-button>
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
     {{ _("Delete") }}
 </gcds-button>
+
+<hr class="mt-800 mb-600">
 
 <gcds-heading tag="h2">{{ _("Evidence") }}</gcds-heading>
 
@@ -28,6 +37,7 @@
                 <th>{{ _('Title') }}</th>
                 <th>{{ _('Description') }}</th>
                 <th>{{ _('Type') }}</th>
+                <th>{{ _('Actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -38,6 +48,10 @@
                     </td>
                     <td>{{ evidence.description }}</td>
                     <td>{{ _(evidence.evidence_type) }}</td>
+                    <td>
+                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit">{{ _("Edit") }}</gcds-link>
+                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/delete" data-csrf-token="{{ csrf_token }}" class="delete-item">{{ _("Delete") }}</gcds-link>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

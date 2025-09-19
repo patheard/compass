@@ -5,16 +5,22 @@
 <gcds-text>
     {{ assessment.product_description }}
 </gcds-text>
-<gcds-text text-role="secondary" size="small">
-    <em>{{ _('Status:') }} {{ _(assessment.status) }}</em>
-</gcds-text>
 
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/edit" type="link" button-role="primary">
+<ul class="list-disc mb-300" class="sm">
+    <li>
+        <strong>{{ _('Status:') }}</strong>
+        {{ _(assessment.status) }}
+    </li>
+</ul>
+
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/edit" type="link" button-role="primary" class="mt-300">
     {{ _("Edit") }}
 </gcds-button>
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
     {{ _("Delete") }}
 </gcds-button>
+
+<hr class="mt-800 mb-600">
 
 <gcds-heading tag="h2">{{ 'Security controls' }}</gcds-heading>
 
@@ -26,6 +32,7 @@
                 <th>{{ _('ID') }}</th>
                 <th>{{ _('Title') }}</th>
                 <th>{{ _('Status') }}</th>
+                <th>{{ _('Actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -36,6 +43,10 @@
                     </td>
                     <td>{{ control.control_title }}</td>
                     <td>{{ _(control.implementation_status) }}</td>
+                    <td>
+                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit">{{ _("Edit") }}</gcds-link>
+                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/delete" data-csrf-token="{{ csrf_token }}" class="delete-item">{{ _("Delete") }}</gcds-link>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

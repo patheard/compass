@@ -73,7 +73,7 @@ function hideConfirmModal() {
  */
 document.addEventListener('DOMContentLoaded', function() {
     // Bind all delete buttons (assessments, controls, evidence)
-    const deleteButtons = document.querySelectorAll('gcds-button.delete-item');
+    const deleteButtons = document.querySelectorAll('.delete-item');
     deleteButtons.forEach(function(deleteBtn) {
         deleteBtn.addEventListener('click', function(event) {
             event.preventDefault(); // Prevent default link behavior

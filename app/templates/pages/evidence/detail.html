@@ -5,11 +5,23 @@
 <gcds-text>
     {{ evidence.description }}
 </gcds-text>
-<gcds-text text-role="secondary" size="small">
-    <em>{{ _('Type:') }} {{ _(evidence.evidence_type|title) }}</em>
-</gcds-text>
 
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit" type="link" button-role="primary">
+<ul class="list-disc mb-300" class="sm">
+    <li>
+        <strong>{{ _('Type:') }}</strong>
+        {{ _(evidence.evidence_type) }}
+    </li>
+    <li>
+        <strong>{{ _('Control:') }}</strong>
+        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}">{{ _(control.nist_control_id) }}</gcds-link>
+    </li>
+    <li>
+        <strong>{{ _('Assessment:') }}</strong>
+        <gcds-link href="/assessments/{{ assessment.assessment_id }}">{{ assessment.product_name }}</gcds-link>
+    </li>
+</ul>
+
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit" type="link" button-role="primary" class="mt-300">
     {{ _("Edit") }}
 </gcds-button>
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
