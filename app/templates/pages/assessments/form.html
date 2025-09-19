@@ -31,7 +31,6 @@
         input-id="product_name"
         label="{{ _('Product name') }}"
         required="true"
-        minlength="2"
         maxlength="200"
         value="{% if is_edit %}{{ assessment.product_name }}{% else %}{{ product_name or '' }}{% endif %}">
     </gcds-input>
@@ -41,7 +40,6 @@
         textarea-id="product_description"
         label="{{ _('Product description') }}"
         required="true"
-        minlength="10"
         maxlength="2000"
         value="{% if is_edit %}{{ assessment.product_description }}{% else %}{{ product_description or '' }}{% endif %}">
     </gcds-textarea>

@@ -30,10 +30,6 @@ class EvidenceCreateRequest(BaseInputValidator):
         """Validate evidence title format."""
         if not value.strip():
             raise ValueError("Evidence title cannot be empty")
-
-        if len(value.strip()) < 3:
-            raise ValueError("Evidence title must be at least 3 characters")
-
         return value
 
     @validator("description")
@@ -41,10 +37,6 @@ class EvidenceCreateRequest(BaseInputValidator):
         """Validate evidence description format."""
         if not value.strip():
             raise ValueError("Evidence description cannot be empty")
-
-        if len(value.strip()) < 10:
-            raise ValueError("Evidence description must be at least 10 characters")
-
         return value
 
     @validator("evidence_type")
@@ -93,10 +85,6 @@ class EvidenceUpdateRequest(BaseInputValidator):
         if value is not None:
             if not value.strip():
                 raise ValueError("Evidence title cannot be empty")
-
-            if len(value.strip()) < 3:
-                raise ValueError("Evidence title must be at least 3 characters")
-
         return value
 
     @validator("description")
@@ -105,10 +93,6 @@ class EvidenceUpdateRequest(BaseInputValidator):
         if value is not None:
             if not value.strip():
                 raise ValueError("Evidence description cannot be empty")
-
-            if len(value.strip()) < 10:
-                raise ValueError("Evidence description must be at least 10 characters")
-
         return value
 
     @validator("evidence_type")

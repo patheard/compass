@@ -27,11 +27,6 @@ class AssessmentCreateRequest(BaseInputValidator):
         """Validate product name format."""
         if not value.strip():
             raise ValueError("Product name cannot be empty")
-
-        # Check for minimum meaningful content
-        if len(value.strip()) < 2:
-            raise ValueError("Product name must be at least 2 characters")
-
         return value
 
     @validator("product_description")
@@ -39,11 +34,6 @@ class AssessmentCreateRequest(BaseInputValidator):
         """Validate product description format."""
         if not value.strip():
             raise ValueError("Product description cannot be empty")
-
-        # Check for minimum meaningful content
-        if len(value.strip()) < 10:
-            raise ValueError("Product description must be at least 10 characters")
-
         return value
 
 

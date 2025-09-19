@@ -50,10 +50,6 @@ class ControlCreateRequest(BaseInputValidator):
         """Validate control title format."""
         if not value.strip():
             raise ValueError("Control title cannot be empty")
-
-        if len(value.strip()) < 3:
-            raise ValueError("Control title must be at least 3 characters")
-
         return value
 
     @validator("control_description")
@@ -61,10 +57,6 @@ class ControlCreateRequest(BaseInputValidator):
         """Validate control description format."""
         if not value.strip():
             raise ValueError("Control description cannot be empty")
-
-        if len(value.strip()) < 10:
-            raise ValueError("Control description must be at least 10 characters")
-
         return value
 
 
