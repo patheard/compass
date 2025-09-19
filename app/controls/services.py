@@ -4,6 +4,7 @@ from typing import List
 from fastapi import HTTPException
 from app.database.models.controls import Control
 from app.database.models.assessments import SecurityAssessment
+from app.database.models.evidence import Evidence
 from app.assessments.base import BaseService
 from app.controls.validation import (
     ControlCreateRequest,
@@ -146,10 +147,18 @@ class ControlService(BaseService[Control]):
             )
 
     def delete_control(self, control_id: str, user_id: str) -> None:
-        """Delete a control."""
+        """Delete a control and all associated evidence."""
         control = self.get_entity_or_404(control_id, user_id)
 
         try:
+            # Get all evidence for this control
+            evidence_list = Evidence.get_by_control(control_id)
+
+            # Delete all evidence first
+            for evidence in evidence_list:
+                evidence.delete()
+
+            # Finally delete the control
             control.delete()
         except Exception as e:
             raise HTTPException(

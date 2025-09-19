@@ -3,6 +3,8 @@
 from typing import List
 from fastapi import HTTPException
 from app.database.models.assessments import SecurityAssessment
+from app.database.models.controls import Control
+from app.database.models.evidence import Evidence
 from app.assessments.base import BaseService
 from app.assessments.validation import (
     AssessmentCreateRequest,
@@ -84,10 +86,24 @@ class AssessmentService(BaseService[SecurityAssessment]):
             )
 
     def delete_assessment(self, assessment_id: str, user_id: str) -> None:
-        """Delete an assessment."""
+        """Delete an assessment and all associated controls and evidence."""
         assessment = self.get_entity_or_404(assessment_id, user_id)
 
         try:
+            # Get all controls for this assessment
+            controls = Control.get_by_assessment(assessment_id)
+
+            # Delete all evidence for each control
+            for control in controls:
+                evidence_list = Evidence.get_by_control(control.control_id)
+                for evidence in evidence_list:
+                    evidence.delete()
+
+            # Delete all controls
+            for control in controls:
+                control.delete()
+
+            # Finally delete the assessment
             assessment.delete()
         except Exception as e:
             raise HTTPException(

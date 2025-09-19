@@ -86,9 +86,7 @@ async def create_control(
         )
 
         # Create control
-        control = control_service.create_control(
-            assessment_id, current_user.user_id, create_data
-        )
+        control_service.create_control(assessment_id, current_user.user_id, create_data)
 
         # Clear CSRF token
         request.session.pop("csrf_token", None)
@@ -342,9 +340,7 @@ async def delete_control(
         # Clear CSRF token
         request.session.pop("csrf_token", None)
 
-        return RedirectResponse(
-            url=f"/assessments/{assessment_id}", status_code=303
-        )
+        return RedirectResponse(url=f"/assessments/{assessment_id}", status_code=303)
 
     except HTTPException as e:
         if e.status_code == 404:

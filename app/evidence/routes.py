@@ -96,9 +96,7 @@ async def create_evidence(
         )
 
         # Create evidence
-        evidence = evidence_service.create_evidence(
-            control_id, current_user.user_id, create_data
-        )
+        evidence_service.create_evidence(control_id, current_user.user_id, create_data)
 
         # Clear CSRF token
         request.session.pop("csrf_token", None)
