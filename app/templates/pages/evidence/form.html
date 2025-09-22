@@ -64,25 +64,24 @@
         <option value="other" {% if (is_edit and evidence.evidence_type == 'other') or (evidence_type == 'other') %}selected{% endif %}>{{ _("Other") }}</option>
     </gcds-select>
 
-    <section id="scan_template_section" style="display: {% if (is_edit and evidence.evidence_type == 'automated_collection') or (evidence_type == 'automated_collection') %}block{% else %}none{% endif %};">
-        <gcds-select
-            name="scan_job_template_id"
-            select-id="scan_job_template_id"
-            label="{{ _('Scan Job Template') }}"
-            default-value="Select template."
-            {% if (is_edit and evidence.evidence_type == 'automated_collection') or (evidence_type == 'automated_collection') %}required="true"{% endif %}>
-            {% if scan_job_templates %}
-                {% for template in scan_job_templates %}
-                    <option value="{{ template.template_id }}" 
-                        {% if (is_edit and evidence.scan_job_template_id == template.template_id) or (scan_job_template_id == template.template_id) %}selected{% endif %}>
-                        {{ template.name }} ({{ template.scan_type }})
-                    </option>
-                {% endfor %}
-            {% else %}
-                <option value="" disabled>{{ _("No scan job templates available") }}</option>
-            {% endif %}
-        </gcds-select>
-    </section>
+    <gcds-select
+        name="scan_job_template_id"
+        select-id="scan_job_template_id"
+        label="{{ _('Scan Job Template') }}"
+        default-value="Select template."
+        {% if (is_edit and evidence.evidence_type == 'automated_collection') or (evidence_type == 'automated_collection') %}required="true"{% endif %}>
+        {% if scan_job_templates %}
+            {% for template in scan_job_templates %}
+                <option value="{{ template.template_id }}" 
+                    {% if (is_edit and evidence.scan_job_template_id == template.template_id) or (scan_job_template_id == template.template_id) %}selected{% endif %}>
+                    {{ template.name }} ({{ template.scan_type }})
+                </option>
+            {% endfor %}
+        {% else %}
+            <option value="" disabled>{{ _("No scan job templates available") }}</option>
+        {% endif %}
+    </gcds-select>
+
 
     <gcds-button type="submit" button-role="primary" class="mt-300">
       {% if is_edit %}

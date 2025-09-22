@@ -69,26 +69,6 @@ function hideConfirmModal() {
 }
 
 /**
- * Toggle scan template select visibility based on evidence type
- */
-function toggleScanTemplateSelect() {
-    const evidenceTypeSelect = document.getElementById('evidence_type');
-    const scanTemplateSection = document.getElementById('scan_template_section');
-    const scanTemplateSelect = document.getElementById('scan_job_template_id');
-    
-    if (evidenceTypeSelect && scanTemplateSection && scanTemplateSelect) {
-        if (evidenceTypeSelect.value === 'automated_collection') {
-            scanTemplateSection.style.display = 'block';
-            scanTemplateSelect.setAttribute('required', 'true');
-        } else {
-            scanTemplateSection.style.display = 'none';
-            scanTemplateSelect.removeAttribute('required');
-            scanTemplateSelect.value = '';
-        }
-    }
-}
-
-/**
  * Initialize event handlers when the DOM is loaded
  */
 document.addEventListener('DOMContentLoaded', function() {
@@ -105,13 +85,4 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-
-    // Initialize scan template toggle for evidence forms
-    const evidenceTypeSelect = document.getElementById('evidence_type');
-    if (evidenceTypeSelect) {
-        // Bind change event handler
-        evidenceTypeSelect.addEventListener('change', toggleScanTemplateSelect);
-        // Initialize on page load
-        toggleScanTemplateSelect();
-    }
 });
