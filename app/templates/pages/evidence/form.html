@@ -65,20 +65,20 @@
     </gcds-select>
 
     <gcds-select
-        name="scan_job_template_id"
-        select-id="scan_job_template_id"
-        label="{{ _('Scan Job Template') }}"
+        name="job_template_id"
+        select-id="job_template_id"
+        label="{{ _('Job Template') }}"
         default-value="Select template."
         {% if (is_edit and evidence.evidence_type == 'automated_collection') or (evidence_type == 'automated_collection') %}required="true"{% endif %}>
-        {% if scan_job_templates %}
-            {% for template in scan_job_templates %}
+        {% if job_templates %}
+            {% for template in job_templates %}
                 <option value="{{ template.template_id }}" 
-                    {% if (is_edit and evidence.scan_job_template_id == template.template_id) or (scan_job_template_id == template.template_id) %}selected{% endif %}>
+                    {% if (is_edit and evidence.job_template_id == template.template_id) or (job_template_id == template.template_id) %}selected{% endif %}>
                     {{ template.name }} ({{ template.scan_type }})
                 </option>
             {% endfor %}
         {% else %}
-            <option value="" disabled>{{ _("No scan job templates available") }}</option>
+            <option value="" disabled>{{ _("No job templates available") }}</option>
         {% endif %}
     </gcds-select>
 

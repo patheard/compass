@@ -9,8 +9,8 @@ from pynamodb.indexes import GlobalSecondaryIndex, AllProjection
 from app.database.base import BaseModel
 from app.database.config import db_config
 
-from app.database.models.scan_job_templates import ScanJobTemplate
-from app.database.models.scan_job_executions import ScanJobExecution
+from app.database.models.job_templates import JobTemplate
+from app.database.models.job_executions import JobExecution
 
 
 class ControlIndex(GlobalSecondaryIndex):
@@ -50,7 +50,7 @@ class Evidence(BaseModel):
         UnicodeAttribute()
     )  # document/screenshot/policy/automated_collection/etc
     file_url = UnicodeAttribute(null=True)  # S3 URL if file upload
-    scan_job_template_id = UnicodeAttribute(
+    job_template_id = UnicodeAttribute(
         null=True
     )  # Reference to scan job template (for automated_collection)
     scan_execution_id = UnicodeAttribute(
@@ -68,7 +68,7 @@ class Evidence(BaseModel):
         description: str = "",
         evidence_type: str = "document",
         file_url: Optional[str] = None,
-        scan_job_template_id: Optional[str] = None,
+        job_template_id: Optional[str] = None,
         scan_execution_id: Optional[str] = None,
         **kwargs,
     ) -> None:
@@ -83,7 +83,7 @@ class Evidence(BaseModel):
             description=description,
             evidence_type=evidence_type,
             file_url=file_url,
-            scan_job_template_id=scan_job_template_id,
+            job_template_id=job_template_id,
             scan_execution_id=scan_execution_id,
             **kwargs,
         )
@@ -118,7 +118,7 @@ class Evidence(BaseModel):
         description: str,
         evidence_type: str = "document",
         file_url: Optional[str] = None,
-        scan_job_template_id: Optional[str] = None,
+        job_template_id: Optional[str] = None,
         scan_execution_id: Optional[str] = None,
     ) -> "Evidence":
         """Create new evidence."""
@@ -128,7 +128,7 @@ class Evidence(BaseModel):
             description=description,
             evidence_type=evidence_type,
             file_url=file_url,
-            scan_job_template_id=scan_job_template_id,
+            job_template_id=job_template_id,
             scan_execution_id=scan_execution_id,
         )
         evidence.save()
@@ -154,20 +154,23 @@ class Evidence(BaseModel):
         self.scan_execution_id = execution_id
         self.save()
 
-    def get_scan_job_template(self) -> Optional["ScanJobTemplate"]:
-        """Get the scan job template associated with this evidence."""
-        if not self.scan_job_template_id:
+    def get_job_template(self) -> Optional["JobTemplate"]:
+        """Get the job template associated with this evidence."""
+        if not self.job_template_id:
             return None
 
-        from app.database.models.scan_job_templates import ScanJobTemplate
+        from app.database.models.job_templates import JobTemplate
 
         try:
-            return ScanJobTemplate.get(self.scan_job_template_id)
-        except ScanJobTemplate.DoesNotExist:
+            return JobTemplate.get(self.job_template_id)
+        except JobTemplate.DoesNotExist:
             return None
 
-    def get_latest_scan_execution(self) -> Optional["ScanJobExecution"]:
-        """Get the latest scan execution for this evidence."""
+    def get_latest_job_execution(self) -> Optional["JobExecution"]:
+        """Get the latest job execution for this evidence."""
         if not self.is_automated_collection():
             return None
-        return ScanJobExecution.get_latest_execution(self.evidence_id)
+
+        from app.database.models.job_executions import JobExecution
+
+        return JobExecution.get_latest_execution(self.evidence_id)

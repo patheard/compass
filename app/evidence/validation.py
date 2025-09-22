@@ -24,7 +24,7 @@ class EvidenceCreateRequest(BaseInputValidator):
     evidence_type: str = Field(
         ..., description="Type of evidence (document, screenshot, policy, etc.)"
     )
-    scan_job_template_id: Optional[str] = Field(
+    job_template_id: Optional[str] = Field(
         None, description="Scan job template ID for automated collection"
     )
 
@@ -65,8 +65,8 @@ class EvidenceCreateRequest(BaseInputValidator):
 
         return value
 
-    @validator("scan_job_template_id")
-    def validate_scan_job_template_id(
+    @validator("job_template_id")
+    def validate_job_template_id(
         cls, value: Optional[str], values: Dict[str, Any]
     ) -> Optional[str]:
         """Validate scan job template ID is provided for automated collection."""
@@ -153,7 +153,7 @@ class EvidenceResponse(BaseModel):
     evidence_type: str
     file_url: Optional[str] = None
     has_file: bool = False
-    scan_job_template_id: Optional[str] = None
+    job_template_id: Optional[str] = None
     scan_execution_id: Optional[str] = None
     is_automated_collection: bool = False
     created_at: Optional[str] = None
@@ -174,7 +174,7 @@ class EvidenceResponse(BaseModel):
         from_attributes = True
 
 
-class ScanJobTemplateCreateRequest(BaseInputValidator):
+class JobTemplateCreateRequest(BaseInputValidator):
     """Validation schema for creating scan job templates."""
 
     name: str = Field(
@@ -232,7 +232,7 @@ class ScanJobTemplateCreateRequest(BaseInputValidator):
         return value
 
 
-class ScanJobTemplateResponse(BaseModel):
+class JobTemplateResponse(BaseModel):
     """Response schema for scan job template data."""
 
     template_id: str
@@ -259,8 +259,8 @@ class ScanJobTemplateResponse(BaseModel):
         from_attributes = True
 
 
-class ScanJobExecutionResponse(BaseModel):
-    """Response schema for scan job execution data."""
+class JobExecutionResponse(BaseModel):
+    """Response schema for job execution data."""
 
     execution_id: str
     template_id: str

@@ -1,4 +1,4 @@
-"""Scan job execution model for PynamoDB."""
+"""Job execution model for PynamoDB."""
 
 import uuid
 from typing import Dict, List, Optional, Any
@@ -30,13 +30,13 @@ class EvidenceIndex(GlobalSecondaryIndex):
     created_at = UTCDateTimeAttribute(range_key=True)
 
 
-class ScanJobExecution(BaseModel):
-    """Scan job execution model for tracking individual scan job runs."""
+class JobExecution(BaseModel):
+    """Job execution model for tracking individual scan job runs."""
 
     class Meta:
-        """Meta configuration for the ScanJobExecution table."""
+        """Meta configuration for the JobExecution table."""
 
-        table_name = db_config.scan_job_executions_table_name
+        table_name = db_config.job_executions_table_name
         region = db_config.region
         if db_config.endpoint_url:
             host = db_config.endpoint_url
@@ -78,7 +78,7 @@ class ScanJobExecution(BaseModel):
         execution_config: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> None:
-        """Initialize ScanJobExecution model."""
+        """Initialize JobExecution model."""
         if execution_id is None:
             execution_id = str(uuid.uuid4())
 
@@ -141,12 +141,12 @@ class ScanJobExecution(BaseModel):
         self.save()
 
     @classmethod
-    def get_by_evidence(cls, evidence_id: str) -> List["ScanJobExecution"]:
+    def get_by_evidence(cls, evidence_id: str) -> List["JobExecution"]:
         """Get all executions for an evidence record."""
         return list(cls.evidence_index.query(evidence_id))
 
     @classmethod
-    def get_latest_execution(cls, evidence_id: str) -> Optional["ScanJobExecution"]:
+    def get_latest_execution(cls, evidence_id: str) -> Optional["JobExecution"]:
         """Get the latest execution for an evidence record."""
         executions = list(
             cls.evidence_index.query(evidence_id, limit=1, scan_index_forward=False)
@@ -154,13 +154,13 @@ class ScanJobExecution(BaseModel):
         return executions[0] if executions else None
 
     @classmethod
-    def get_pending_executions(cls) -> List["ScanJobExecution"]:
+    def get_pending_executions(cls) -> List["JobExecution"]:
         """Get all pending executions across all evidence."""
         # Note: This requires a scan operation
         return list(cls.scan(filter_condition=cls.status == "pending"))
 
     @classmethod
-    def get_running_executions(cls) -> List["ScanJobExecution"]:
+    def get_running_executions(cls) -> List["JobExecution"]:
         """Get all running executions across all evidence."""
         # Note: This requires a scan operation
         return list(cls.scan(filter_condition=cls.status == "running"))
@@ -171,7 +171,7 @@ class ScanJobExecution(BaseModel):
         template_id: str,
         evidence_id: str,
         execution_config: Optional[Dict[str, Any]] = None,
-    ) -> "ScanJobExecution":
+    ) -> "JobExecution":
         """Create new scan job execution."""
         execution = cls(
             template_id=template_id,
@@ -184,7 +184,7 @@ class ScanJobExecution(BaseModel):
     @classmethod
     def get_execution_history(
         cls, evidence_id: str, limit: int = 10
-    ) -> List["ScanJobExecution"]:
+    ) -> List["JobExecution"]:
         """Get execution history for evidence, ordered by creation date."""
         return list(
             cls.evidence_index.query(evidence_id, limit=limit, scan_index_forward=False)

@@ -1,17 +1,18 @@
-"""Routes for scan job template management."""
+"""Routes for job template management."""
 
 import ast
+import json
 from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import UUID4
 
 from app.auth.middleware import require_authenticated_user
 from app.database.models.users import User
-from app.scan_job_templates.services import ScanJobTemplateService
+from app.job_templates.services import JobTemplateService
 from app.templates.utils import LocalizedTemplates
 from app.assessments.base import CSRFTokenManager
 
-router = APIRouter(prefix="/jobs", tags=["scan-job-templates"])
+router = APIRouter(prefix="/job-templates", tags=["job-templates"])
 templates = LocalizedTemplates(directory="./app/templates")
 csrf_manager = CSRFTokenManager()
 
@@ -21,9 +22,9 @@ async def list_templates(
     request: Request,
     current_user: User = Depends(require_authenticated_user),
 ) -> HTMLResponse:
-    """Get all scan job templates in the system."""
+    """Get all job templates in the system."""
     try:
-        templates_data = ScanJobTemplateService.get_all_templates()
+        templates_data = JobTemplateService.get_all_templates()
 
         # Generate CSRF token for delete functionality
         csrf_token = csrf_manager.generate_csrf_token()
@@ -46,7 +47,7 @@ async def list_templates(
 
         return templates.TemplateResponse(
             request,
-            "pages/jobs/list.html",
+            "pages/job_templates/list.html",
             {
                 "request": request,
                 "templates": serialized_templates,
@@ -66,7 +67,7 @@ async def create_template_form(
     request: Request,
     current_user: User = Depends(require_authenticated_user),
 ) -> HTMLResponse:
-    """Show form to create a new scan job template."""
+    """Show form to create a new job template."""
     # Generate CSRF token for form
     csrf_token = csrf_manager.generate_csrf_token()
     request.session["csrf_token"] = csrf_token
@@ -74,7 +75,7 @@ async def create_template_form(
     scan_types = ["aws_config"]
     return templates.TemplateResponse(
         request,
-        "pages/jobs/form.html",
+        "pages/job_templates/form.html",
         {
             "request": request,
             "scan_types": scan_types,
@@ -112,7 +113,7 @@ async def create_template(
                 status_code=400, detail=f"Invalid JSON configuration: {e}"
             )
 
-        template = ScanJobTemplateService.create_template(
+        template = JobTemplateService.create_template(
             name=name,
             description=description,
             scan_type=scan_type,
@@ -130,7 +131,7 @@ async def create_template(
             "name": template.name,
             "description": template.description,
             "scan_type": template.scan_type,
-            "config": template.config.as_dict(),
+            "config": json.dumps(template.config.as_dict(), indent=2),
             "is_active": template.is_active,
             "created_at": getattr(template, "created_at", None),
             "updated_at": getattr(template, "updated_at", None),
@@ -138,7 +139,7 @@ async def create_template(
 
         return templates.TemplateResponse(
             request,
-            "pages/jobs/detail.html",
+            "pages/job_templates/detail.html",
             {"request": request, "template": template_data, "user": current_user},
         )
     except Exception as e:
@@ -153,7 +154,7 @@ async def get_template(
 ) -> HTMLResponse:
     """Get a specific scan job template."""
     try:
-        template = ScanJobTemplateService.get_template(str(template_id))
+        template = JobTemplateService.get_template(str(template_id))
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
 
@@ -167,7 +168,7 @@ async def get_template(
             "name": template.name,
             "description": template.description,
             "scan_type": template.scan_type,
-            "config": template.config.as_dict(),
+            "config": json.dumps(template.config.as_dict(), indent=2),
             "is_active": template.is_active,
             "created_at": getattr(template, "created_at", None),
             "updated_at": getattr(template, "updated_at", None),
@@ -175,7 +176,7 @@ async def get_template(
 
         return templates.TemplateResponse(
             request,
-            "pages/jobs/detail.html",
+            "pages/job_templates/detail.html",
             {
                 "request": request,
                 "template": template_data,
@@ -184,8 +185,8 @@ async def get_template(
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {
-                        "label": "Jobs",
-                        "link": "/jobs",
+                        "label": "Job templates",
+                        "link": "/job-templates",
                     },
                 ],
             },
@@ -204,7 +205,7 @@ async def edit_template_form(
 ) -> HTMLResponse:
     """Show form to edit a scan job template."""
     try:
-        template = ScanJobTemplateService.get_template(str(template_id))
+        template = JobTemplateService.get_template(str(template_id))
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
 
@@ -226,7 +227,7 @@ async def edit_template_form(
 
         return templates.TemplateResponse(
             request,
-            "pages/jobs/form.html",
+            "pages/job_templates/form.html",
             {
                 "request": request,
                 "template": template_data,
@@ -267,7 +268,7 @@ async def update_template(
                 status_code=400, detail=f"Invalid JSON configuration: {e}"
             )
 
-        template = ScanJobTemplateService.update_template(
+        template = JobTemplateService.update_template(
             template_id=str(template_id),
             name=name,
             description=description,
@@ -286,7 +287,7 @@ async def update_template(
             "name": template.name,
             "description": template.description,
             "scan_type": template.scan_type,
-            "config": template.config.as_dict(),
+            "config": json.dumps(template.config.as_dict(), indent=2),
             "is_active": template.is_active,
             "created_at": getattr(template, "created_at", None),
             "updated_at": getattr(template, "updated_at", None),
@@ -294,8 +295,16 @@ async def update_template(
 
         return templates.TemplateResponse(
             request,
-            "pages/jobs/detail.html",
-            {"request": request, "template": template_data, "user": current_user},
+            "pages/job_templates/detail.html",
+            {
+                "request": request,
+                "template": template_data,
+                "user": current_user,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                    {"label": "Job Templates", "link": "/job-templates"},
+                ],
+            },
         )
     except HTTPException:
         raise
@@ -317,13 +326,13 @@ async def delete_template(
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
     try:
-        ScanJobTemplateService.delete_template(str(template_id))
+        JobTemplateService.delete_template(str(template_id))
 
         # Clear CSRF token
         request.session.pop("csrf_token", None)
 
         return RedirectResponse(
-            url="/jobs",
+            url="/job-templates",
             status_code=303,
         )
 

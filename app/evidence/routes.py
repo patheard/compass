@@ -8,8 +8,8 @@ from app.database.models.users import User
 from app.templates.utils import LocalizedTemplates
 from app.evidence.services import EvidenceService
 from app.evidence.validation import EvidenceCreateRequest, EvidenceUpdateRequest
-from app.scan_job_templates.services import ScanJobTemplateService
-from app.scan_job_executions.services import ScanJobExecutionService
+from app.job_templates.services import JobTemplateService
+from app.job_executions.services import JobExecutionService
 from app.assessments.base import CSRFTokenManager
 
 router = APIRouter(
@@ -46,7 +46,7 @@ async def create_evidence_page(
         request.session["csrf_token"] = csrf_token
 
         # Get scan job templates for user
-        scan_job_templates = ScanJobTemplateService.get_active_templates()
+        job_templates = JobTemplateService.get_active_templates()
 
         return templates.TemplateResponse(
             request,
@@ -59,7 +59,7 @@ async def create_evidence_page(
                 "control": control,
                 "csrf_token": csrf_token,
                 "is_edit": False,
-                "scan_job_templates": scan_job_templates,
+                "job_templates": job_templates,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {
@@ -88,7 +88,7 @@ async def create_evidence(
     description: str = Form(...),
     evidence_type: str = Form(...),
     csrf_token: str = Form(...),
-    scan_job_template_id: Optional[str] = Form(None),
+    job_template_id: Optional[str] = Form(None),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
     """Handle evidence creation form submission."""
@@ -103,7 +103,7 @@ async def create_evidence(
             title=title,
             description=description,
             evidence_type=evidence_type,
-            scan_job_template_id=scan_job_template_id,
+            job_template_id=job_template_id,
         )
 
         # Create evidence
@@ -128,7 +128,7 @@ async def create_evidence(
             request.session["csrf_token"] = csrf_token
 
             # Get scan job templates for user
-            scan_job_templates = ScanJobTemplateService.get_active_templates()
+            job_templates = JobTemplateService.get_active_templates()
 
             return templates.TemplateResponse(
                 request,
@@ -145,8 +145,8 @@ async def create_evidence(
                     "title_value": title,
                     "description": description,
                     "evidence_type": evidence_type,
-                    "scan_job_template_id": scan_job_template_id,
-                    "scan_job_templates": scan_job_templates,
+                    "job_template_id": job_template_id,
+                    "job_templates": job_templates,
                     "breadcrumbs": [
                         {"label": "Compass", "link": "/"},
                         {
@@ -192,18 +192,16 @@ async def evidence_detail_page(
         request.session["csrf_token"] = csrf_token
 
         # Get scan job information for automated collection evidence
-        scan_job_template = None
-        scan_executions = []
+        job_template = None
+        job_executions = []
 
         if evidence.is_automated_collection:
             # Get scan job template information
-            if evidence.scan_job_template_id:
-                scan_job_template = ScanJobTemplateService.get_template(
-                    evidence.scan_job_template_id
-                )
+            if evidence.job_template_id:
+                job_template = JobTemplateService.get_template(evidence.job_template_id)
 
             # Get scan execution history
-            scan_executions = ScanJobExecutionService.get_evidence_executions(
+            job_executions = JobExecutionService.get_evidence_executions(
                 evidence.evidence_id, current_user.user_id
             )
 
@@ -218,8 +216,8 @@ async def evidence_detail_page(
                 "control": control,
                 "evidence": evidence,
                 "csrf_token": csrf_token,
-                "scan_job_template": scan_job_template,
-                "scan_executions": scan_executions,
+                "job_template": job_template,
+                "job_executions": job_executions,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {
@@ -267,7 +265,7 @@ async def edit_evidence_page(
         request.session["csrf_token"] = csrf_token
 
         # Get scan job templates for user
-        scan_job_templates = ScanJobTemplateService.get_active_templates()
+        job_templates = JobTemplateService.get_active_templates()
 
         return templates.TemplateResponse(
             request,
@@ -281,7 +279,7 @@ async def edit_evidence_page(
                 "csrf_token": csrf_token,
                 "is_edit": True,
                 "evidence": evidence,
-                "scan_job_templates": scan_job_templates,
+                "job_templates": job_templates,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {

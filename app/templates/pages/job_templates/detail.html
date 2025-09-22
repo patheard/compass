@@ -20,10 +20,10 @@
     </li>
 </ul>
 
-<gcds-button href="/jobs/{{ template.template_id }}/edit" type="link" button-role="primary" class="mt-300">
+<gcds-button href="/job-templates/{{ template.template_id }}/edit" type="link" button-role="primary" class="mt-300">
     {{ _("Edit") }}
 </gcds-button>
-<gcds-button href="/jobs/{{ template.template_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
+<gcds-button href="/job-templates/{{ template.template_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
     {{ _("Delete") }}
 </gcds-button>
 

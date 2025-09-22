@@ -3,16 +3,16 @@
 {% block content %}
 <gcds-heading tag="h1">
     {% if template %}
-        {{ _("Edit Scan Job Template") }}
+        {{ _("Edit Job Template") }}
     {% else %}
-        {{ _("Create Scan Job Template") }}
+        {{ _("Create Job Template") }}
     {% endif %}
 </gcds-heading>
 <gcds-text>
     {% if template %}
-        {{ _("Update the details of your scan job template.") }}
+        {{ _("Update the details of your job template.") }}
     {% else %}
-        {{ _("Fill out the form below to create a new scan job template.") }}
+        {{ _("Fill out the form below to create a new job template.") }}
     {% endif %}
 </gcds-text>
 
@@ -64,7 +64,7 @@
         required="true"
         rows="10"
         hint="{{ _('Enter the configuration as JSON. This will be used to configure the scan job execution.') }}"
-        value="{% if template %}{{ template.config }}{% else %}{{ config or '{}' }}{% endif %}">
+        value="{% if template %}{{ template.config }}{% else %}{% endif %}">
     </gcds-textarea>
 
     <gcds-button type="submit" button-role="primary" class="mt-300">
@@ -74,7 +74,7 @@
         {{ _("Create") }}
       {% endif %}
     </gcds-button>
-    <gcds-button href="{% if template %}/jobs/{{ template.template_id }}{% else %}/jobs{% endif %}" type="link" button-role="secondary">
+    <gcds-button href="{% if template %}/job-templates/{{ template.template_id }}{% else %}/job-templates{% endif %}" type="link" button-role="secondary">
       {{ _('Cancel') }}
     </gcds-button>
 

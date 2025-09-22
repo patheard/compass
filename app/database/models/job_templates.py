@@ -1,4 +1,4 @@
-"""Scan job template model for PynamoDB."""
+"""Job template model for PynamoDB."""
 
 import uuid
 from typing import Dict, List, Optional, Any
@@ -9,13 +9,13 @@ from app.database.base import BaseModel
 from app.database.config import db_config
 
 
-class ScanJobTemplate(BaseModel):
-    """Scan job template model for storing reusable scan configurations."""
+class JobTemplate(BaseModel):
+    """Job template model for storing reusable scan configurations."""
 
     class Meta:
-        """Meta configuration for the ScanJobTemplate table."""
+        """Meta configuration for the JobTemplate table."""
 
-        table_name = db_config.scan_job_templates_table_name
+        table_name = db_config.job_templates_table_name
         region = db_config.region
         if db_config.endpoint_url:
             host = db_config.endpoint_url
@@ -40,7 +40,7 @@ class ScanJobTemplate(BaseModel):
         is_active: str = "true",
         **kwargs,
     ) -> None:
-        """Initialize ScanJobTemplate model."""
+        """Initialize JobTemplate model."""
         if template_id is None:
             template_id = str(uuid.uuid4())
 
@@ -68,7 +68,7 @@ class ScanJobTemplate(BaseModel):
         self.save()
 
     @classmethod
-    def get_all_templates(cls, active_only: bool = True) -> List["ScanJobTemplate"]:
+    def get_all_templates(cls, active_only: bool = True) -> List["JobTemplate"]:
         """Get all templates in the system."""
         if active_only:
             return list(cls.scan(filter_condition=cls.is_active == "true"))
@@ -77,7 +77,7 @@ class ScanJobTemplate(BaseModel):
     @classmethod
     def get_by_type(
         cls, scan_type: str, active_only: bool = True
-    ) -> List["ScanJobTemplate"]:
+    ) -> List["JobTemplate"]:
         """Get templates by scan type."""
         templates = cls.get_all_templates(active_only)
         return [t for t in templates if t.scan_type == scan_type]
@@ -89,7 +89,7 @@ class ScanJobTemplate(BaseModel):
         description: str,
         scan_type: str,
         config: Dict[str, Any],
-    ) -> "ScanJobTemplate":
+    ) -> "JobTemplate":
         """Create new scan job template."""
         template = cls(
             name=name,
@@ -101,7 +101,7 @@ class ScanJobTemplate(BaseModel):
         return template
 
     @classmethod
-    def get_active_templates(cls) -> List["ScanJobTemplate"]:
+    def get_active_templates(cls) -> List["JobTemplate"]:
         """Get all active templates, ordered by creation date."""
         return list(
             cls.scan(

@@ -5,14 +5,14 @@ from fastapi import HTTPException
 from app.database.models.evidence import Evidence
 from app.database.models.controls import Control
 from app.database.models.assessments import SecurityAssessment
-from app.database.models.scan_job_templates import ScanJobTemplate
+from app.database.models.job_templates import JobTemplate
 from app.assessments.base import BaseService
 from app.evidence.validation import (
     EvidenceCreateRequest,
     EvidenceUpdateRequest,
     EvidenceResponse,
 )
-from app.scan_job_executions.services import ScanJobExecutionService
+from app.job_executions.services import JobExecutionService
 
 
 class EvidenceService(BaseService[Evidence]):
@@ -75,7 +75,7 @@ class EvidenceService(BaseService[Evidence]):
 
         # If automated collection, validate template access
         if data.evidence_type == "automated_collection":
-            self._validate_scan_template_access(data.scan_job_template_id, user_id)
+            self._validate_scan_template_access(data.job_template_id, user_id)
 
         try:
             evidence = Evidence.create_evidence(
@@ -83,13 +83,13 @@ class EvidenceService(BaseService[Evidence]):
                 title=data.title,
                 description=data.description,
                 evidence_type=data.evidence_type,
-                scan_job_template_id=data.scan_job_template_id,
+                job_template_id=data.job_template_id,
             )
 
             # Create scan job execution for automated collection
             if data.evidence_type == "automated_collection":
-                execution = ScanJobExecutionService.create_execution(
-                    template_id=data.scan_job_template_id,
+                execution = JobExecutionService.create_execution(
+                    template_id=data.job_template_id,
                     evidence_id=evidence.evidence_id,
                 )
                 evidence.update_scan_execution_id(execution.execution_id)
@@ -176,12 +176,12 @@ class EvidenceService(BaseService[Evidence]):
             )
 
         try:
-            template = ScanJobTemplate.get(template_id)
+            template = JobTemplate.get(template_id)
             if template.is_active != "true":
                 raise HTTPException(
                     status_code=400, detail="Scan job template is not active"
                 )
-        except ScanJobTemplate.DoesNotExist:
+        except JobTemplate.DoesNotExist:
             raise HTTPException(status_code=404, detail="Scan job template not found")
 
     def _to_response(self, evidence: Evidence) -> EvidenceResponse:
@@ -194,7 +194,7 @@ class EvidenceService(BaseService[Evidence]):
             evidence_type=evidence.evidence_type,
             file_url=evidence.file_url,
             has_file=evidence.has_file(),
-            scan_job_template_id=evidence.scan_job_template_id,
+            job_template_id=evidence.job_template_id,
             scan_execution_id=evidence.scan_execution_id,
             is_automated_collection=evidence.is_automated_collection(),
             created_at=evidence.created_at,

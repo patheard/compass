@@ -10,8 +10,8 @@ from app.database.models import (
     Evidence,
     SecurityAssessment,
     User,
-    ScanJobTemplate,
-    ScanJobExecution,
+    JobTemplate,
+    JobExecution,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,8 +28,8 @@ class DatabaseManager:
             SecurityAssessment,
             Control,
             Evidence,
-            ScanJobTemplate,
-            ScanJobExecution,
+            JobTemplate,
+            JobExecution,
         ]
 
     @staticmethod

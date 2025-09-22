@@ -1,12 +1,12 @@
-"""Service layer for scan job template operations."""
+"""Service layer for job template operations."""
 
 from typing import Dict, List, Optional, Any
 
-from app.database.models.scan_job_templates import ScanJobTemplate
+from app.database.models.job_templates import JobTemplate
 
 
-class ScanJobTemplateService:
-    """Service for managing scan job templates."""
+class JobTemplateService:
+    """Service for managing job templates."""
 
     @staticmethod
     def create_template(
@@ -14,9 +14,9 @@ class ScanJobTemplateService:
         description: str,
         scan_type: str,
         config: Dict[str, Any],
-    ) -> ScanJobTemplate:
-        """Create a new scan job template."""
-        return ScanJobTemplate.create_template(
+    ) -> JobTemplate:
+        """Create a new job template."""
+        return JobTemplate.create_template(
             name=name,
             description=description,
             scan_type=scan_type,
@@ -24,24 +24,24 @@ class ScanJobTemplateService:
         )
 
     @staticmethod
-    def get_template(template_id: str) -> Optional[ScanJobTemplate]:
+    def get_template(template_id: str) -> Optional[JobTemplate]:
         """Get a template by ID."""
         try:
-            return ScanJobTemplate.get(template_id)
-        except ScanJobTemplate.DoesNotExist:
+            return JobTemplate.get(template_id)
+        except JobTemplate.DoesNotExist:
             return None
 
     @staticmethod
-    def get_all_templates(active_only: bool = True) -> List[ScanJobTemplate]:
+    def get_all_templates(active_only: bool = True) -> List[JobTemplate]:
         """Get all templates in the system."""
-        return ScanJobTemplate.get_all_templates(active_only)
+        return JobTemplate.get_all_templates(active_only)
 
     @staticmethod
     def get_templates_by_type(
         scan_type: str, active_only: bool = True
-    ) -> List[ScanJobTemplate]:
+    ) -> List[JobTemplate]:
         """Get templates by scan type."""
-        return ScanJobTemplate.get_by_type(scan_type, active_only)
+        return JobTemplate.get_by_type(scan_type, active_only)
 
     @staticmethod
     def update_template(
@@ -50,9 +50,9 @@ class ScanJobTemplateService:
         description: str,
         scan_type: str,
         config: Dict[str, Any],
-    ) -> Optional[ScanJobTemplate]:
-        """Update a scan job template."""
-        template = ScanJobTemplateService.get_template(template_id)
+    ) -> Optional[JobTemplate]:
+        """Update a job template."""
+        template = JobTemplateService.get_template(template_id)
         if not template:
             return None
 
@@ -64,8 +64,8 @@ class ScanJobTemplateService:
 
     @staticmethod
     def delete_template(template_id: str) -> bool:
-        """Delete (deactivate) a scan job template."""
-        template = ScanJobTemplateService.get_template(template_id)
+        """Delete (deactivate) a job template."""
+        template = JobTemplateService.get_template(template_id)
         if not template:
             return False
 
@@ -74,8 +74,8 @@ class ScanJobTemplateService:
 
     @staticmethod
     def activate_template(template_id: str) -> bool:
-        """Activate a scan job template."""
-        template = ScanJobTemplateService.get_template(template_id)
+        """Activate a job template."""
+        template = JobTemplateService.get_template(template_id)
         if not template:
             return False
 
@@ -83,6 +83,6 @@ class ScanJobTemplateService:
         return True
 
     @staticmethod
-    def get_active_templates() -> List[ScanJobTemplate]:
+    def get_active_templates() -> List[JobTemplate]:
         """Get all active templates."""
-        return ScanJobTemplate.get_active_templates()
+        return JobTemplate.get_active_templates()

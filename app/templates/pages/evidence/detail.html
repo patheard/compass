@@ -24,26 +24,26 @@
 {% if evidence.is_automated_collection %}
 <gcds-heading tag="h2">{{ _("Evidence collection") }}</gcds-heading>
 
-{% if scan_job_template %}
+{% if job_template %}
 <gcds-details details-title="{{ _('Job') }}">
     <ul class="list-disc">
         <li>
-            <strong>{{ _('Template Name:') }}</strong>
-            <gcds-link href="/jobs/{{ scan_job_template.template_id }}">{{ scan_job_template.name }}</gcds-link>
+            <strong>{{ _('Name:') }}</strong>
+            <gcds-link href="/job-templates/{{ job_template.template_id }}">{{ job_template.name }}</gcds-link>
         </li>
         <li>
             <strong>{{ _('Description:') }}</strong>
-            {{ scan_job_template.description }}
+            {{ job_template.description }}
         </li>
         <li>
-            <strong>{{ _('Scan Type:') }}</strong>
-            {{ scan_job_template.scan_type }}
+            <strong>{{ _('Type:') }}</strong>
+            {{ job_template.scan_type }}
         </li>
     </ul>
 </gcds-details>
 {% endif %}
 
-{% if scan_executions %}
+{% if job_executions %}
 <gcds-details details-title="{{ _('Results') }}" class="table-container">
     <table>
         <thead>
