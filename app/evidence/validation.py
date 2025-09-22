@@ -27,6 +27,9 @@ class EvidenceCreateRequest(BaseInputValidator):
     job_template_id: Optional[str] = Field(
         None, description="Scan job template ID for automated collection"
     )
+    aws_account_id: Optional[str] = Field(
+        None, description="AWS account ID associated with this evidence (12 digits)"
+    )
 
     @validator("title")
     def validate_title(cls, value: str) -> str:
@@ -84,6 +87,18 @@ class EvidenceCreateRequest(BaseInputValidator):
 
         return value
 
+    @validator("aws_account_id")
+    def validate_aws_account_id(cls, value: Optional[str]) -> Optional[str]:
+        """Validate AWS account ID format if provided (12 numeric digits)."""
+        if value is None:
+            return None
+        acct = value.strip()
+        if acct == "":
+            return None
+        if not acct.isdigit() or len(acct) != 12:
+            raise ValueError("aws_account_id must be a 12-digit numeric AWS account id")
+        return acct
+
 
 class EvidenceUpdateRequest(BaseInputValidator):
     """Validation schema for updating evidence."""
@@ -101,6 +116,9 @@ class EvidenceUpdateRequest(BaseInputValidator):
         description="Description of the evidence",
     )
     evidence_type: Optional[str] = Field(None, description="Type of evidence")
+    aws_account_id: Optional[str] = Field(
+        None, description="AWS account ID associated with this evidence (12 digits)"
+    )
 
     @validator("title")
     def validate_title(cls, value: Optional[str]) -> Optional[str]:
@@ -142,6 +160,18 @@ class EvidenceUpdateRequest(BaseInputValidator):
 
         return value
 
+    @validator("aws_account_id")
+    def validate_aws_account_id(cls, value: Optional[str]) -> Optional[str]:
+        """Validate AWS account ID format if provided (12 numeric digits)."""
+        if value is None:
+            return None
+        acct = value.strip()
+        if acct == "":
+            return None
+        if not acct.isdigit() or len(acct) != 12:
+            raise ValueError("aws_account_id must be a 12-digit numeric AWS account id")
+        return acct
+
 
 class EvidenceResponse(BaseModel):
     """Response schema for evidence data."""
@@ -153,6 +183,7 @@ class EvidenceResponse(BaseModel):
     evidence_type: str
     file_url: Optional[str] = None
     has_file: bool = False
+    aws_account_id: Optional[str] = None
     job_template_id: Optional[str] = None
     scan_execution_id: Optional[str] = None
     is_automated_collection: bool = False

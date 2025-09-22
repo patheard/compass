@@ -49,6 +49,7 @@ class Evidence(BaseModel):
     evidence_type = (
         UnicodeAttribute()
     )  # document/screenshot/policy/automated_collection/etc
+    aws_account_id = UnicodeAttribute(null=True)
     file_url = UnicodeAttribute(null=True)  # S3 URL if file upload
     job_template_id = UnicodeAttribute(
         null=True
@@ -67,6 +68,7 @@ class Evidence(BaseModel):
         title: str = "",
         description: str = "",
         evidence_type: str = "document",
+        aws_account_id: Optional[str] = None,
         file_url: Optional[str] = None,
         job_template_id: Optional[str] = None,
         scan_execution_id: Optional[str] = None,
@@ -82,6 +84,7 @@ class Evidence(BaseModel):
             title=title,
             description=description,
             evidence_type=evidence_type,
+            aws_account_id=aws_account_id,
             file_url=file_url,
             job_template_id=job_template_id,
             scan_execution_id=scan_execution_id,
@@ -117,6 +120,7 @@ class Evidence(BaseModel):
         title: str,
         description: str,
         evidence_type: str = "document",
+        aws_account_id: Optional[str] = None,
         file_url: Optional[str] = None,
         job_template_id: Optional[str] = None,
         scan_execution_id: Optional[str] = None,
@@ -127,6 +131,7 @@ class Evidence(BaseModel):
             title=title,
             description=description,
             evidence_type=evidence_type,
+            aws_account_id=aws_account_id,
             file_url=file_url,
             job_template_id=job_template_id,
             scan_execution_id=scan_execution_id,

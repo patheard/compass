@@ -12,7 +12,6 @@ from app.evidence.validation import (
     EvidenceUpdateRequest,
     EvidenceResponse,
 )
-from app.job_executions.services import JobExecutionService
 from app.evidence.sqs_service import SQSService
 
 
@@ -86,6 +85,7 @@ class EvidenceService(BaseService[Evidence]):
                 description=data.description,
                 evidence_type=data.evidence_type,
                 job_template_id=data.job_template_id,
+                aws_account_id=data.aws_account_id,
             )
 
             # Create scan job execution for automated collection
@@ -144,6 +144,9 @@ class EvidenceService(BaseService[Evidence]):
 
             if data.evidence_type is not None:
                 evidence.evidence_type = data.evidence_type
+
+            if data.aws_account_id is not None:
+                evidence.aws_account_id = data.aws_account_id
 
             evidence.save()
 
@@ -208,6 +211,7 @@ class EvidenceService(BaseService[Evidence]):
             title=evidence.title,
             description=evidence.description,
             evidence_type=evidence.evidence_type,
+            aws_account_id=evidence.aws_account_id,
             file_url=evidence.file_url,
             has_file=evidence.has_file(),
             job_template_id=evidence.job_template_id,

@@ -36,6 +36,10 @@
             {{ job_template.description }}
         </li>
         <li>
+            <strong>{{ _('AWS Account ID:') }}</strong>
+            {{ evidence.aws_account_id }}
+        </li>
+        <li>
             <strong>{{ _('Type:') }}</strong>
             {{ job_template.scan_type }}
         </li>

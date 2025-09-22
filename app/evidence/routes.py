@@ -87,6 +87,7 @@ async def create_evidence(
     title: str = Form(...),
     description: str = Form(...),
     evidence_type: str = Form(...),
+    aws_account_id: Optional[str] = Form(None),
     csrf_token: str = Form(...),
     job_template_id: Optional[str] = Form(None),
     current_user: User = Depends(require_authenticated_user),
@@ -104,6 +105,7 @@ async def create_evidence(
             description=description,
             evidence_type=evidence_type,
             job_template_id=job_template_id,
+            aws_account_id=aws_account_id,
         )
 
         # Create evidence
@@ -146,6 +148,7 @@ async def create_evidence(
                     "description": description,
                     "evidence_type": evidence_type,
                     "job_template_id": job_template_id,
+                    "aws_account_id": aws_account_id,
                     "job_templates": job_templates,
                     "breadcrumbs": [
                         {"label": "Compass", "link": "/"},
@@ -312,6 +315,7 @@ async def update_evidence(
     title: str = Form(...),
     description: str = Form(...),
     evidence_type: str = Form(...),
+    aws_account_id: Optional[str] = Form(None),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -324,7 +328,10 @@ async def update_evidence(
     try:
         # Validate input data
         update_data = EvidenceUpdateRequest(
-            title=title, description=description, evidence_type=evidence_type
+            title=title,
+            description=description,
+            evidence_type=evidence_type,
+            aws_account_id=aws_account_id,
         )
 
         # Update evidence
@@ -351,6 +358,9 @@ async def update_evidence(
             csrf_token = csrf_manager.generate_csrf_token()
             request.session["csrf_token"] = csrf_token
 
+            # Get scan job templates for user
+            job_templates = JobTemplateService.get_active_templates()
+
             return templates.TemplateResponse(
                 request,
                 "pages/evidence/form.html",
@@ -364,6 +374,7 @@ async def update_evidence(
                     "is_edit": True,
                     "evidence": evidence,
                     "error": str(e),
+                    "job_templates": job_templates,
                     "breadcrumbs": [
                         {"label": "Compass", "link": "/"},
                         {
