@@ -1,16 +1,18 @@
 """Evidence service layer for business logic and data operations."""
 
-from typing import List
+from typing import List, Optional
 from fastapi import HTTPException
 from app.database.models.evidence import Evidence
 from app.database.models.controls import Control
 from app.database.models.assessments import SecurityAssessment
+from app.database.models.scan_job_templates import ScanJobTemplate
 from app.assessments.base import BaseService
 from app.evidence.validation import (
     EvidenceCreateRequest,
     EvidenceUpdateRequest,
     EvidenceResponse,
 )
+from app.scan_job_executions.services import ScanJobExecutionService
 
 
 class EvidenceService(BaseService[Evidence]):
@@ -71,13 +73,27 @@ class EvidenceService(BaseService[Evidence]):
         # Validate control access
         self.validate_control_access(control_id, user_id)
 
+        # If automated collection, validate template access
+        if data.evidence_type == "automated_collection":
+            self._validate_scan_template_access(data.scan_job_template_id, user_id)
+
         try:
             evidence = Evidence.create_evidence(
                 control_id=control_id,
                 title=data.title,
                 description=data.description,
                 evidence_type=data.evidence_type,
+                scan_job_template_id=data.scan_job_template_id,
             )
+
+            # Create scan job execution for automated collection
+            if data.evidence_type == "automated_collection":
+                execution = ScanJobExecutionService.create_execution(
+                    template_id=data.scan_job_template_id,
+                    evidence_id=evidence.evidence_id,
+                )
+                evidence.update_scan_execution_id(execution.execution_id)
+
             return self._to_response(evidence)
         except Exception as e:
             raise HTTPException(
@@ -149,6 +165,25 @@ class EvidenceService(BaseService[Evidence]):
         except SecurityAssessment.DoesNotExist:
             raise HTTPException(status_code=404, detail="Assessment not found")
 
+    def _validate_scan_template_access(
+        self, template_id: Optional[str], user_id: str
+    ) -> None:
+        """Validate that the scan job template exists and is active."""
+        if not template_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Scan job template ID is required for automated collection",
+            )
+
+        try:
+            template = ScanJobTemplate.get(template_id)
+            if template.is_active != "true":
+                raise HTTPException(
+                    status_code=400, detail="Scan job template is not active"
+                )
+        except ScanJobTemplate.DoesNotExist:
+            raise HTTPException(status_code=404, detail="Scan job template not found")
+
     def _to_response(self, evidence: Evidence) -> EvidenceResponse:
         """Convert evidence model to response schema."""
         return EvidenceResponse(
@@ -159,6 +194,9 @@ class EvidenceService(BaseService[Evidence]):
             evidence_type=evidence.evidence_type,
             file_url=evidence.file_url,
             has_file=evidence.has_file(),
+            scan_job_template_id=evidence.scan_job_template_id,
+            scan_execution_id=evidence.scan_execution_id,
+            is_automated_collection=evidence.is_automated_collection(),
             created_at=evidence.created_at,
             updated_at=evidence.updated_at,
         )

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<gcds-heading tag="h1">
+    {% if template %}
+        {{ _("Edit Scan Job Template") }}
+    {% else %}
+        {{ _("Create Scan Job Template") }}
+    {% endif %}
+</gcds-heading>
+<gcds-text>
+    {% if template %}
+        {{ _("Update the details of your scan job template.") }}
+    {% else %}
+        {{ _("Fill out the form below to create a new scan job template.") }}
+    {% endif %}
+</gcds-text>
+
+{% if error %}
+<gcds-notice type="danger" notice-title-tag="h2" notice-title="{{ _('Error') }}">
+  <gcds-text>{{ error }}</gcds-text>
+</gcds-notice>
+{% endif %}
+
+<form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <gcds-input
+        name="name"
+        input-id="name"
+        label="{{ _('Template name') }}"
+        required="true"
+        maxlength="200"
+        value="{% if template %}{{ template.name }}{% else %}{{ name or '' }}{% endif %}">
+    </gcds-input>
+
+    <gcds-textarea
+        name="description"
+        textarea-id="description"
+        label="{{ _('Template description') }}"
+        required="true"
+        maxlength="2000"
+        value="{% if template %}{{ template.description }}{% else %}{{ description or '' }}{% endif %}">
+    </gcds-textarea>
+
+    <gcds-select
+        name="scan_type"
+        select-id="scan_type"
+        label="{{ _('Scan type') }}"
+        default-value="Select scan type."
+        required="true">
+        {% for scan_type in scan_types %}
+            <option value="{{ scan_type }}" 
+                {% if (template and template.scan_type == scan_type) or (scan_type_value == scan_type) %}selected{% endif %}>
+                {{  _(scan_type) }}
+            </option>
+        {% endfor %}
+    </gcds-select>
+
+    <gcds-textarea
+        name="config"
+        textarea-id="config"
+        label="{{ _('Configuration (JSON)') }}"
+        required="true"
+        rows="10"
+        hint="{{ _('Enter the configuration as JSON. This will be used to configure the scan job execution.') }}"
+        value="{% if template %}{{ template.config }}{% else %}{{ config or '{}' }}{% endif %}">
+    </gcds-textarea>
+
+    <gcds-button type="submit" button-role="primary" class="mt-300">
+      {% if template %}
+        {{ _("Update") }}
+      {% else %}
+        {{ _("Create") }}
+      {% endif %}
+    </gcds-button>
+    <gcds-button href="{% if template %}/jobs/{{ template.template_id }}{% else %}/jobs{% endif %}" type="link" button-role="secondary">
+      {{ _('Cancel') }}
+    </gcds-button>
+
+</form>
+
+<script>
+// Validate JSON configuration
+document.getElementById('config').addEventListener('blur', function() {
+    const configValue = this.value.trim();
+    if (configValue) {
+        try {
+            JSON.parse(configValue);
+            this.setCustomValidity('');
+        } catch (e) {
+            this.setCustomValidity('{{ _("Invalid JSON format") }}');
+        }
+    }
+});
+
+// Format JSON on focus out
+document.getElementById('config').addEventListener('blur', function() {
+    const configValue = this.value.trim();
+    if (configValue) {
+        try {
+            const parsed = JSON.parse(configValue);
+            this.value = JSON.stringify(parsed, null, 2);
+        } catch (e) {
+            // Keep original value if invalid JSON
+        }
+    }
+});
+</script>
+
+{% endblock %}

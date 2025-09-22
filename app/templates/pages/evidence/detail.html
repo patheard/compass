@@ -21,11 +21,136 @@
     </li>
 </ul>
 
+{% if evidence.is_automated_collection %}
+<gcds-heading tag="h2">{{ _("Evidence collection") }}</gcds-heading>
+
+{% if scan_job_template %}
+<gcds-details details-title="{{ _('Job') }}">
+    <ul class="list-disc">
+        <li>
+            <strong>{{ _('Template Name:') }}</strong>
+            {{ scan_job_template.name }}
+        </li>
+        <li>
+            <strong>{{ _('Scan Type:') }}</strong>
+            {{ scan_job_template.scan_type }}
+        </li>
+        <li>
+            <strong>{{ _('Description:') }}</strong>
+            {{ scan_job_template.description }}
+        </li>
+    </ul>
+</gcds-details>
+{% endif %}
+
+{% if scan_executions %}
+<gcds-details details-title="{{ _('Results') }}" class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">{{ _('Status') }}</th>
+                <th scope="col">{{ _('Started At') }}</th>
+                <th scope="col">{{ _('Completed At') }}</th>
+                <th scope="col">{{ _('Retry Count') }}</th>
+                <th scope="col">{{ _('Actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for execution in scan_executions %}
+            <tr>
+                <td>
+                    {% if execution.status == 'pending' %}
+                        <gcds-tag colour="cyan">{{ _('Pending') }}</gcds-tag>
+                    {% elif execution.status == 'running' %}
+                        <gcds-tag colour="blue">{{ _('Running') }}</gcds-tag>
+                    {% elif execution.status == 'completed' %}
+                        <gcds-tag colour="green">{{ _('Completed') }}</gcds-tag>
+                    {% elif execution.status == 'failed' %}
+                        <gcds-tag colour="red">{{ _('Failed') }}</gcds-tag>
+                    {% elif execution.status == 'cancelled' %}
+                        <gcds-tag colour="dark-grey">{{ _('Cancelled') }}</gcds-tag>
+                    {% endif %}
+                </td>
+                <td>{{ execution.started_at or '-' }}</td>
+                <td>{{ execution.completed_at or '-' }}</td>
+                <td>{{ execution.retry_count }}</td>
+                <td>
+                    {% if execution.status in ['pending', 'running'] %}
+                        <gcds-button size="small" button-role="secondary" onclick="cancelExecution('{{ execution.execution_id }}')">
+                            {{ _('Cancel') }}
+                        </gcds-button>
+                    {% elif execution.status == 'failed' %}
+                        <gcds-button size="small" button-role="secondary" onclick="retryExecution('{{ execution.execution_id }}')">
+                            {{ _('Retry') }}
+                        </gcds-button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</gcds-details>
+{% else %}
+<gcds-notice type="info" notice-title-tag="h3" notice-title="{{ _('No scan executions') }}">
+    <gcds-text>{{ _('No scan executions have been created for this evidence yet.') }}</gcds-text>
+</gcds-notice>
+{% endif %}
+
+{% endif %}
+
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit" type="link" button-role="primary" class="mt-300">
     {{ _("Edit") }}
 </gcds-button>
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
     {{ _("Delete") }}
 </gcds-button>
+
+<script>
+async function cancelExecution(executionId) {
+    if (!confirm('{{ _("Are you sure you want to cancel this scan execution?") }}')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/scan-job-executions/${executionId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('{{ _("Failed to cancel execution") }}');
+        }
+    } catch (error) {
+        alert('{{ _("Error cancelling execution") }}');
+    }
+}
+
+async function retryExecution(executionId) {
+    if (!confirm('{{ _("Are you sure you want to retry this scan execution?") }}')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/scan-job-executions/${executionId}/retry`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('{{ _("Failed to retry execution") }}');
+        }
+    } catch (error) {
+        alert('{{ _("Error retrying execution") }}');
+    }
+}
+</script>
 
 {% endblock %}

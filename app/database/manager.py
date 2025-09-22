@@ -5,7 +5,14 @@ import os
 from typing import List, Type
 
 from app.database.base import BaseModel
-from app.database.models import Control, Evidence, SecurityAssessment, User
+from app.database.models import (
+    Control,
+    Evidence,
+    SecurityAssessment,
+    User,
+    ScanJobTemplate,
+    ScanJobExecution,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +23,14 @@ class DatabaseManager:
     @staticmethod
     def get_all_models() -> List[Type[BaseModel]]:
         """Get all database models."""
-        return [User, SecurityAssessment, Control, Evidence]
+        return [
+            User,
+            SecurityAssessment,
+            Control,
+            Evidence,
+            ScanJobTemplate,
+            ScanJobExecution,
+        ]
 
     @staticmethod
     def initialize_tables(wait_for_creation: bool = True) -> bool:

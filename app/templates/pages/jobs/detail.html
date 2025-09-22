@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<gcds-heading tag="h1">{{ template.name }}</gcds-heading>
+<gcds-text>
+    {{ template.description }}
+</gcds-text>
+
+<gcds-heading tag="h2">{{ _('Configuration') }}</gcds-heading>
+<code><pre>{{ template.config }}</pre></code>
+
+<ul class="list-disc mt-600 mb-300" class="sm">
+    <li>
+        <strong>{{ _('Scan Type:') }}</strong>
+        {{ template.scan_type }}
+    </li>
+    <li>
+        <strong>{{ _('Active:') }}</strong>
+        {{ _(template.is_active) }}
+    </li>
+</ul>
+
+<gcds-button href="/jobs/{{ template.template_id }}/edit" type="link" button-role="primary" class="mt-300">
+    {{ _("Edit") }}
+</gcds-button>
+<gcds-button href="/jobs/{{ template.template_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
+    {{ _("Delete") }}
+</gcds-button>
+
+
+{% endblock %}

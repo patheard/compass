@@ -33,6 +33,16 @@ class DatabaseConfig:
         """Get the evidence table name."""
         return f"{self.table_prefix}-evidence"
 
+    @property
+    def scan_job_templates_table_name(self) -> str:
+        """Get the scan job templates table name."""
+        return f"{self.table_prefix}-scan-job-templates"
+
+    @property
+    def scan_job_executions_table_name(self) -> str:
+        """Get the scan job executions table name."""
+        return f"{self.table_prefix}-scan-job-executions"
+
 
 # Global configuration instance
 db_config = DatabaseConfig()

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<gcds-heading tag="h1">{{ _("Jobs") }}</gcds-heading>
+<gcds-text>
+    {{ _("Manage automated scan job templates for evidence collection.") }}
+</gcds-text>
+
+<gcds-button href="/jobs/new" type="link" button-role="secondary" class="mb-300">
+    {{ _("Create New Job") }}
+</gcds-button>
+
+{% if templates %}
+<section class="table-container mt-600 mb-300">
+<table>
+    <thead>
+        <tr>
+            <th scope="col">{{ _('Name') }}</th>
+            <th scope="col">{{ _('Description') }}</th>
+            <th scope="col">{{ _('Scan Type') }}</th>
+            <th scope="col">{{ _('Created') }}</th>
+            <th scope="col">{{ _('Actions') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for template in templates %}
+        <tr>
+            <td>
+                <gcds-link href="/jobs/{{ template.template_id }}">{{ template.name }}</gcds-link>
+            </td>
+            <td>{{ template.description }}</td>
+            <td>
+                <gcds-tag colour="blue">{{ template.scan_type }}</gcds-tag>
+            </td>
+            <td>{{ template.created_at.strftime('%Y-%m-%d %H:%M') if template.created_at else '-' }}</td>
+            <td>
+                <gcds-link href="/jobs/{{ template.template_id }}/edit" size="small">
+                    {{ _("Edit") }}
+                </gcds-link>
+                <gcds-link href="/jobs/{{ template.template_id }}/delete" size="small" data-csrf-token="{{ csrf_token }}" class="delete-item">
+                    {{ _("Delete") }}
+                </gcds-link>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</section>
+{% endif %}
+
+{% endblock %}
