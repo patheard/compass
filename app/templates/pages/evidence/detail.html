@@ -55,7 +55,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for execution in scan_executions %}
+            {% for execution in job_executions %}
             <tr>
                 <td>{{ execution.status }}</td>
                 <td>{{ execution.started_at or '-' }}</td>
