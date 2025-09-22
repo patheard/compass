@@ -13,6 +13,7 @@ from app.evidence.validation import (
     EvidenceResponse,
 )
 from app.job_executions.services import JobExecutionService
+from app.evidence.sqs_service import SQSService
 
 
 class EvidenceService(BaseService[Evidence]):
@@ -20,6 +21,7 @@ class EvidenceService(BaseService[Evidence]):
 
     def __init__(self):
         super().__init__(Evidence)
+        self.sqs_service = SQSService()
 
     def validate_ownership(self, entity: Evidence, user_id: str) -> bool:
         """Validate that the user owns the assessment containing the evidence."""
@@ -88,11 +90,11 @@ class EvidenceService(BaseService[Evidence]):
 
             # Create scan job execution for automated collection
             if data.evidence_type == "automated_collection":
-                execution = JobExecutionService.create_execution(
-                    template_id=data.job_template_id,
+                # Send SQS message for processing
+                self.sqs_service.send_evidence_processing_message(
+                    control_id=control_id,
                     evidence_id=evidence.evidence_id,
                 )
-                evidence.update_scan_execution_id(execution.execution_id)
 
             return self._to_response(evidence)
         except Exception as e:
@@ -126,6 +128,12 @@ class EvidenceService(BaseService[Evidence]):
         """Update existing evidence."""
         evidence = self.get_entity_or_404(evidence_id, user_id)
 
+        # Track if evidence type is changing to automated_collection
+        becoming_automated = (
+            data.evidence_type == "automated_collection"
+            and evidence.evidence_type != "automated_collection"
+        )
+
         try:
             # Update only provided fields
             if data.title is not None:
@@ -138,6 +146,14 @@ class EvidenceService(BaseService[Evidence]):
                 evidence.evidence_type = data.evidence_type
 
             evidence.save()
+
+            # Send SQS message if evidence type changed to automated_collection
+            if becoming_automated:
+                self.sqs_service.send_evidence_processing_message(
+                    control_id=evidence.control_id,
+                    evidence_id=evidence.evidence_id,
+                )
+
             return self._to_response(evidence)
         except Exception as e:
             raise HTTPException(

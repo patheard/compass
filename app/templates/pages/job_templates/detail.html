@@ -7,9 +7,11 @@
 </gcds-text>
 
 <gcds-heading tag="h2">{{ _('Configuration') }}</gcds-heading>
-<code><pre>{{ template.config }}</pre></code>
+<section class="p-300 bg-light b-default b-sm">
+    <code><pre>{{ template.config }}</pre></code>
+</section>
 
-<ul class="list-disc mt-600 mb-300" class="sm">
+<ul class="list-disc mt-300 mb-300" class="sm">
     <li>
         <strong>{{ _('Scan Type:') }}</strong>
         {{ template.scan_type }}

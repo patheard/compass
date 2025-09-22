@@ -97,7 +97,7 @@ async def create_template(
     config: str = Form(...),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
-) -> HTMLResponse:
+) -> RedirectResponse:
     """Create a new scan job template."""
     # Validate CSRF token
     session_token = request.session.get("csrf_token")
@@ -125,22 +125,9 @@ async def create_template(
         # Clear CSRF token
         request.session.pop("csrf_token", None)
 
-        # Convert config to JSON string for template display
-        template_data = {
-            "template_id": template.template_id,
-            "name": template.name,
-            "description": template.description,
-            "scan_type": template.scan_type,
-            "config": json.dumps(template.config.as_dict(), indent=2),
-            "is_active": template.is_active,
-            "created_at": getattr(template, "created_at", None),
-            "updated_at": getattr(template, "updated_at", None),
-        }
-
-        return templates.TemplateResponse(
-            request,
-            "pages/job_templates/detail.html",
-            {"request": request, "template": template_data, "user": current_user},
+        return RedirectResponse(
+            url=f"/job-templates/{template.template_id}",
+            status_code=303,
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -252,7 +239,7 @@ async def update_template(
     config: str = Form(...),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
-) -> HTMLResponse:
+) -> RedirectResponse:
     """Update a scan job template."""
     # Validate CSRF token
     session_token = request.session.get("csrf_token")
@@ -281,30 +268,9 @@ async def update_template(
         # Clear CSRF token
         request.session.pop("csrf_token", None)
 
-        # Convert config to JSON string for template display
-        template_data = {
-            "template_id": template.template_id,
-            "name": template.name,
-            "description": template.description,
-            "scan_type": template.scan_type,
-            "config": json.dumps(template.config.as_dict(), indent=2),
-            "is_active": template.is_active,
-            "created_at": getattr(template, "created_at", None),
-            "updated_at": getattr(template, "updated_at", None),
-        }
-
-        return templates.TemplateResponse(
-            request,
-            "pages/job_templates/detail.html",
-            {
-                "request": request,
-                "template": template_data,
-                "user": current_user,
-                "breadcrumbs": [
-                    {"label": "Compass", "link": "/"},
-                    {"label": "Job Templates", "link": "/job-templates"},
-                ],
-            },
+        return RedirectResponse(
+            url=f"/job-templates/{template.template_id}",
+            status_code=303,
         )
     except HTTPException:
         raise

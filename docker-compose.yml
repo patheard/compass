@@ -9,5 +9,20 @@ services:
     volumes:
       - dynamodb-data:/home/dynamodblocal
 
+  localstack:
+    image: localstack/localstack:latest
+    container_name: compass-localstack
+    environment:
+      SERVICES: sqs
+      DEBUG: 1
+      AWS_DEFAULT_REGION: ca-central-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    ports:
+      - "4566:4566"
+    volumes:
+      - localstack-data:/var/lib/localstack
+
 volumes:
   dynamodb-data:
+  localstack-data:

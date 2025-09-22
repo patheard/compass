@@ -8,15 +8,9 @@
         {{ _("Create evidence") }}
     {% endif %}
 </gcds-heading>
+
 <gcds-text>
-    {% if is_edit %}
-        {{ _("Update the details of your evidence.") }}
-    {% else %}
-        {{ _("Fill out the form below to create new evidence.") }}
-    {% endif %}
-</gcds-text>
-<gcds-text text-role="secondary" size="small">
-    {{ _("Control") }}: {{ control.nist_control_id }} - {{ control.control_title }}
+    <strong>{{ _("Control") }}</strong><br>{{ control.nist_control_id }} - {{ control.control_title }}
 </gcds-text>
 
 {% if error %}

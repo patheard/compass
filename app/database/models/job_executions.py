@@ -201,3 +201,19 @@ class JobExecution(BaseModel):
     def get_result_value(self, key: str) -> Optional[Any]:
         """Get a specific result value."""
         return self.result_data.get(key) if self.result_data else None
+
+    def set_aws_config_compliance_results(
+        self, compliance_data: Dict[str, Any]
+    ) -> None:
+        """Set AWS Config compliance results."""
+        if not self.result_data:
+            self.result_data = {}
+
+        self.result_data["compliance_results"] = compliance_data
+        self.result_data["scan_type"] = "aws_config"
+
+    def get_aws_config_compliance_results(self) -> Optional[Dict[str, Any]]:
+        """Get AWS Config compliance results."""
+        if not self.result_data:
+            return None
+        return self.result_data.get("compliance_results")
