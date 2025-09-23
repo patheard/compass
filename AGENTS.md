@@ -1,14 +1,14 @@
 # Core
 - Be concise in all responses.
 - Do not use adjectives or expresive language.
-- Do not provide a summary when the task is complete.
-- Suggest alternative options if the requested task could be improved.
+- Provide a brief summary when the task is complete.
 
 # Code
 ## Python
 - Dependency management is done with `uv`.
 - This is a Python 3.13 project using FastAPI.
 - Add type hints to all code.
+- When making frontend page changes follow the examples in the `./app/templates` directory.
 - Before completing a task, run `make fmt`, `make lint` and `make security` and fix any issues found before considering the task finished.
 
 ## Terraform
