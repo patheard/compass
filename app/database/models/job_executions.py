@@ -47,6 +47,7 @@ class JobExecution(BaseModel):
     # Execution attributes
     template_id = UnicodeAttribute()
     evidence_id = UnicodeAttribute()
+    aws_account_id = UnicodeAttribute(null=True)
     status = UnicodeAttribute()  # pending/running/completed/failed/cancelled
     started_at = UTCDateTimeAttribute(null=True)
     completed_at = UTCDateTimeAttribute(null=True)
@@ -68,6 +69,7 @@ class JobExecution(BaseModel):
         execution_id: Optional[str] = None,
         template_id: str = "",
         evidence_id: str = "",
+        aws_account_id: Optional[str] = None,
         status: str = "pending",
         started_at: Optional[str] = None,
         completed_at: Optional[str] = None,
@@ -86,6 +88,7 @@ class JobExecution(BaseModel):
             execution_id=execution_id,
             template_id=template_id,
             evidence_id=evidence_id,
+            aws_account_id=aws_account_id,
             status=status,
             started_at=started_at,
             completed_at=completed_at,
@@ -171,12 +174,14 @@ class JobExecution(BaseModel):
         template_id: str,
         evidence_id: str,
         execution_config: Optional[Dict[str, Any]] = None,
+        aws_account_id: Optional[str] = None,
     ) -> "JobExecution":
         """Create new scan job execution."""
         execution = cls(
             template_id=template_id,
             evidence_id=evidence_id,
             execution_config=execution_config,
+            aws_account_id=aws_account_id,
         )
         execution.save()
         return execution

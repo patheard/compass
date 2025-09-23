@@ -245,9 +245,7 @@ class JobTemplateCreateRequest(BaseInputValidator):
     @validator("scan_type")
     def validate_scan_type(cls, value: str) -> str:
         """Validate scan type."""
-        valid_types = {
-            "aws_config"
-        }
+        valid_types = {"aws_config"}
 
         if value not in valid_types:
             raise ValueError(

@@ -1,4 +1,4 @@
-.PHONY: dynamodb-admin dynamodb-admin-install fmt i18n-compile i18n-extract i18n-update install lint local run security
+.PHONY: docker dynamodb-admin dynamodb-admin-install fmt i18n-compile i18n-extract i18n-update install lint local run security
 
 dynamodb-admin:
 	AWS_REGION=ca-central-1 \
@@ -36,3 +36,7 @@ run: local
 
 security:
 	uv run bandit -r app/
+
+docker:
+	docker build -t compass -f Dockerfile.app --platform linux/arm64 . &&\
+	docker build -t compass-job-processor -f Dockerfile.job_processor --platform linux/arm64 .

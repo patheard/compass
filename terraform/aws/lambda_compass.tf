@@ -14,10 +14,12 @@ module "compass" {
     GOOGLE_CLIENT_SECRET = var.google_oauth_client_secret
     SECRET_KEY           = var.secret_key
     BASE_URL             = "https://${var.domain}"
+    SQS_QUEUE_URL        = aws_sqs_queue.compass_jobs.id
   }
 
   policies = [
     data.aws_iam_policy_document.dynamodb.json,
+    data.aws_iam_policy_document.sqs.json
   ]
 
   billing_tag_value = var.billing_code
@@ -26,30 +28,6 @@ module "compass" {
 resource "aws_lambda_function_url" "compass" {
   function_name      = module.compass.function_name
   authorization_type = "NONE"
-}
-
-data "aws_iam_policy_document" "dynamodb" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "dynamodb:CreateTable",
-      "dynamodb:DescribeTable",
-      "dynamodb:ListTables",
-      "dynamodb:DeleteTable",
-      "dynamodb:UpdateTable",
-      "dynamodb:PutItem",
-      "dynamodb:GetItem",
-      "dynamodb:UpdateItem",
-      "dynamodb:DeleteItem",
-      "dynamodb:Query",
-      "dynamodb:Scan",
-      "dynamodb:BatchGetItem",
-      "dynamodb:BatchWriteItem"
-    ]
-    resources = [
-      "arn:aws:dynamodb:${var.region}:${var.account_id}:table/compass-*"
-    ]
-  }
 }
 
 #

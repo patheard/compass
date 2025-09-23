@@ -214,7 +214,9 @@ class EvidenceService(BaseService[Evidence]):
             aws_account_id=evidence.aws_account_id if evidence.aws_account_id else "",
             file_url=evidence.file_url,
             has_file=evidence.has_file(),
-            job_template_id=evidence.job_template_id if evidence.job_template_id else "",
+            job_template_id=evidence.job_template_id
+            if evidence.job_template_id
+            else "",
             scan_execution_id=evidence.scan_execution_id,
             is_automated_collection=evidence.is_automated_collection(),
             created_at=evidence.created_at,
