@@ -58,7 +58,7 @@
         <option value="other" {% if (is_edit and evidence.evidence_type == 'other') or (evidence_type == 'other') %}selected{% endif %}>{{ _("Other") }}</option>
     </gcds-select>
 
-    <section id="automated-collection-fields">
+    <section id="automated-collection-fields" class="{% if is_edit and evidence.evidence_type == 'automated_collection' %}d-block{% else %}d-none{% endif %}">
         <gcds-select
             name="job_template_id"
             select-id="job_template_id"

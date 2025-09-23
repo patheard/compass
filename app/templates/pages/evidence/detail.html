@@ -11,67 +11,49 @@
         <strong>{{ _('Type:') }}</strong>
         {{ _(evidence.evidence_type) }}
     </li>
+{% if evidence.is_automated_collection %}
+{% if job_template %}
     <li>
-        <strong>{{ _('Control:') }}</strong>
-        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}">{{ _(control.nist_control_id) }}</gcds-link>
+        <strong>{{ _('Job name:') }}</strong>
+        <gcds-link href="/job-templates/{{ job_template.template_id }}">{{ job_template.name }} ({{ job_template.scan_type }})</gcds-link>
     </li>
     <li>
-        <strong>{{ _('Assessment:') }}</strong>
-        <gcds-link href="/assessments/{{ assessment.assessment_id }}">{{ assessment.product_name }}</gcds-link>
+        <strong>{{ _('Description:') }}</strong>
+        {{ job_template.description }}
     </li>
+    <li>
+        <strong>{{ _('AWS Account ID:') }}</strong>
+        {{ evidence.aws_account_id }}
+    </li>
+{% endif %}
+{% endif %}
 </ul>
 
+
+
 {% if evidence.is_automated_collection %}
-<gcds-heading tag="h2">{{ _("Evidence collection") }}</gcds-heading>
-
-{% if job_template %}
-<gcds-details details-title="{{ _('Job') }}">
-    <ul class="list-disc">
-        <li>
-            <strong>{{ _('Name:') }}</strong>
-            <gcds-link href="/job-templates/{{ job_template.template_id }}">{{ job_template.name }}</gcds-link>
-        </li>
-        <li>
-            <strong>{{ _('Description:') }}</strong>
-            {{ job_template.description }}
-        </li>
-        <li>
-            <strong>{{ _('AWS Account ID:') }}</strong>
-            {{ evidence.aws_account_id }}
-        </li>
-        <li>
-            <strong>{{ _('Type:') }}</strong>
-            {{ job_template.scan_type }}
-        </li>
-    </ul>
-</gcds-details>
-{% endif %}
-
 {% if job_executions %}
-<gcds-details details-title="{{ _('Results') }}" class="table-container">
-    <table>
-        <thead>
-            <tr>
-                <th scope="col">{{ _('Status') }}</th>
-                <th scope="col">{{ _('Started At') }}</th>
-                <th scope="col">{{ _('Completed At') }}</th>
-                <th scope="col">{{ _('Retry Count') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for execution in job_executions %}
-            <tr>
-                <td>{{ execution.status }}</td>
-                <td>{{ execution.started_at or '-' }}</td>
-                <td>{{ execution.completed_at or '-' }}</td>
-                <td>{{ execution.retry_count }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</gcds-details>
+<table>
+    <thead>
+        <tr>
+            <th scope="col">{{ _('Status') }}</th>
+            <th scope="col">{{ _('Started At') }}</th>
+            <th scope="col">{{ _('Completed At') }}</th>
+            <th scope="col">{{ _('Retry Count') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for execution in job_executions %}
+        <tr>
+            <td>{{ execution.status }}</td>
+            <td>{{ execution.started_at or '-' }}</td>
+            <td>{{ execution.completed_at or '-' }}</td>
+            <td>{{ execution.retry_count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endif %}
-
 {% endif %}
 
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit" type="link" button-role="primary" class="mt-300">

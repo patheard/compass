@@ -89,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize visibility on load
     const evidenceForm = document.querySelector('form#evidence-form');
     if (evidenceForm) {
-        updateEvidenceAutomatedCollection();
         evidenceForm.addEventListener('change', updateEvidenceAutomatedCollection);
     }
 });
