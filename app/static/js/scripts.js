@@ -85,4 +85,27 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    // Initialize visibility on load
+    const evidenceForm = document.querySelector('form#evidence-form');
+    if (evidenceForm) {
+        updateEvidenceAutomatedCollection();
+        evidenceForm.addEventListener('change', updateEvidenceAutomatedCollection);
+    }
 });
+
+/**
+ * Update visibility and required attributes for automated collection related fields.
+ */
+function updateEvidenceAutomatedCollection() {
+    const form = document.querySelector('form#evidence-form');
+    if (!form) return;
+
+    const evidenceTypeSelect = form.querySelector('[name="evidence_type"]');
+    const automatedCollectionFields = form.querySelector('#automated-collection-fields');
+
+    const value = evidenceTypeSelect ? evidenceTypeSelect.value : null;
+    const isAuto = value === 'automated_collection';
+
+    automatedCollectionFields.className = isAuto ? 'd-block' : 'd-none';
+}

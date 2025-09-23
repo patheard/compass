@@ -246,13 +246,7 @@ class JobTemplateCreateRequest(BaseInputValidator):
     def validate_scan_type(cls, value: str) -> str:
         """Validate scan type."""
         valid_types = {
-            "aws_config",
-            "nessus",
-            "qualys",
-            "custom_script",
-            "vulnerability_scan",
-            "compliance_check",
-            "other",
+            "aws_config"
         }
 
         if value not in valid_types:

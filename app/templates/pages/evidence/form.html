@@ -19,7 +19,7 @@
 </gcds-notice>
 {% endif %}
 
-<form method="post">
+<form method="post" id="evidence-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
     <gcds-input
@@ -58,31 +58,32 @@
         <option value="other" {% if (is_edit and evidence.evidence_type == 'other') or (evidence_type == 'other') %}selected{% endif %}>{{ _("Other") }}</option>
     </gcds-select>
 
-    <gcds-select
-        name="job_template_id"
-        select-id="job_template_id"
-        label="{{ _('Job Template') }}"
-        default-value="Select template."
-        {% if (is_edit and evidence.evidence_type == 'automated_collection') or (evidence_type == 'automated_collection') %}required="true"{% endif %}>
-        {% if job_templates %}
-            {% for template in job_templates %}
-                <option value="{{ template.template_id }}" 
-                    {% if (is_edit and evidence.job_template_id == template.template_id) or (job_template_id == template.template_id) %}selected{% endif %}>
-                    {{ template.name }} ({{ template.scan_type }})
-                </option>
-            {% endfor %}
-        {% else %}
-            <option value="" disabled>{{ _("No job templates available") }}</option>
-        {% endif %}
-    </gcds-select>
+    <section id="automated-collection-fields">
+        <gcds-select
+            name="job_template_id"
+            select-id="job_template_id"
+            label="{{ _('Job Template') }}"
+            default-value="Select template.">
+            {% if job_templates %}
+                {% for template in job_templates %}
+                    <option value="{{ template.template_id }}" 
+                        {% if (is_edit and evidence.job_template_id == template.template_id) or (job_template_id == template.template_id) %}selected{% endif %}>
+                        {{ template.name }} ({{ template.scan_type }})
+                    </option>
+                {% endfor %}
+            {% else %}
+                <option value="" disabled>{{ _("No job templates available") }}</option>
+            {% endif %}
+        </gcds-select>
 
-    <gcds-input
-        name="aws_account_id"
-        input-id="aws_account_id"
-        label="{{ _('AWS Account ID') }}"
-        maxlength="12"
-        value="{% if is_edit %}{{ evidence.aws_account_id }}{% else %}{{ aws_account_id_value or '' }}{% endif %}">
-    </gcds-input>
+        <gcds-input
+            name="aws_account_id"
+            input-id="aws_account_id"
+            label="{{ _('AWS Account ID') }}"
+            maxlength="12"
+            value="{% if is_edit %}{{ evidence.aws_account_id }}{% else %}{{ aws_account_id_value or '' }}{% endif %}">
+        </gcds-input>
+    </section>
 
 
     <gcds-button type="submit" button-role="primary" class="mt-300">
