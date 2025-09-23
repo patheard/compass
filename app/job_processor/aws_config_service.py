@@ -100,7 +100,7 @@ class AWSConfigService:
         )
         return matching_rules
 
-    def get_compliance_by_config_rule(
+    def get_compliance_for_config_rules(
         self, rule_names: List[str]
     ) -> Dict[str, Dict[str, Any]]:
         """
@@ -193,7 +193,9 @@ class AWSConfigService:
                 }
 
             # Get compliance status for matching rules
-            compliance_results = self.get_compliance_by_config_rule(matching_rule_names)
+            compliance_results = self.get_compliance_for_config_rules(
+                matching_rule_names
+            )
 
             # Generate summary using uppercase AWS compliance types as keys.
             summary = {

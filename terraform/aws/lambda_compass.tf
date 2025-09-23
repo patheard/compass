@@ -6,7 +6,7 @@ module "compass" {
 
   architectures          = ["arm64"]
   memory                 = 2048
-  timeout                = 10
+  timeout                = 30
   enable_lambda_insights = true
 
   environment_variables = {

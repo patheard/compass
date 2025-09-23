@@ -7,10 +7,10 @@ from typing import Dict, Any
 from app.database.models.evidence import Evidence
 from app.database.models.job_executions import JobExecution
 from app.database.models.job_templates import JobTemplate
-from lambda_functions.aws_config_service import AWSConfigService
+from app.job_processor.aws_config_service import AWSConfigService
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -26,26 +26,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     logger.info(f"Processing evidence collection event: {json.dumps(event)}")
 
-    results = []
-    errors = []
+    batch_item_failures = []
 
     # Process each SQS record
     for record in event.get("Records", []):
         try:
-            result = process_sqs_record(record)
-            results.append(result)
+            process_sqs_record(record)
         except Exception as e:
-            error_msg = f"Failed to process record {record.get('messageId', 'unknown')}: {str(e)}"
-            logger.error(error_msg)
-            errors.append(error_msg)
+            logger.error(
+                f"Failed to process record {record.get('messageId', 'unknown')}: {e}"
+            )
+            batch_item_failures.append(
+                {"itemIdentifier": record.get("messageId", "unknown")}
+            )
 
-    return {
-        "statusCode": 200,
-        "processed_count": len(results),
-        "error_count": len(errors),
-        "results": results,
-        "errors": errors,
-    }
+    return {"batchItemFailures": batch_item_failures}
 
 
 def process_sqs_record(record: Dict[str, Any]) -> Dict[str, Any]:
@@ -124,7 +119,6 @@ def process_evidence_collection(
             raise ValueError(f"Unsupported scan type: {scan_type}")
 
         # Update execution with results
-        execution.set_aws_config_compliance_results(results)
         execution.complete_execution(results)
 
         logger.info(f"Successfully processed evidence {evidence_id}")
@@ -139,7 +133,7 @@ def process_evidence_collection(
         }
 
     except Exception as e:
-        error_msg = f"Evidence processing failed: {str(e)}"
+        error_msg = f"Evidence processing failed: {e}"
         logger.error(error_msg)
         try:
             if execution:
@@ -180,17 +174,6 @@ def process_aws_config_scan(
     config_service = AWSConfigService(role_arn=iam_role_arn, region=region)
     results = config_service.scan_config_compliance(rule_names)
 
-    results["scan_metadata"] = {
-        "template_id": job_template.template_id,
-        "execution_id": execution.execution_id,
-        "region": region,
-        "rule_names": rule_names,
-        "iam_role_arn": iam_role_arn,
-    }
-
-    logger.info(
-        f"AWS Config scan completed: {results['compliance_summary']['compliant']} compliant, "
-        f"{results['compliance_summary']['non_compliant']} non-compliant rules"
-    )
+    logger.info(f"AWS Config scan completed: {results}")
 
     return results

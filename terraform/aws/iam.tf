@@ -58,6 +58,8 @@ data "aws_iam_policy_document" "sqs" {
       "sqs:DeleteMessage",
       "sqs:GetQueueAttributes"
     ]
-    resources = aws_sqs_queue.compass_jobs.arn
+    resources = [
+      aws_sqs_queue.compass_jobs.arn
+    ]
   }
 }

@@ -22,9 +22,9 @@ module "compass_job_processor" {
 # SQS trigger for Lambda
 #
 resource "aws_lambda_event_source_mapping" "compass_job_processor" {
-  event_source_arn = aws_sqs_queue.compass.arn
+  event_source_arn = aws_sqs_queue.compass_jobs.arn
   function_name    = module.compass_job_processor.function_arn
   batch_size       = 10
-  
+
   function_response_types = ["ReportBatchItemFailures"]
 }
