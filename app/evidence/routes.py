@@ -413,6 +413,7 @@ async def delete_evidence(
 
     try:
         evidence_service.delete_evidence(evidence_id, current_user.user_id)
+        JobExecutionService.delete_executions_by_evidence(evidence_id, current_user.user_id)
 
         # Clear CSRF token
         request.session.pop("csrf_token", None)

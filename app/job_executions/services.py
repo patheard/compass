@@ -75,6 +75,30 @@ class JobExecutionService:
         return True
 
     @staticmethod
+    def delete_execution(execution_id: str, user_id: str) -> bool:
+        """Delete a job execution."""
+        execution = JobExecutionService.get_execution(execution_id, user_id)
+        if not execution:
+            return False
+
+        try:
+            execution.delete()
+            return True
+        except JobExecution.DoesNotExist:  # Race condition after fetch
+            return False
+        except Exception:
+            # Intentionally swallow to keep interface simple (bool result)
+            return False
+
+    @staticmethod
+    def delete_executions_by_evidence(evidence_id: str, user_id: str) -> bool:
+        """Delete all job executions for a specific evidence."""
+        executions = JobExecutionService.get_evidence_executions(evidence_id, user_id)
+        for execution in executions:
+            execution.delete()
+        return True
+
+    @staticmethod
     def get_user_pending_executions(user_id: str) -> List[JobExecution]:
         """Get all pending executions for user's evidence."""
         # This would require a more complex query in production

@@ -3,7 +3,6 @@
 from typing import Optional
 from fastapi import HTTPException, status, Request
 from app.database.models.users import User
-import time
 
 
 async def get_user_from_session(request: Request) -> Optional[User]:

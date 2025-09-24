@@ -33,26 +33,42 @@
 
 {% if evidence.is_automated_collection %}
 {% if job_executions %}
-<table>
-    <thead>
-        <tr>
-            <th scope="col">{{ _('Status') }}</th>
-            <th scope="col">{{ _('Started At') }}</th>
-            <th scope="col">{{ _('Completed At') }}</th>
-            <th scope="col">{{ _('Retry Count') }}</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for execution in job_executions %}
-        <tr>
-            <td>{{ execution.status }}</td>
-            <td>{{ execution.started_at or '-' }}</td>
-            <td>{{ execution.completed_at or '-' }}</td>
-            <td>{{ execution.retry_count }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<gcds-heading tag="h2" class="mb-200">{{ _('Scans') }}</gcds-heading>
+<section class="table-container mb-300">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">{{ _('Status') }}</th>
+                <th scope="col">{{ _('Started At') }}</th>
+                <th scope="col">{{ _('Completed At') }}</th>
+                <th scope="col">{{ _('Result') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for execution in job_executions %}
+            <tr>
+                <td>{{ _(execution.status) }}</td>
+                <td>{{ execution.started_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>{{ execution.completed_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>
+                    {% if execution.result_data and execution.result_data.rule_details %}
+                    <div class="result-rule-icons" style="display:flex;flex-wrap:wrap;gap:.25rem;">
+                        {% for rule_name, rule_info in execution.result_data.rule_details.items() %}
+                            {% set compliance = rule_info.compliance_type %}
+                            <span title="{{ rule_name }}" aria-label="{{ rule_name }}: {{ compliance }}">
+                                {% if compliance == 'COMPLIANT' %}✅{% else %}❌{% endif %}
+                            </span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                        {{ execution.result_data }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
 {% endif %}
 {% endif %}
 

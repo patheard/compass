@@ -48,7 +48,7 @@ docker:
 
 deploy-lambda:
 	set -o allexport; . .env; set +o allexport; \
-	aws lambda update-function-code --function-name compass --image-uri $$AWS_ACCOUNT_ID.dkr.ecr.$$AWS_REGION.amazonaws.com/compass:latest && \
-	aws lambda update-function-code --function-name compass-job-processor --image-uri $$AWS_ACCOUNT_ID.dkr.ecr.$$AWS_REGION.amazonaws.com/compass-job-processor:latest
+	aws lambda update-function-code --function-name compass --image-uri $$AWS_ACCOUNT_ID.dkr.ecr.$$AWS_REGION.amazonaws.com/compass:latest > /dev/null && \
+	aws lambda update-function-code --function-name compass-job-processor --image-uri $$AWS_ACCOUNT_ID.dkr.ecr.$$AWS_REGION.amazonaws.com/compass-job-processor:latest > /dev/null
 
 
