@@ -41,7 +41,7 @@ async def create_control_page(
             "pages/controls/form.html",
             {
                 "request": request,
-                "title": "create_control_title",
+                "title": "Create control",
                 "user": current_user,
                 "assessment": assessment,
                 "csrf_token": csrf_token,
@@ -111,7 +111,7 @@ async def create_control(
                 "pages/controls/form.html",
                 {
                     "request": request,
-                    "title": "create_control_title",
+                    "title": "Create control",
                     "user": current_user,
                     "assessment": assessment,
                     "csrf_token": csrf_token,
@@ -165,7 +165,7 @@ async def control_detail_page(
             "pages/controls/detail.html",
             {
                 "request": request,
-                "title": "control_detail_title",
+                "title": "Control",
                 "user": current_user,
                 "assessment": assessment,
                 "control": control,
@@ -215,7 +215,7 @@ async def edit_control_page(
             "pages/controls/form.html",
             {
                 "request": request,
-                "title": "edit_control_title",
+                "title": "Edit control",
                 "user": current_user,
                 "assessment": assessment,
                 "csrf_token": csrf_token,
@@ -296,7 +296,7 @@ async def update_control(
                 "pages/controls/form.html",
                 {
                     "request": request,
-                    "title": "edit_control_title",
+                    "title": "Edit control",
                     "user": current_user,
                     "assessment": assessment,
                     "csrf_token": csrf_token,

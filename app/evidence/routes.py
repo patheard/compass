@@ -53,7 +53,7 @@ async def create_evidence_page(
             "pages/evidence/form.html",
             {
                 "request": request,
-                "title": "create_evidence_title",
+                "title": "Create evidence",
                 "user": current_user,
                 "assessment": assessment,
                 "control": control,
@@ -137,7 +137,7 @@ async def create_evidence(
                 "pages/evidence/form.html",
                 {
                     "request": request,
-                    "title": "create_evidence_title",
+                    "title": "Create evidence",
                     "user": current_user,
                     "assessment": assessment,
                     "control": control,
@@ -213,7 +213,7 @@ async def evidence_detail_page(
             "pages/evidence/detail.html",
             {
                 "request": request,
-                "title": "evidence_detail_title",
+                "title": "Evidence",
                 "user": current_user,
                 "assessment": assessment,
                 "control": control,
@@ -275,7 +275,7 @@ async def edit_evidence_page(
             "pages/evidence/form.html",
             {
                 "request": request,
-                "title": "edit_evidence_title",
+                "title": "Edit evidence",
                 "user": current_user,
                 "assessment": assessment,
                 "control": control,
@@ -366,7 +366,7 @@ async def update_evidence(
                 "pages/evidence/form.html",
                 {
                     "request": request,
-                    "title": "edit_evidence_title",
+                    "title": "Edit evidence",
                     "user": current_user,
                     "assessment": assessment,
                     "control": control,
