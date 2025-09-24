@@ -165,14 +165,16 @@ def process_aws_config_scan(
     iam_role_arn = (
         f"arn:aws:iam::{execution.aws_account_id}:role/compass-aws-config-job"
     )
-    rule_names = config.get("rule_names", None)
+    rules = config.get("rules", None)
     region = config.get("region", "ca-central-1")
 
-    if not rule_names:
-        raise ValueError("Job template configuration missing rule_names")
+    if not rules:
+        raise ValueError("Job template configuration missing rules")
+
+    rule_prefixes = [r["prefix"] for r in rules if "prefix" in r]
 
     config_service = AWSConfigService(role_arn=iam_role_arn, region=region)
-    results = config_service.scan_config_compliance(rule_names)
+    results = config_service.scan_config_compliance(rule_prefixes)
 
     logger.info(f"AWS Config scan completed: {results}")
 
