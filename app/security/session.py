@@ -9,7 +9,7 @@ class SecureSessionConfig:
 
     # Session settings
     SESSION_COOKIE_NAME: str = "session"
-    SESSION_MAX_AGE: int = 900  # 15 minutes
+    SESSION_MAX_AGE: int = 28800  # 8 hours
     SESSION_COOKIE_SECURE: bool = True  # Only send over HTTPS
     SESSION_COOKIE_HTTPONLY: bool = True  # Prevent JS access
     SESSION_COOKIE_SAMESITE: str = "strict"  # CSRF protection

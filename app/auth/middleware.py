@@ -12,29 +12,9 @@ async def get_user_from_session(request: Request) -> Optional[User]:
     if not user_data:
         return None
 
-    # Check session timestamp to enforce timeout
-    session_timestamp = request.session.get("timestamp")
-    if session_timestamp:
-        current_time = time.time()
-        session_age = current_time - session_timestamp
-
-        # Session timeout: 8 hours
-        if session_age > 28800:
-            # Clear expired session
-            request.session.clear()
-            return None
-
-        # Update timestamp for sliding window
-        request.session["timestamp"] = current_time
-    else:
-        # Set timestamp if not present
-        request.session["timestamp"] = time.time()
-
     try:
-        # Reconstruct User object from session data
         return User.from_dict(user_data)
     except Exception:
-        # Clear invalid session data
         request.session.clear()
         return None
 
