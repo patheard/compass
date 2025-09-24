@@ -17,7 +17,7 @@ templates = LocalizedTemplates(directory="./app/templates")
 csrf_manager = CSRFTokenManager()
 
 
-@router.get("/", response_class=HTMLResponse)
+@router.get("", response_class=HTMLResponse)
 async def list_templates(
     request: Request,
     current_user: User = Depends(require_authenticated_user),

@@ -22,7 +22,7 @@ ENV PORT=8000
 COPY --from=builder ${LAMBDA_TASK_ROOT} ${LAMBDA_TASK_ROOT}
 COPY ./app ${LAMBDA_TASK_ROOT}/app
 
-# Add the Lambda web adpater
-COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.9.0 /lambda-adapter /opt/extensions/lambda-adapter
+# Add the Lambda web adapter
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 /lambda-adapter /opt/extensions/lambda-adapter
 
 CMD ["app.main.handler"]
