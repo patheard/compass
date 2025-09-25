@@ -13,6 +13,7 @@ from app.database.models.evidence import Evidence
 from app.database.models.controls import Control
 from app.database.models.assessments import SecurityAssessment
 from app.database.models.job_templates import JobTemplate
+from app.job_executions.services import JobExecutionService
 from app.assessments.base import BaseService
 from app.evidence.validation import (
     EvidenceCreateRequest,
@@ -177,6 +178,7 @@ class EvidenceService(BaseService[Evidence]):
 
         try:
             # TODO: If evidence has a file, delete it from S3 storage
+            JobExecutionService.delete_executions_by_evidence(evidence_id, user_id)
             evidence.delete()
         except Exception as e:
             raise HTTPException(

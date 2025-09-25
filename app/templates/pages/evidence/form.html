@@ -28,7 +28,7 @@
         label="{{ _('Evidence type') }}"
         default-value="Select option."
         required="true">
-        <option value="automated_collection" {% if (is_edit and evidence.evidence_type == 'automated_collection') or (evidence_type == 'automated_collection') %}selected{% endif %}>{{ _("Automated Collection") }}</option>
+        <option value="automated_collection" {% if (is_edit and evidence.evidence_type == 'automated_collection') or (evidence_type == 'automated_collection') %}selected{% endif %}>{{ _("automated_collection") }}</option>
         <option value="document" {% if (is_edit and evidence.evidence_type == 'document') or (evidence_type == 'document') %}selected{% endif %}>{{ _("Document") }}</option>
         <option value="screenshot" {% if (is_edit and evidence.evidence_type == 'screenshot') or (evidence_type == 'screenshot') %}selected{% endif %}>{{ _("Screenshot") }}</option>
         <option value="other" {% if (is_edit and evidence.evidence_type == 'other') or (evidence_type == 'other') %}selected{% endif %}>{{ _("Other") }}</option>
@@ -48,7 +48,7 @@
             name="job_template_id"
             select-id="job_template_id"
             label="{{ _('Evidence job') }}"
-            default-value="Select template.">
+            default-value="Select a job.">
             {% if job_templates %}
                 {% for template in job_templates %}
                     <option value="{{ template.template_id }}" 

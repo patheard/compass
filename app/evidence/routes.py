@@ -415,9 +415,6 @@ async def delete_evidence(
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
     try:
-        JobExecutionService.delete_executions_by_evidence(
-            evidence_id, current_user.user_id
-        )
         evidence_service.delete_evidence(evidence_id, current_user.user_id)
 
         # Clear CSRF token
