@@ -488,3 +488,15 @@ msgstr "collecte_automatisée"
 #~ msgid "Report"
 #~ msgstr "Rapport"
 
+msgid "Page Not Found"
+msgstr "Page non trouvée"
+
+msgid "The page you are looking for does not exist or has been moved."
+msgstr "La page que vous recherchez n'existe pas ou a été déplacée."
+
+msgid "You can return to the home page or try searching for what you need."
+msgstr "Vous pouvez retourner à la page d'accueil ou essayer de rechercher ce dont vous avez besoin."
+
+msgid "Go to Home"
+msgstr "Aller à l'accueil"
+

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<gcds-heading tag="h1">{{ _('Page not found') }}</gcds-heading>
+
+<gcds-notice type="danger" notice-title-tag="h2" notice-title="404">
+  <gcds-text>
+    {{ _('The page you are looking for does not exist or has been moved.') }}
+  </gcds-text>
+</gcds-notice>
+
+<gcds-button href="/" type="link" button-role="primary" class="mt-600">
+  {{ _('Home') }}
+</gcds-button>
+
+{% endblock %}

@@ -16,7 +16,11 @@ class LocalizedTemplates:
         self.templates = Jinja2Templates(directory=directory)
 
     def TemplateResponse(
-        self, request: Request, name: str, context: Dict[str, Any]
+        self,
+        request: Request,
+        name: str,
+        context: Dict[str, Any],
+        status_code: int = 200,
     ) -> HTMLResponse:
         """Create a template response with automatic localization."""
         # Get user's preferred language from request state (set by middleware)
@@ -29,4 +33,4 @@ class LocalizedTemplates:
         context["version"] = os.getenv("APP_VERSION", "1.0.0")
 
         # The translation function is now available globally in templates as '_'
-        return self.templates.TemplateResponse(name, context)
+        return self.templates.TemplateResponse(name, context, status_code=status_code)

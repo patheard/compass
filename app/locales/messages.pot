@@ -419,3 +419,19 @@ msgstr ""
 msgid "Scan Type"
 msgstr ""
 
+#: app/templates/pages/404.html:4
+msgid "Page Not Found"
+msgstr ""
+
+#: app/templates/pages/404.html:6
+msgid "The page you are looking for does not exist or has been moved."
+msgstr ""
+
+#: app/templates/pages/404.html:9
+msgid "You can return to the home page or try searching for what you need."
+msgstr ""
+
+#: app/templates/pages/404.html:12
+msgid "Go to Home"
+msgstr ""
+
