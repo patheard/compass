@@ -51,12 +51,6 @@ class EvidenceCreateRequest(BaseInputValidator):
         valid_types = {
             "document",
             "screenshot",
-            "policy",
-            "procedure",
-            "log",
-            "configuration",
-            "certificate",
-            "report",
             "automated_collection",
             "other",
         }
@@ -143,12 +137,6 @@ class EvidenceUpdateRequest(BaseInputValidator):
             valid_types = {
                 "document",
                 "screenshot",
-                "policy",
-                "procedure",
-                "log",
-                "configuration",
-                "certificate",
-                "report",
                 "automated_collection",
                 "other",
             }

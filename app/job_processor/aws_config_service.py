@@ -19,7 +19,10 @@ class AWSConfigService:
     """Service for interacting with AWS Config service."""
 
     def __init__(
-        self, role_arn: Optional[str] = None, region: str = "ca-central-1"
+        self,
+        rules: List[Dict[str, str]],
+        role_arn: Optional[str] = None,
+        region: str = "ca-central-1",
     ) -> None:
         """
         Initialize AWS Config service.
@@ -29,6 +32,7 @@ class AWSConfigService:
             region: AWS region to scan
         """
         self.region = region
+        self.rules = rules
         self.role_arn = role_arn
         self.config_client = self._create_config_client()
 
@@ -165,7 +169,7 @@ class AWSConfigService:
         logger.info(f"Retrieved compliance status for {len(compliance_results)} rules")
         return compliance_results
 
-    def scan_config_compliance(self, rule_prefixes: List[str]) -> Dict[str, Any]:
+    def scan_config_compliance(self) -> Dict[str, Any]:
         """
         Perform a complete AWS Config compliance scan.
 
@@ -178,6 +182,7 @@ class AWSConfigService:
         try:
             # Get all config rules
             all_rules = self.get_all_config_rules()
+            rule_prefixes = [r["prefix"] for r in self.rules if "prefix" in r]
 
             # Filter rules by prefixes
             matching_rule_names = self.filter_rules_by_prefixes(
@@ -209,6 +214,19 @@ class AWSConfigService:
                 except ValueError:
                     compliance_enum = AwsComplianceType.ERROR
                 summary[compliance_enum] = summary[compliance_enum] + 1
+
+                # Enrich rule compliance with metadata from job template
+                rule_name = rule_compliance.get("config_rule_name", "")
+                rule_link = ""
+                for rule in self.rules:
+                    if rule_compliance["config_rule_name"].startswith(
+                        rule.get("prefix")
+                    ):
+                        rule_name = rule.get("prefix")
+                        rule_link = rule.get("link")
+                        break
+                rule_compliance["rule_name"] = rule_name
+                rule_compliance["rule_link"] = rule_link
 
             return {
                 "rules_scanned": matching_rule_names,

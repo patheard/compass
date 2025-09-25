@@ -9,24 +9,22 @@
 <ul class="list-disc mb-300" class="sm">
     <li>
         <strong>{{ _('Type:') }}</strong>
-        {{ _(evidence.evidence_type) }}
+        {{ _(evidence.evidence_type) }} {% if job_template %}({{ _(job_template.scan_type) }}){% endif %}
     </li>
-{% if evidence.is_automated_collection %}
-{% if job_template %}
-    <li>
-        <strong>{{ _('Job name:') }}</strong>
-        <gcds-link href="/job-templates/{{ job_template.template_id }}">{{ job_template.name }} ({{ job_template.scan_type }})</gcds-link>
-    </li>
-    <li>
-        <strong>{{ _('Description:') }}</strong>
-        {{ job_template.description }}
-    </li>
+    {% if evidence.is_automated_collection %}
     <li>
         <strong>{{ _('AWS Account ID:') }}</strong>
         {{ evidence.aws_account_id }}
     </li>
-{% endif %}
-{% endif %}
+    {% endif %}
+    <li>
+        <strong>{{ _('Assessment:') }}</strong>
+        <gcds-link href="/assessments/{{ assessment.assessment_id }}">{{ assessment.product_name }}</gcds-link>
+    </li>
+    <li>
+        <strong>{{ _('Control:') }}</strong>
+        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}">{{ control.nist_control_id }}</gcds-link>
+    </li>
 </ul>
 
 <hr class="mt-800">
@@ -41,11 +39,13 @@
             {% for rule_name, rule_details in job_execution_latest.result_data.rule_details.items() %}
                 <li class="pb-100">
                     <span class="cursor-help" title="{{ _(rule_details.compliance_type) }}">{% if rule_details.compliance_type == 'COMPLIANT' %}✅{% else %}❌{% endif %}</span>
-                    {% for rule in job_template.config.rules %}
-                        {% if rule_name.startswith(rule.prefix) %}
-                            <gcds-link href="{{ rule.link }}" target="_blank">{{ rule.prefix|replace('securityhub-','') }}</gcds-link>
-                        {% endif %}
-                    {% endfor %}
+                    {% if rule_details.rule_link %}
+                        <gcds-link href="{{ rule_details.rule_link }}" target="_blank">{{ rule_details.rule_name | replace('securityhub-','') }}</gcds-link>
+                    {% elif rule_details.rule_name %}
+                        {{ rule_details.rule_name | replace('securityhub-','') }}
+                    {% else %}
+                        {{ rule_details.config_rule_name }}
+                    {% endif %}
                 </li>
             {% endfor %}
             </ul>

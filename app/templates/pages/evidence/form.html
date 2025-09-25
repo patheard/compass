@@ -22,47 +22,32 @@
 <form method="post" id="evidence-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
-    <gcds-input
-        name="title"
-        input-id="title"
-        label="{{ _('Evidence title') }}"
-        required="true"
-        maxlength="200"
-        value="{% if is_edit %}{{ evidence.title }}{% else %}{{ title_value or '' }}{% endif %}">
-    </gcds-input>
-
-    <gcds-textarea
-        name="description"
-        textarea-id="description"
-        label="{{ _('Evidence description') }}"
-        required="true"
-        maxlength="2000"
-        value="{% if is_edit %}{{ evidence.description }}{% else %}{{ description or '' }}{% endif %}">
-    </gcds-textarea>
-
     <gcds-select
         name="evidence_type"
         select-id="evidence_type"
         label="{{ _('Evidence type') }}"
         default-value="Select option."
         required="true">
+        <option value="automated_collection" {% if (is_edit and evidence.evidence_type == 'automated_collection') or (evidence_type == 'automated_collection') %}selected{% endif %}>{{ _("Automated Collection") }}</option>
         <option value="document" {% if (is_edit and evidence.evidence_type == 'document') or (evidence_type == 'document') %}selected{% endif %}>{{ _("Document") }}</option>
         <option value="screenshot" {% if (is_edit and evidence.evidence_type == 'screenshot') or (evidence_type == 'screenshot') %}selected{% endif %}>{{ _("Screenshot") }}</option>
-        <option value="policy" {% if (is_edit and evidence.evidence_type == 'policy') or (evidence_type == 'policy') %}selected{% endif %}>{{ _("Policy") }}</option>
-        <option value="procedure" {% if (is_edit and evidence.evidence_type == 'procedure') or (evidence_type == 'procedure') %}selected{% endif %}>{{ _("Procedure") }}</option>
-        <option value="log" {% if (is_edit and evidence.evidence_type == 'log') or (evidence_type == 'log') %}selected{% endif %}>{{ _("Log File") }}</option>
-        <option value="configuration" {% if (is_edit and evidence.evidence_type == 'configuration') or (evidence_type == 'configuration') %}selected{% endif %}>{{ _("Configuration") }}</option>
-        <option value="certificate" {% if (is_edit and evidence.evidence_type == 'certificate') or (evidence_type == 'certificate') %}selected{% endif %}>{{ _("Certificate") }}</option>
-        <option value="report" {% if (is_edit and evidence.evidence_type == 'report') or (evidence_type == 'report') %}selected{% endif %}>{{ _("Report") }}</option>
-        <option value="automated_collection" {% if (is_edit and evidence.evidence_type == 'automated_collection') or (evidence_type == 'automated_collection') %}selected{% endif %}>{{ _("Automated Collection") }}</option>
         <option value="other" {% if (is_edit and evidence.evidence_type == 'other') or (evidence_type == 'other') %}selected{% endif %}>{{ _("Other") }}</option>
     </gcds-select>
 
     <section id="automated-collection-fields" class="{% if is_edit and evidence.evidence_type == 'automated_collection' %}d-block{% else %}d-none{% endif %}">
+        {% if job_templates %}
+            {% for template in job_templates %}
+                <span class="d-none" data-id="{{ template.template_id }}">
+                    <span data-name="{{ template.name }}"></span>
+                    <span data-description="{{ template.description }}"></span>
+                </span>
+            {% endfor %}
+        {% endif %}
+        
         <gcds-select
             name="job_template_id"
             select-id="job_template_id"
-            label="{{ _('Job Template') }}"
+            label="{{ _('Evidence job') }}"
             default-value="Select template.">
             {% if job_templates %}
                 {% for template in job_templates %}
@@ -84,6 +69,24 @@
             value="{% if is_edit %}{{ evidence.aws_account_id }}{% else %}{{ aws_account_id_value or '' }}{% endif %}">
         </gcds-input>
     </section>
+
+    <gcds-input
+        name="title"
+        input-id="title"
+        label="{{ _('Evidence title') }}"
+        required="true"
+        maxlength="200"
+        value="{% if is_edit %}{{ evidence.title }}{% else %}{{ title_value or '' }}{% endif %}">
+    </gcds-input>
+
+    <gcds-textarea
+        name="description"
+        textarea-id="description"
+        label="{{ _('Evidence description') }}"
+        required="true"
+        maxlength="2000"
+        value="{% if is_edit %}{{ evidence.description }}{% else %}{{ description or '' }}{% endif %}">
+    </gcds-textarea>
 
 
     <gcds-button type="submit" button-role="primary" class="mt-300">

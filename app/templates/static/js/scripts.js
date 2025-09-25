@@ -91,6 +91,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (evidenceForm) {
         evidenceForm.addEventListener('change', updateEvidenceAutomatedCollection);
     }
+    // Also listen for job template changes to autofill title/description
+    const jobTemplateSelect = document.querySelector('[name="job_template_id"]');
+    if (jobTemplateSelect) {
+        jobTemplateSelect.addEventListener('change', updateEvidenceWithJobTemplate);
+    }
 
     // Initialize compliance chart if present
     initComplianceChart();
@@ -110,6 +115,37 @@ function updateEvidenceAutomatedCollection() {
     const isAuto = value === 'automated_collection';
 
     automatedCollectionFields.className = isAuto ? 'd-block' : 'd-none';
+}
+
+/**
+ * When a job template is selected, find the hidden div[data-id] with the same id
+ * and copy its data-name and data-description into the title and description fields.
+ */
+function updateEvidenceWithJobTemplate(event) {
+    // `this` may be the select element if called with .call
+    const select = event && event.target ? event.target : this;
+    if (!select) return;
+
+    const selectedValue = select.value;
+    if (!selectedValue) return;
+
+    // Find the hidden container with matching data-id
+    const templateDiv = document.querySelector('#automated-collection-fields')
+        ? document.querySelector('#automated-collection-fields').querySelector('[data-id="' + selectedValue + '"]')
+        : document.querySelector('[data-id="' + selectedValue + '"]');
+
+    if (!templateDiv) return;
+
+    const nameSpan = templateDiv.querySelector('[data-name]');
+    const descSpan = templateDiv.querySelector('[data-description]');
+
+    const titleInput = document.querySelector('[name="title"]');
+    const descriptionTextarea = document.querySelector('[name="description"]');
+
+    if (nameSpan && descSpan) {
+        titleInput.value = nameSpan.getAttribute('data-name');
+        descriptionTextarea.value = descSpan.getAttribute('data-description');
+    }
 }
 
 /**
