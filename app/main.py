@@ -112,7 +112,7 @@ async def root(
             "pages/home.html",
             {
                 "request": request,
-                "title": "welcome_title",
+                "title": "Home",
                 "user": current_user,
                 "assessments": assessments,
             },
@@ -122,7 +122,7 @@ async def root(
         return templates.TemplateResponse(
             request,
             "pages/login.html",
-            {"request": request, "title": "welcome_title", "user": None},
+            {"request": request, "title": "Home", "user": None},
         )
 
 
@@ -134,7 +134,7 @@ async def login_page(
     return templates.TemplateResponse(
         request,
         "pages/login.html",
-        {"request": request, "title": "login_title", "user": current_user},
+        {"request": request, "title": "Login", "user": current_user},
     )
 
 
@@ -146,7 +146,7 @@ async def home_page(
     return templates.TemplateResponse(
         request,
         "pages/home.html",
-        {"request": request, "title": "welcome_title", "user": current_user},
+        {"request": request, "title": "Home", "user": current_user},
     )
 
 

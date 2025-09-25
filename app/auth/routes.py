@@ -33,10 +33,6 @@ def get_localized_template_response(
     # Get translation function
     _ = get_translation_function(language)
 
-    # Update context with translation function if title needs translation
-    if context.get("title") == "Welcome to Compass":
-        context["title"] = _("welcome_title")
-
     return templates.TemplateResponse(template_name, context)
 
 

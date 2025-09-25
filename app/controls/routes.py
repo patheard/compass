@@ -165,7 +165,7 @@ async def control_detail_page(
             "pages/controls/detail.html",
             {
                 "request": request,
-                "title": "Control",
+                "title": "Control details",
                 "user": current_user,
                 "assessment": assessment,
                 "control": control,

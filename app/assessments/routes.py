@@ -31,7 +31,7 @@ async def create_assessment_page(
         "pages/assessments/form.html",
         {
             "request": request,
-            "title": "create_assessment_title",
+            "title": "Create assessment",
             "user": current_user,
             "csrf_token": csrf_token,
             "is_edit": False,
@@ -85,7 +85,7 @@ async def create_assessment(
             "pages/assessments/form.html",
             {
                 "request": request,
-                "title": "create_assessment_title",
+                "title": "Create assessment",
                 "user": current_user,
                 "csrf_token": csrf_token,
                 "is_edit": False,
@@ -123,7 +123,7 @@ async def assessment_detail_page(
             "pages/assessments/detail.html",
             {
                 "request": request,
-                "title": "assessment_detail_title",
+                "title": "Assessment details",
                 "user": current_user,
                 "assessment": assessment,
                 "controls": controls,
@@ -160,7 +160,7 @@ async def edit_assessment_page(
             "pages/assessments/form.html",
             {
                 "request": request,
-                "title": "edit_assessment_title",
+                "title": "Edit assessment",
                 "user": current_user,
                 "csrf_token": csrf_token,
                 "is_edit": True,
@@ -231,7 +231,7 @@ async def update_assessment(
                 "pages/assessments/form.html",
                 {
                     "request": request,
-                    "title": "edit_assessment_title",
+                    "title": "Edit assessment",
                     "user": current_user,
                     "csrf_token": csrf_token,
                     "is_edit": True,

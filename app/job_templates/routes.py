@@ -49,6 +49,7 @@ async def list_templates(
             request,
             "pages/job_templates/list.html",
             {
+                "title": "Job templates",
                 "request": request,
                 "templates": serialized_templates,
                 "user": current_user,
@@ -77,6 +78,7 @@ async def create_template_form(
         request,
         "pages/job_templates/form.html",
         {
+            "title": "Create template",
             "request": request,
             "scan_types": scan_types,
             "user": current_user,
@@ -165,6 +167,7 @@ async def get_template(
             request,
             "pages/job_templates/detail.html",
             {
+                "title": "Job template details",
                 "request": request,
                 "template": template_data,
                 "user": current_user,
@@ -216,6 +219,7 @@ async def edit_template_form(
             request,
             "pages/job_templates/form.html",
             {
+                "title": "Edit job template",
                 "request": request,
                 "template": template_data,
                 "scan_types": scan_types,

@@ -12,6 +12,7 @@ from app.job_templates.services import JobTemplateService
 from app.job_executions.services import JobExecutionService
 from app.assessments.base import CSRFTokenManager
 
+
 router = APIRouter(
     prefix="/assessments/{assessment_id}/controls/{control_id}/evidence",
     tags=["evidence"],
@@ -203,17 +204,18 @@ async def evidence_detail_page(
             if evidence.job_template_id:
                 job_template = JobTemplateService.get_template(evidence.job_template_id)
 
-            # Get scan execution history
+            # Get scan execution history and sort in newest first (reverse chronological)
             job_executions = JobExecutionService.get_evidence_executions(
                 evidence.evidence_id, current_user.user_id
             )
+            job_executions.sort(key=lambda x: x.created_at, reverse=True)
 
         return templates.TemplateResponse(
             request,
             "pages/evidence/detail.html",
             {
                 "request": request,
-                "title": "Evidence",
+                "title": "Evidence details",
                 "user": current_user,
                 "assessment": assessment,
                 "control": control,
@@ -221,6 +223,7 @@ async def evidence_detail_page(
                 "csrf_token": csrf_token,
                 "job_template": job_template,
                 "job_executions": job_executions,
+                "job_execution_latest": job_executions[0] if job_executions else None,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {
@@ -412,8 +415,10 @@ async def delete_evidence(
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
     try:
+        JobExecutionService.delete_executions_by_evidence(
+            evidence_id, current_user.user_id
+        )
         evidence_service.delete_evidence(evidence_id, current_user.user_id)
-        JobExecutionService.delete_executions_by_evidence(evidence_id, current_user.user_id)
 
         # Clear CSRF token
         request.session.pop("csrf_token", None)
