@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-18 15:06-0400\n"
+"POT-Creation-Date: 2025-09-25 12:20-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,40 +17,52 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app/auth/routes.py:38
-msgid "welcome_title"
-msgstr ""
-
-#: app/templates/base.html:22
-msgid "sign_out"
+#: app/templates/base.html:6 app/templates/pages/home.html:5
+#: app/templates/pages/login.html:5
+msgid "Compass"
 msgstr ""
 
 #: app/templates/base.html:24
+msgid "sign_out"
+msgstr ""
+
+#: app/templates/base.html:26
 msgid "sign_in"
 msgstr ""
 
-#: app/templates/base.html:41
+#: app/templates/base.html:43
 msgid "version"
 msgstr ""
 
-#: app/templates/pages/home.html:5 app/templates/pages/login.html:5
-msgid "Compass"
+#: app/templates/base.html:51
+msgid "Are you sure you want to continue? This action cannot be undone."
+msgstr ""
+
+#: app/templates/base.html:52
+msgid "Yes"
+msgstr ""
+
+#: app/templates/base.html:53 app/templates/pages/assessments/form.html:76
+#: app/templates/pages/controls/form.html:79
+#: app/templates/pages/evidence/form.html:100
+#: app/templates/pages/job_templates/form.html:78
+msgid "Cancel"
 msgstr ""
 
 #: app/templates/pages/home.html:7
 msgid "Create and manage security assessments for your products."
 msgstr ""
 
-#: app/templates/pages/home.html:10
-msgid "Get started"
+#: app/templates/pages/assessments/form.html:8 app/templates/pages/home.html:10
+msgid "Create assessment"
 msgstr ""
 
 #: app/templates/pages/home.html:16
 msgid "Security assessments"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:9
-#: app/templates/pages/controls/detail.html:10 app/templates/pages/home.html:23
+#: app/templates/pages/assessments/detail.html:11
+#: app/templates/pages/controls/detail.html:12 app/templates/pages/home.html:23
 msgid "Status:"
 msgstr ""
 
@@ -62,37 +74,61 @@ msgstr ""
 msgid "Login"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:13
-#: app/templates/pages/controls/detail.html:15
-#: app/templates/pages/evidence/detail.html:13
+#: app/templates/pages/assessments/detail.html:16
+msgid "AWS account ID:"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:22
+msgid "GitHub controls:"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:29
+#: app/templates/pages/assessments/detail.html:59
+#: app/templates/pages/controls/detail.html:22
+#: app/templates/pages/controls/detail.html:52
+#: app/templates/pages/evidence/detail.html:104
+#: app/templates/pages/job_templates/detail.html:26
+#: app/templates/pages/job_templates/list.html:34
 msgid "Edit"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:23
-msgid "ID"
-msgstr ""
-
-#: app/templates/pages/assessments/detail.html:24
+#: app/templates/pages/assessments/detail.html:32
+#: app/templates/pages/assessments/detail.html:60
 #: app/templates/pages/controls/detail.html:25
-msgid "Title"
-msgstr ""
-
-#: app/templates/pages/assessments/detail.html:25
-#: app/templates/pages/assessments/form.html:53
-msgid "Status"
+#: app/templates/pages/controls/detail.html:53
+#: app/templates/pages/evidence/detail.html:107
+#: app/templates/pages/job_templates/detail.html:29
+#: app/templates/pages/job_templates/list.html:37
+msgid "Delete"
 msgstr ""
 
 #: app/templates/pages/assessments/detail.html:44
-#: app/templates/pages/controls/detail.html:46
+msgid "ID"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:45
+#: app/templates/pages/controls/detail.html:37
+msgid "Title"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:46
+#: app/templates/pages/assessments/form.html:59
+msgid "Status"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:47
+#: app/templates/pages/controls/detail.html:40
+#: app/templates/pages/job_templates/list.html:21
+msgid "Actions"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:70
+#: app/templates/pages/controls/detail.html:63
 msgid "Add"
 msgstr ""
 
 #: app/templates/pages/assessments/form.html:6
 msgid "Edit assessment"
-msgstr ""
-
-#: app/templates/pages/assessments/form.html:8
-msgid "Create assessment"
 msgstr ""
 
 #: app/templates/pages/assessments/form.html:13
@@ -105,7 +141,8 @@ msgstr ""
 
 #: app/templates/pages/assessments/form.html:20
 #: app/templates/pages/controls/form.html:23
-#: app/templates/pages/evidence/form.html:23
+#: app/templates/pages/evidence/form.html:17
+#: app/templates/pages/job_templates/form.html:20
 msgid "Error"
 msgstr ""
 
@@ -113,49 +150,58 @@ msgstr ""
 msgid "Product name"
 msgstr ""
 
-#: app/templates/pages/assessments/form.html:42
+#: app/templates/pages/assessments/form.html:41
 msgid "Product description"
 msgstr ""
 
-#: app/templates/pages/assessments/form.html:56
+#: app/templates/pages/assessments/form.html:50
+msgid "AWS account ID"
+msgstr ""
+
+#: app/templates/pages/assessments/form.html:62
 msgid "Draft"
 msgstr ""
 
-#: app/templates/pages/assessments/form.html:57
+#: app/templates/pages/assessments/form.html:63
 msgid "In Progress"
 msgstr ""
 
-#: app/templates/pages/assessments/form.html:58
+#: app/templates/pages/assessments/form.html:64
+#: app/templates/pages/evidence/detail.html:73
 msgid "Completed"
 msgstr ""
 
-#: app/templates/pages/assessments/form.html:64
-#: app/templates/pages/controls/form.html:75
-#: app/templates/pages/evidence/form.html:70
+#: app/templates/pages/assessments/form.html:70
+#: app/templates/pages/controls/form.html:73
+#: app/templates/pages/evidence/form.html:94
+#: app/templates/pages/job_templates/form.html:72
 msgid "Update"
 msgstr ""
 
-#: app/templates/pages/assessments/form.html:66
-#: app/templates/pages/controls/form.html:77
-#: app/templates/pages/evidence/form.html:72
+#: app/templates/pages/assessments/form.html:72
+#: app/templates/pages/controls/form.html:75
+#: app/templates/pages/evidence/form.html:96
+#: app/templates/pages/job_templates/form.html:74
 msgid "Create"
 msgstr ""
 
-#: app/templates/pages/assessments/form.html:70
-#: app/templates/pages/controls/form.html:81
-#: app/templates/pages/evidence/form.html:76
-msgid "Cancel"
+#: app/templates/pages/controls/detail.html:16
+#: app/templates/pages/controls/form.html:19
+#: app/templates/pages/evidence/detail.html:21
+msgid "Assessment:"
 msgstr ""
 
-#: app/templates/pages/controls/detail.html:18
+#: app/templates/pages/controls/detail.html:30
+#: app/templates/pages/evidence/detail.html:35
 msgid "Evidence"
 msgstr ""
 
-#: app/templates/pages/controls/detail.html:26
+#: app/templates/pages/controls/detail.html:38
+#: app/templates/pages/job_templates/list.html:19
 msgid "Description"
 msgstr ""
 
-#: app/templates/pages/controls/detail.html:27
+#: app/templates/pages/controls/detail.html:39
 msgid "Type"
 msgstr ""
 
@@ -175,10 +221,6 @@ msgstr ""
 msgid "Fill out the form below to create a new security control."
 msgstr ""
 
-#: app/templates/pages/controls/form.html:19
-msgid "Assessment:"
-msgstr ""
-
 #: app/templates/pages/controls/form.html:34
 msgid "NIST Control ID"
 msgstr ""
@@ -187,32 +229,68 @@ msgstr ""
 msgid "Control title"
 msgstr ""
 
-#: app/templates/pages/controls/form.html:53
+#: app/templates/pages/controls/form.html:52
 msgid "Control description"
 msgstr ""
 
-#: app/templates/pages/controls/form.html:64
+#: app/templates/pages/controls/form.html:62
 msgid "Implementation status"
 msgstr ""
 
-#: app/templates/pages/controls/form.html:66
+#: app/templates/pages/controls/form.html:64
 msgid "Current implementation status of this security control"
 msgstr ""
 
-#: app/templates/pages/controls/form.html:67
+#: app/templates/pages/controls/form.html:65
 msgid "Not Started"
 msgstr ""
 
-#: app/templates/pages/controls/form.html:68
+#: app/templates/pages/controls/form.html:66
 msgid "Partially Implemented"
 msgstr ""
 
-#: app/templates/pages/controls/form.html:69
+#: app/templates/pages/controls/form.html:67
 msgid "Fully Implemented"
 msgstr ""
 
-#: app/templates/pages/evidence/detail.html:9
+#: app/templates/pages/evidence/detail.html:11
 msgid "Type:"
+msgstr ""
+
+#: app/templates/pages/evidence/detail.html:16
+msgid "AWS Account ID:"
+msgstr ""
+
+#: app/templates/pages/evidence/detail.html:25
+msgid "Control:"
+msgstr ""
+
+#: app/templates/pages/evidence/detail.html:36
+msgid "of"
+msgstr ""
+
+#: app/templates/pages/evidence/detail.html:36
+msgid "rules compliant"
+msgstr ""
+
+#: app/templates/pages/evidence/detail.html:58
+msgid "Compliance chart"
+msgstr ""
+
+#: app/templates/pages/evidence/detail.html:66
+msgid "History"
+msgstr ""
+
+#: app/templates/pages/evidence/detail.html:71
+msgid "Scan"
+msgstr ""
+
+#: app/templates/pages/evidence/detail.html:72
+msgid "Started"
+msgstr ""
+
+#: app/templates/pages/evidence/detail.html:74
+msgid "Result"
 msgstr ""
 
 #: app/templates/pages/evidence/form.html:6
@@ -224,62 +302,120 @@ msgid "Create evidence"
 msgstr ""
 
 #: app/templates/pages/evidence/form.html:13
-msgid "Update the details of your evidence."
-msgstr ""
-
-#: app/templates/pages/evidence/form.html:15
-msgid "Fill out the form below to create new evidence."
-msgstr ""
-
-#: app/templates/pages/evidence/form.html:19
 msgid "Control"
 msgstr ""
 
-#: app/templates/pages/evidence/form.html:34
-msgid "Evidence title"
-msgstr ""
-
-#: app/templates/pages/evidence/form.html:44
+#: app/templates/pages/evidence/form.html:28
 msgid "Evidence type"
 msgstr ""
 
-#: app/templates/pages/evidence/form.html:47
+#: app/templates/pages/evidence/form.html:31
+msgid "Automated Collection"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:32
 msgid "Document"
 msgstr ""
 
-#: app/templates/pages/evidence/form.html:48
+#: app/templates/pages/evidence/form.html:33
 msgid "Screenshot"
 msgstr ""
 
-#: app/templates/pages/evidence/form.html:49
-msgid "Policy"
-msgstr ""
-
-#: app/templates/pages/evidence/form.html:50
-msgid "Procedure"
-msgstr ""
-
-#: app/templates/pages/evidence/form.html:51
-msgid "Log File"
-msgstr ""
-
-#: app/templates/pages/evidence/form.html:52
-msgid "Configuration"
-msgstr ""
-
-#: app/templates/pages/evidence/form.html:53
-msgid "Certificate"
-msgstr ""
-
-#: app/templates/pages/evidence/form.html:54
-msgid "Report"
-msgstr ""
-
-#: app/templates/pages/evidence/form.html:55
+#: app/templates/pages/evidence/form.html:34
 msgid "Other"
 msgstr ""
 
-#: app/templates/pages/evidence/form.html:61
+#: app/templates/pages/evidence/form.html:50
+msgid "Evidence job"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:60
+msgid "No job templates available"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:67
+msgid "AWS Account ID"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:77
+msgid "Evidence title"
+msgstr ""
+
+#: app/templates/pages/evidence/form.html:85
 msgid "Evidence description"
+msgstr ""
+
+#: app/templates/pages/job_templates/detail.html:9
+msgid "Configuration"
+msgstr ""
+
+#: app/templates/pages/job_templates/detail.html:16
+msgid "Scan Type:"
+msgstr ""
+
+#: app/templates/pages/job_templates/detail.html:20
+msgid "Active:"
+msgstr ""
+
+#: app/templates/pages/job_templates/form.html:6
+msgid "Edit Job Template"
+msgstr ""
+
+#: app/templates/pages/job_templates/form.html:8
+msgid "Create Job Template"
+msgstr ""
+
+#: app/templates/pages/job_templates/form.html:13
+msgid "Update the details of your job template."
+msgstr ""
+
+#: app/templates/pages/job_templates/form.html:15
+msgid "Fill out the form below to create a new job template."
+msgstr ""
+
+#: app/templates/pages/job_templates/form.html:31
+msgid "Template name"
+msgstr ""
+
+#: app/templates/pages/job_templates/form.html:40
+msgid "Template description"
+msgstr ""
+
+#: app/templates/pages/job_templates/form.html:49
+msgid "Scan type"
+msgstr ""
+
+#: app/templates/pages/job_templates/form.html:63
+msgid "Configuration (JSON)"
+msgstr ""
+
+#: app/templates/pages/job_templates/form.html:66
+msgid ""
+"Enter the configuration as JSON. This will be used to configure the scan "
+"job execution."
+msgstr ""
+
+#: app/templates/pages/job_templates/form.html:92
+msgid "Invalid JSON format"
+msgstr ""
+
+#: app/templates/pages/job_templates/list.html:4
+msgid "Job templates"
+msgstr ""
+
+#: app/templates/pages/job_templates/list.html:6
+msgid "Manage automated scan job templates for evidence collection."
+msgstr ""
+
+#: app/templates/pages/job_templates/list.html:10
+msgid "Create new job template"
+msgstr ""
+
+#: app/templates/pages/job_templates/list.html:18
+msgid "Name"
+msgstr ""
+
+#: app/templates/pages/job_templates/list.html:20
+msgid "Scan Type"
 msgstr ""
 

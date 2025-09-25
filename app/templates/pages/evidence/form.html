@@ -70,11 +70,11 @@
         </gcds-input>
     </section>
 
+    <!-- TODO: set required="true" once upstream GCDS bug is fixed -->
     <gcds-input
         name="title"
         input-id="title"
         label="{{ _('Evidence title') }}"
-        required="true"
         maxlength="200"
         value="{% if is_edit %}{{ evidence.title }}{% else %}{{ title_value or '' }}{% endif %}">
     </gcds-input>
