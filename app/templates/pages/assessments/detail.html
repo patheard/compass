@@ -64,10 +64,19 @@
         </tbody>
     </table>
 </section>
-{% endif %}
 
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/new" type="link">
     {{ _('Add') }}
 </gcds-button>
+{% else %}
+<gcds-notice type="info" notice-title-tag="h2" notice-title="No controls found">
+  <gcds-text>
+    {{ _('Get started by') }} <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/new">{{ _('creating a control') }}</gcds-link> {{ _('or') }} <gcds-link href="/assessments/{{ assessment.assessment_id }}/import">{{ _('importing from GitHub') }}</gcds-link>.
+  </gcds-text>
+</gcds-notice>
+
+{% endif %}
+
+
 
 {% endblock %}

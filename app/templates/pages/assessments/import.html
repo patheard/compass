@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<gcds-heading tag="h1">{{ assessment.product_name }}</gcds-heading>
+<gcds-text>{{ _('Create your controls from a GitHub repository.  The open issue in the repo will be assumed to be NIST controls and imported.') }}</gcds-text>
+
+<gcds-stepper current-step="1" total-steps="2" tag="h2">
+  {{ _('Control import') }}
+</gcds-stepper>
+
+<form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <gcds-input
+        name="github_repo_controls"
+        input-id="github_repo_controls"
+        label="{{ _('GitHub repository URL') }}"
+        required="true"
+        maxlength="200"
+        value="{% if is_edit %}{{ assessment.github_repo_controls }}{% else %}{{ github_repo_controls or '' }}{% endif %}">
+    </gcds-input>
+
+    <gcds-input
+        name="github_pat"
+        input-id="github_pat"
+        label="{{ _('GitHub Personal Access Token') }}"
+        required="true"
+        maxlength="200"
+        hint="{{ _('This needs issue read permission for the repository and will not be saved') }}"
+        value="{% if is_edit %}{{ assessment.github_pat }}{% else %}{{ github_pat or '' }}{% endif %}">
+    </gcds-input>
+
+    <gcds-button type="submit" button-role="primary" class="mt-300">{{ _("Import") }}</gcds-button>
+    <gcds-button href="/assessments/{{ assessment.assessment_id }}" type="link" button-role="secondary">
+      {{ _('Cancel') }}
+    </gcds-button>
+
+</form>
+
+{% endblock %}

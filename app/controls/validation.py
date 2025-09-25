@@ -37,7 +37,7 @@ class ControlCreateRequest(BaseInputValidator):
         # Basic format validation for NIST controls (e.g., AC-1, AU-2.1)
         import re
 
-        pattern = r"^[A-Z]{2,3}-\d{1,2}(\.\d{1,2})?$"
+        pattern = r"^[A-Z]{2,3}-\d{1,2}([\.\(]\d{1,2}\)?)?$"
         if not re.match(pattern, value.strip().upper()):
             raise ValueError(
                 "NIST control ID must follow format like AC-1, AU-2, or SC-7.1"

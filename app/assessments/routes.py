@@ -290,3 +290,43 @@ async def delete_assessment(
         if e.status_code == 404:
             raise HTTPException(status_code=404, detail="Assessment not found")
         raise
+
+
+@router.get("/{assessment_id}/import", response_class=HTMLResponse)
+async def import_assessment_page(
+    assessment_id: str,
+    request: Request,
+    current_user: User = Depends(require_authenticated_user),
+) -> HTMLResponse:
+    """Display form to begin the GitHub repo controls import."""
+    try:
+        assessment = assessment_service.get_assessment(
+            assessment_id, current_user.user_id
+        )
+
+        # Generate CSRF token for form
+        csrf_token = csrf_manager.generate_csrf_token()
+        request.session["csrf_token"] = csrf_token
+
+        return templates.TemplateResponse(
+            request,
+            "pages/assessments/import.html",
+            {
+                "request": request,
+                "title": "Import controls",
+                "user": current_user,
+                "csrf_token": csrf_token,
+                "assessment": assessment,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                    {
+                        "label": assessment.product_name,
+                        "link": f"/assessments/{assessment.assessment_id}",
+                    },
+                ],
+            },
+        )
+    except HTTPException as e:
+        if e.status_code == 404:
+            raise HTTPException(status_code=404, detail="Assessment not found")
+        raise
