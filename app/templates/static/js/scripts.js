@@ -136,15 +136,15 @@ function updateEvidenceWithJobTemplate(event) {
 
     if (!templateDiv) return;
 
-    const nameSpan = templateDiv.querySelector('[data-name]');
-    const descSpan = templateDiv.querySelector('[data-description]');
+    const name = templateDiv.querySelector('[data-name]');
+    const desc = templateDiv.querySelector('[data-description]');
 
     const titleInput = document.querySelector('[name="title"]');
     const descriptionTextarea = document.querySelector('[name="description"]');
 
-    if (nameSpan && descSpan) {
-        titleInput.value = nameSpan.getAttribute('data-name');
-        descriptionTextarea.value = descSpan.getAttribute('data-description');
+    if (name && desc) {
+        titleInput.value = name.getAttribute('data-name');
+        descriptionTextarea.value = desc.getAttribute('data-description');
     }
 }
 

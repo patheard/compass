@@ -170,7 +170,7 @@ def process_aws_config_scan(
     if not rules:
         raise ValueError("Job template configuration has no rules defined")
 
-    region = config.get("region", "ca-central-1")    
+    region = config.get("region", "ca-central-1")
     config_service = AWSConfigService(rules=rules, role_arn=iam_role_arn, region=region)
     results = config_service.scan_config_compliance()
 
