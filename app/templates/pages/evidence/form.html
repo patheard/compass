@@ -66,7 +66,7 @@
             input-id="aws_account_id"
             label="{{ _('AWS Account ID') }}"
             maxlength="12"
-            value="{% if is_edit %}{{ evidence.aws_account_id }}{% else %}{{ aws_account_id_value or '' }}{% endif %}">
+            value="{% if is_edit %}{{ evidence.aws_account_id }}{% else %}{{ aws_account_id_value or assessment.aws_account_id }}{% endif %}">
         </gcds-input>
     </section>
 

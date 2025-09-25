@@ -30,6 +30,8 @@ class SecurityAssessment(BaseModel):
     product_name = UnicodeAttribute()
     product_description = UnicodeAttribute()
     status = UnicodeAttribute()  # draft/in_progress/completed
+    aws_account_id = UnicodeAttribute(null=True)  # Optional AWS account ID
+    github_repo_controls = UnicodeAttribute(null=True)  # Optional GitHub repo controls
 
     def __init__(
         self,
@@ -38,6 +40,8 @@ class SecurityAssessment(BaseModel):
         product_name: str = "",
         product_description: str = "",
         status: str = "draft",
+        aws_account_id: Optional[str] = None,
+        github_repo_controls: Optional[str] = None,
         **kwargs,
     ) -> None:
         """Initialize SecurityAssessment model."""
@@ -50,6 +54,8 @@ class SecurityAssessment(BaseModel):
             product_name=product_name,
             product_description=product_description,
             status=status,
+            aws_account_id=aws_account_id,
+            github_repo_controls=github_repo_controls,
             **kwargs,
         )
 
@@ -81,6 +87,8 @@ class SecurityAssessment(BaseModel):
         creator_id: str,
         product_name: str,
         product_description: str,
+        aws_account_id: Optional[str] = None,
+        github_repo_controls: Optional[str] = None,
     ) -> "SecurityAssessment":
         """Create a new security assessment."""
         assessment = cls(
@@ -88,6 +96,8 @@ class SecurityAssessment(BaseModel):
             product_name=product_name,
             product_description=product_description,
             status="draft",
+            aws_account_id=aws_account_id,
+            github_repo_controls=github_repo_controls,
         )
         assessment.save()
         return assessment

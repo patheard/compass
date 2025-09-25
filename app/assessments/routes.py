@@ -47,6 +47,8 @@ async def create_assessment(
     request: Request,
     product_name: str = Form(...),
     product_description: str = Form(...),
+    aws_account_id: str = Form(""),
+    github_repo_controls: str = Form(""),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -59,7 +61,12 @@ async def create_assessment(
     try:
         # Validate input data
         create_data = AssessmentCreateRequest(
-            product_name=product_name, product_description=product_description
+            product_name=product_name,
+            product_description=product_description,
+            aws_account_id=aws_account_id if aws_account_id.strip() else None,
+            github_repo_controls=github_repo_controls
+            if github_repo_controls.strip()
+            else None,
         )
 
         # Create assessment
@@ -92,6 +99,8 @@ async def create_assessment(
                 "error": str(e),
                 "product_name": product_name,
                 "product_description": product_description,
+                "aws_account_id": aws_account_id,
+                "github_repo_controls": github_repo_controls,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                 ],
@@ -187,6 +196,8 @@ async def update_assessment(
     product_name: str = Form(...),
     product_description: str = Form(...),
     status: str = Form(...),
+    aws_account_id: str = Form(""),
+    github_repo_controls: str = Form(""),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -202,6 +213,10 @@ async def update_assessment(
             product_name=product_name,
             product_description=product_description,
             status=status,
+            aws_account_id=aws_account_id if aws_account_id.strip() else None,
+            github_repo_controls=github_repo_controls
+            if github_repo_controls.strip()
+            else None,
         )
 
         # Update assessment

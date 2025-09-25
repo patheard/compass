@@ -21,6 +21,16 @@ class AssessmentCreateRequest(BaseInputValidator):
         max_length=2000,
         description="Description of the product being assessed",
     )
+    aws_account_id: Optional[str] = Field(
+        None,
+        max_length=12,
+        description="AWS account ID associated with this assessment",
+    )
+    github_repo_controls: Optional[str] = Field(
+        None,
+        max_length=1000,
+        description="GitHub repository for controls",
+    )
 
     @validator("product_name")
     def validate_product_name(cls, value: str) -> str:
@@ -53,6 +63,16 @@ class AssessmentUpdateRequest(BaseInputValidator):
         description="Description of the product being assessed",
     )
     status: Optional[str] = Field(None, description="Assessment status")
+    aws_account_id: Optional[str] = Field(
+        None,
+        max_length=12,
+        description="AWS account ID associated with this assessment",
+    )
+    github_repo_controls: Optional[str] = Field(
+        None,
+        max_length=1000,
+        description="GitHub repository for controls",
+    )
 
     @validator("product_name")
     def validate_product_name(cls, value: Optional[str]) -> Optional[str]:
@@ -97,6 +117,8 @@ class AssessmentResponse(BaseModel):
     product_name: str
     product_description: str
     status: str
+    aws_account_id: Optional[str] = None
+    github_repo_controls: Optional[str] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 

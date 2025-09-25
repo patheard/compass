@@ -41,6 +41,8 @@ class AssessmentService(BaseService[SecurityAssessment]):
                 creator_id=user_id,
                 product_name=data.product_name,
                 product_description=data.product_description,
+                aws_account_id=data.aws_account_id,
+                github_repo_controls=data.github_repo_controls,
             )
             return self._to_response(assessment)
         except Exception as e:
@@ -71,6 +73,12 @@ class AssessmentService(BaseService[SecurityAssessment]):
 
             if data.product_description is not None:
                 assessment.product_description = data.product_description
+
+            if data.aws_account_id is not None:
+                assessment.aws_account_id = data.aws_account_id
+
+            if data.github_repo_controls is not None:
+                assessment.github_repo_controls = data.github_repo_controls
 
             if data.status is not None:
                 assessment.update_status(data.status)
@@ -118,6 +126,8 @@ class AssessmentService(BaseService[SecurityAssessment]):
             product_name=assessment.product_name,
             product_description=assessment.product_description,
             status=assessment.status,
+            aws_account_id=assessment.aws_account_id,
+            github_repo_controls=assessment.github_repo_controls,
             created_at=assessment.created_at,
             updated_at=assessment.updated_at,
         )

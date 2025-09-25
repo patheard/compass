@@ -44,6 +44,14 @@
         value="{% if is_edit %}{{ assessment.product_description }}{% else %}{{ product_description or '' }}{% endif %}">
     </gcds-textarea>
 
+    <gcds-input
+        name="aws_account_id"
+        input-id="aws_account_id"
+        label="{{ _('AWS account ID') }}"
+        maxlength="12"
+        value="{% if is_edit %}{{ assessment.aws_account_id or '' }}{% else %}{{ aws_account_id or '' }}{% endif %}">
+    </gcds-input>
+
     {% if is_edit %}
         <gcds-select
             name="status"
