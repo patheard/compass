@@ -85,6 +85,60 @@ class ControlService(BaseService[Control]):
                 status_code=500, detail=f"Failed to create control: {str(e)}"
             )
 
+    def create_controls_from_github(
+        self, assessment_id: str, user_id: str, controls_data: List[dict]
+    ) -> dict:
+        """Create multiple controls from GitHub issue data."""
+        # Validate assessment access
+        self.validate_assessment_access(assessment_id, user_id)
+
+        created_controls = []
+        skipped_controls = []
+        errors = []
+
+        for control_data in controls_data:
+            try:
+                # Check for duplicate NIST control ID in assessment
+                existing_control = Control.get_by_assessment_and_nist_id(
+                    assessment_id, control_data["nist_control_id"]
+                )
+                if existing_control:
+                    skipped_controls.append(
+                        {
+                            "nist_control_id": control_data["nist_control_id"],
+                            "reason": "Already exists in assessment",
+                        }
+                    )
+                    continue
+
+                # Create control
+                control = Control.create_control(
+                    assessment_id=assessment_id,
+                    nist_control_id=control_data["nist_control_id"],
+                    control_title=control_data["control_title"],
+                    control_description=control_data["control_description"],
+                )
+                created_controls.append(self._to_response(control))
+
+            except Exception as e:
+                errors.append(
+                    {
+                        "nist_control_id": control_data.get(
+                            "nist_control_id", "Unknown"
+                        ),
+                        "error": str(e),
+                    }
+                )
+
+        return {
+            "created_count": len(created_controls),
+            "skipped_count": len(skipped_controls),
+            "error_count": len(errors),
+            "created_controls": created_controls,
+            "skipped_controls": skipped_controls,
+            "errors": errors,
+        }
+
     def get_control(self, control_id: str, user_id: str) -> ControlResponse:
         """Get a specific control by ID."""
         control = self.get_entity_or_404(control_id, user_id)

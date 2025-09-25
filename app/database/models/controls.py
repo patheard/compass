@@ -86,7 +86,35 @@ class Control(BaseModel):
     @classmethod
     def get_by_assessment(cls, assessment_id: str) -> List["Control"]:
         """Get all controls for an assessment."""
-        return list(cls.assessment_index.query(assessment_id))
+        controls = list(cls.assessment_index.query(assessment_id))
+
+        def sort_key(control: "Control") -> tuple:
+            """Sort key for NIST control IDs (e.g., AU-2, AU-2(3), AU-10)."""
+            nist_id = control.nist_control_id
+
+            # Split on '-' to get family (e.g., 'AU') and number part (e.g., '2(3)')
+            if "-" in nist_id:
+                family, number_part = nist_id.split("-", 1)
+            else:
+                return (nist_id, 0, 0)  # Fallback for malformed IDs
+
+            base_num_str = number_part
+            enhancement_num_str = "0"
+            if "(" in number_part:
+                base_num_str, enhancement_part = number_part.split("(", 1)
+                enhancement_num_str = enhancement_part.rstrip(")")
+            elif "." in number_part:
+                base_num_str, enhancement_num_str = number_part.split(".", 1)
+            try:
+                base_num = int(base_num_str)
+                enhancement_num = int(enhancement_num_str)
+            except ValueError:
+                base_num = 0
+                enhancement_num = 0
+
+            return (family, base_num, enhancement_num)
+
+        return sorted(controls, key=sort_key)
 
     @classmethod
     def get_by_assessment_and_nist_id(

@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from app.auth.middleware import require_authenticated_user
 from app.database.models.users import User
 from app.templates.utils import LocalizedTemplates
-from app.assessments.services import AssessmentService
+from app.assessments.services import AssessmentService, GitHubService
 from app.assessments.validation import AssessmentCreateRequest, AssessmentUpdateRequest
 from app.assessments.base import CSRFTokenManager
 from app.controls.services import ControlService
@@ -330,3 +330,103 @@ async def import_assessment_page(
         if e.status_code == 404:
             raise HTTPException(status_code=404, detail="Assessment not found")
         raise
+
+
+@router.post("/{assessment_id}/import", response_class=HTMLResponse)
+async def import_controls_from_github(
+    assessment_id: str,
+    request: Request,
+    github_repo_controls: str = Form(...),
+    github_pat: str = Form(...),
+    csrf_token: str = Form(...),
+    current_user: User = Depends(require_authenticated_user),
+) -> HTMLResponse:
+    """Handle GitHub repository controls import."""
+    # Validate CSRF token
+    session_token = request.session.get("csrf_token")
+    if not csrf_manager.validate_csrf_token(session_token, csrf_token):
+        raise HTTPException(status_code=403, detail="Invalid CSRF token")
+
+    try:
+        # Get assessment
+        assessment = assessment_service.get_assessment(
+            assessment_id, current_user.user_id
+        )
+
+        # Initialize GitHub service with PAT
+        github_service = GitHubService(github_pat)
+
+        # Import issues as control data
+        controls_data = github_service.import_issues_as_controls(github_repo_controls)
+
+        if not controls_data:
+            raise HTTPException(
+                status_code=400, detail="No valid issues found in the repository"
+            )
+
+        # Create controls from GitHub issues
+        result = control_service.create_controls_from_github(
+            assessment_id, current_user.user_id, controls_data
+        )
+
+        # Clear CSRF token
+        request.session.pop("csrf_token", None)
+
+        # Generate new CSRF token for results page
+        csrf_token = csrf_manager.generate_csrf_token()
+        request.session["csrf_token"] = csrf_token
+
+        return templates.TemplateResponse(
+            request,
+            "pages/assessments/import_results.html",
+            {
+                "request": request,
+                "title": "Import results",
+                "user": current_user,
+                "assessment": assessment,
+                "csrf_token": csrf_token,
+                "result": result,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                    {
+                        "label": assessment.product_name,
+                        "link": f"/assessments/{assessment.assessment_id}",
+                    },
+                ],
+            },
+        )
+
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        # Handle other errors and redisplay form
+        try:
+            assessment = assessment_service.get_assessment(
+                assessment_id, current_user.user_id
+            )
+            csrf_token = csrf_manager.generate_csrf_token()
+            request.session["csrf_token"] = csrf_token
+
+            return templates.TemplateResponse(
+                request,
+                "pages/assessments/import.html",
+                {
+                    "request": request,
+                    "title": "Import controls",
+                    "user": current_user,
+                    "csrf_token": csrf_token,
+                    "assessment": assessment,
+                    "error": str(e),
+                    "github_repo_controls": github_repo_controls,
+                    "breadcrumbs": [
+                        {"label": "Compass", "link": "/"},
+                        {
+                            "label": assessment.product_name,
+                            "link": f"/assessments/{assessment.assessment_id}",
+                        },
+                    ],
+                },
+            )
+        except Exception:
+            raise HTTPException(status_code=404, detail="Assessment not found")

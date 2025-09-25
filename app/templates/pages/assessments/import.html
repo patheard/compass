@@ -4,9 +4,17 @@
 <gcds-heading tag="h1">{{ assessment.product_name }}</gcds-heading>
 <gcds-text>{{ _('Create your controls from a GitHub repository.  The open issue in the repo will be assumed to be NIST controls and imported.') }}</gcds-text>
 
+<hr class="mt-600 mb-600">
+
 <gcds-stepper current-step="1" total-steps="2" tag="h2">
-  {{ _('Control import') }}
+  {{ _('Setup import') }}
 </gcds-stepper>
+
+{% if error %}
+<gcds-error-message title="{{ _('Error') }}" class="mb-400">
+  {{ error }}
+</gcds-error-message>
+{% endif %}
 
 <form method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

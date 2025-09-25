@@ -14,6 +14,10 @@
     border-bottom-width: 2px;
 }
 
+.nowrap {
+    white-space: nowrap;
+}
+
 /* Confirmation Modal */
 .modal-overlay {
     display: none;

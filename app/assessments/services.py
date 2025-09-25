@@ -1,7 +1,11 @@
 """Assessment service layer for business logic and data operations."""
 
-from typing import List
+import re
+from typing import List, Dict, Any
 from fastapi import HTTPException
+from github import Github
+from github.Repository import Repository
+from github.Issue import Issue
 from app.database.models.assessments import SecurityAssessment
 from app.database.models.controls import Control
 from app.database.models.evidence import Evidence
@@ -131,3 +135,150 @@ class AssessmentService(BaseService[SecurityAssessment]):
             created_at=assessment.created_at,
             updated_at=assessment.updated_at,
         )
+
+
+class GitHubService:
+    """Service for interacting with GitHub API to import issues."""
+
+    def __init__(self, access_token: str):
+        """Initialize GitHub client with access token."""
+        self.github = Github(access_token)
+
+    def get_repository(self, repo_url: str) -> Repository:
+        """Extract repository from URL and return GitHub repository object."""
+        # Extract owner/repo from various GitHub URL formats
+        patterns = [
+            r"https://github\.com/([^/]+)/([^/]+?)(?:\.git)?/?$",
+            r"git@github\.com:([^/]+)/([^/]+?)(?:\.git)?/?$",
+            r"([^/]+)/([^/]+)$",  # Direct owner/repo format
+        ]
+
+        repo_path = None
+        for pattern in patterns:
+            match = re.match(pattern, repo_url.strip())
+            if match:
+                owner, repo_name = match.groups()
+                repo_path = f"{owner}/{repo_name}"
+                break
+
+        if not repo_path:
+            raise ValueError(f"Invalid GitHub repository URL format: {repo_url}")
+
+        try:
+            return self.github.get_repo(repo_path)
+        except Exception as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Failed to access repository {repo_path}: {str(e)}",
+            )
+
+    def get_open_issues(self, repo: Repository) -> List[Issue]:
+        """Get all open issues from a repository with pagination."""
+        try:
+            issues = []
+            # Get open issues, paginated automatically by PyGithub
+            for issue in repo.get_issues(state="open"):
+                # Skip pull requests (they appear as issues in GitHub API)
+                if not issue.pull_request:
+                    issues.append(issue)
+            return issues
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"Failed to retrieve issues: {str(e)}"
+            )
+
+    def parse_issue_to_control(self, issue: Issue) -> Dict[str, Any]:
+        """Parse a GitHub issue into control data."""
+        # Parse title: "NIST-ID: Control Title"
+        title_parts = issue.title.split(":", 1)
+        if len(title_parts) != 2:
+            raise ValueError(f"Issue title format invalid: {issue.title}")
+
+        nist_control_id = title_parts[0].strip()
+        control_title = title_parts[1].strip()
+
+        # Parse body for control description sections
+        control_description = self._parse_control_description(issue.body or "")
+
+        return {
+            "nist_control_id": nist_control_id,
+            "control_title": control_title,
+            "control_description": control_description,
+            "github_issue_number": issue.number,
+            "github_issue_url": issue.html_url,
+        }
+
+    def _parse_control_description(self, body: str) -> str:
+        """Extract Control Definition, Class, and Supplemental Guidance from issue body."""
+        if not body:
+            return ""
+
+        # Sections to extract
+        sections = {
+            "Control Definition": None,
+            "Class": None,
+            "Supplemental Guidance": None,
+        }
+
+        # Split body into lines for processing
+        lines = body.split("\n")
+        current_section = None
+        section_content = []
+
+        for line in lines:
+            line = line.strip()
+
+            # Check if this line is a section header
+            for section_name in sections.keys():
+                if line.lower().startswith(section_name.lower()):
+                    # Save previous section if exists
+                    if current_section and section_content:
+                        sections[current_section] = "\n".join(section_content).strip()
+
+                    # Start new section
+                    current_section = section_name
+                    section_content = []
+
+                    # Check if there's content after the colon on the same line
+                    if ":" in line:
+                        after_colon = line.split(":", 1)[1].strip()
+                        if after_colon:
+                            section_content.append(after_colon)
+                    break
+            else:
+                # Add line to current section if we're in one
+                if current_section and line:
+                    section_content.append(line)
+
+        # Save the last section
+        if current_section and section_content:
+            sections[current_section] = "\n".join(section_content).strip()
+
+        # Build description from extracted sections
+        description_parts = []
+        for section_name, content in sections.items():
+            if content:
+                description_parts.append(f"**{section_name}**\n{content}")
+
+        return "\n\n".join(description_parts) if description_parts else body
+
+    def import_issues_as_controls(self, repo_url: str) -> List[Dict[str, Any]]:
+        """Import all open issues from a repository as control data."""
+        repo = self.get_repository(repo_url)
+        issues = self.get_open_issues(repo)
+
+        controls_data = []
+        errors = []
+
+        for issue in issues:
+            try:
+                control_data = self.parse_issue_to_control(issue)
+                controls_data.append(control_data)
+            except ValueError as e:
+                errors.append(f"Issue #{issue.number}: {str(e)}")
+
+        if errors:
+            # Log errors but don't fail completely if some issues are parseable
+            print(f"Errors parsing some issues: {errors}")
+
+        return controls_data

@@ -15,15 +15,16 @@
         {{ _("Fill out the form below to create a new security control.") }}
     {% endif %}
 </gcds-text>
-<gcds-text text-role="secondary" size="small">
-    <em>{{ _('Assessment:') }} {{ assessment.product_name }}</em>
-</gcds-text>
 
 {% if error %}
 <gcds-notice type="danger" notice-title-tag="h2" notice-title="{{ _('Error') }}">
   <gcds-text>{{ error }}</gcds-text>
 </gcds-notice>
 {% endif %}
+
+<gcds-text>
+    <strong>{{ _("Assessment") }}</strong><br>{{ assessment.product_name }}
+</gcds-text>
 
 <form method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

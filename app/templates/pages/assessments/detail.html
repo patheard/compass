@@ -34,7 +34,10 @@
 
 <hr class="mt-800 mb-600">
 
-<gcds-heading tag="h2">{{ 'Security controls' }}</gcds-heading>
+<gcds-heading tag="h2">
+    {{ 'Security controls' }}
+    {% if controls %} ({{ controls|length }}) {% endif %}
+</gcds-heading>
 
 {% if controls %}
 <section class="table-container mb-300">
@@ -50,7 +53,7 @@
         <tbody>
             {% for control in controls %}
                 <tr>
-                    <td>
+                    <td class="nowrap">
                         <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}">{{ control.nist_control_id }}</gcds-link>
                     </td>
                     <td>{{ control.control_title }}</td>

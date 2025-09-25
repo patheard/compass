@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<gcds-heading tag="h1">{{ assessment.product_name }}</gcds-heading>
+<gcds-text>{{ _('Import completed. Review the results below.') }}</gcds-text>
+
+<hr class="mt-600 mb-600">
+
+<gcds-stepper current-step="2" total-steps="2" tag="h2">
+  {{ _('Import results') }}
+</gcds-stepper>
+
+<div class="mt-400">
+  <gcds-details details-title="{{ _('Summary') }}">
+    <ul class="list-disc pl-500">
+      <li><strong>{{ result.created_count }}</strong> {{ _('controls created') }}</li>
+      {% if result.skipped_count > 0 %}
+        <li><strong>{{ result.skipped_count }}</strong> {{ _('controls skipped (already exist)') }}</li>
+      {% endif %}
+      {% if result.error_count > 0 %}
+        <li><strong>{{ result.error_count }}</strong> {{ _('controls failed to import') }}</li>
+      {% endif %}
+    </ul>
+  </gcds-details>
+</div>
+
+{% if result.created_controls %}
+<div class="mt-600">
+  <gcds-heading tag="h3">{{ _('Successfully created controls') }}</gcds-heading>
+  <div class="mt-300">
+    {% for control in result.created_controls %}
+      <gcds-card card-title="{{ control.nist_control_id }}: {{ control.control_title }}" class="mb-300">
+        <p class="text-sm text-gray-600 truncate">{{ control.control_description[:200] }}{% if control.control_description|length > 200 %}...{% endif %}</p>
+      </gcds-card>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if result.skipped_controls %}
+<div class="mt-600">
+  <gcds-heading tag="h3">{{ _('Skipped controls') }}</gcds-heading>
+  <div class="mt-300">
+    {% for control in result.skipped_controls %}
+      <gcds-card card-title="{{ control.nist_control_id }}" class="mb-300">
+        <p class="text-sm text-yellow-600">{{ control.reason }}</p>
+      </gcds-card>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if result.errors %}
+<div class="mt-600">
+  <gcds-heading tag="h3">{{ _('Errors') }}</gcds-heading>
+  <div class="mt-300">
+    {% for error in result.errors %}
+      <gcds-card card-title="{{ error.nist_control_id }}" class="mb-300">
+        <p class="text-sm text-red-600">{{ error.error }}</p>
+      </gcds-card>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="mt-600">
+  <gcds-button href="/assessments/{{ assessment.assessment_id }}" type="link" button-role="primary">
+    {{ _('View assessment') }}
+  </gcds-button>
+  <gcds-button href="/assessments/{{ assessment.assessment_id }}/import" type="link" button-role="secondary">
+    {{ _('Import more controls') }}
+  </gcds-button>
+</div>
+
+{% endblock %}
