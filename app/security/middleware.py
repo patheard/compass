@@ -33,11 +33,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Content Security Policy - Prevent XSS
         csp_policy = (
             "default-src 'self'; "
-            "script-src 'self' https://cdn.design-system.alpha.canada.ca; "
+            "script-src 'self' https://cdn.design-system.alpha.canada.ca https://cdn.jsdelivr.net/npm/chart.js@4.5.0/; "
             "style-src 'self' https://cdn.design-system.alpha.canada.ca https://fonts.googleapis.com/; "
             "img-src 'self' data:; "
             "font-src 'self' https://cdn.design-system.alpha.canada.ca https://fonts.gstatic.com; "
-            "connect-src 'self' https://cdn.design-system.alpha.canada.ca; "
+            "connect-src 'self' https://cdn.design-system.alpha.canada.ca https://cdn.jsdelivr.net/npm/chart.js@4.5.0/; "
             "frame-src 'self'; "
             "object-src 'none'; "
             "base-uri 'self'; "

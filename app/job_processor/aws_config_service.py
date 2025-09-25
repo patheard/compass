@@ -6,6 +6,12 @@ from typing import Dict, List, Optional, Any
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
+from app.job_processor.constants import (
+    empty_compliance_summary,
+    AwsComplianceType,
+    AwsComplianceSummary,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -182,13 +188,7 @@ class AWSConfigService:
                 logger.warning(f"No rules found matching prefixes: {rule_prefixes}")
                 return {
                     "rules_scanned": [],
-                    "compliance_summary": {
-                        "COMPLIANT": 0,
-                        "NON_COMPLIANT": 0,
-                        "NOT_APPLICABLE": 0,
-                        "INSUFFICIENT_DATA": 0,
-                        "ERROR": 0,
-                    },
+                    "compliance_summary": empty_compliance_summary(),
                     "rule_details": {},
                 }
 
@@ -198,18 +198,17 @@ class AWSConfigService:
             )
 
             # Generate summary using uppercase AWS compliance types as keys.
-            summary = {
-                "COMPLIANT": 0,
-                "NON_COMPLIANT": 0,
-                "NOT_APPLICABLE": 0,
-                "INSUFFICIENT_DATA": 0,
-                "ERROR": 0,
-            }
+            summary: AwsComplianceSummary = empty_compliance_summary()
 
             for rule_compliance in compliance_results.values():
-                compliance_type = rule_compliance.get("compliance_type", "")
-                key = compliance_type if compliance_type in summary else "ERROR"
-                summary[key] = summary[key] + 1
+                compliance_type_raw: str = rule_compliance.get(
+                    "compliance_type", AwsComplianceType.ERROR.value
+                )
+                try:
+                    compliance_enum = AwsComplianceType(compliance_type_raw)
+                except ValueError:
+                    compliance_enum = AwsComplianceType.ERROR
+                summary[compliance_enum] = summary[compliance_enum] + 1
 
             return {
                 "rules_scanned": matching_rule_names,

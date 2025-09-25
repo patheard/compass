@@ -29,48 +29,77 @@
 {% endif %}
 </ul>
 
+<hr class="mt-800">
 
-
-{% if evidence.is_automated_collection %}
 {% if job_executions %}
-<gcds-heading tag="h2" class="mb-200">{{ _('Scans') }}</gcds-heading>
-<section class="table-container mb-300">
-    <table>
-        <thead>
-            <tr>
-                <th scope="col">{{ _('Status') }}</th>
-                <th scope="col">{{ _('Started At') }}</th>
-                <th scope="col">{{ _('Completed At') }}</th>
-                <th scope="col">{{ _('Result') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for execution in job_executions %}
-            <tr>
-                <td>{{ _(execution.status) }}</td>
-                <td>{{ execution.started_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                <td>{{ execution.completed_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                <td>
-                    {% if execution.result_data and execution.result_data.rule_details %}
-                    <div class="result-rule-icons" style="display:flex;flex-wrap:wrap;gap:.25rem;">
-                        {% for rule_name, rule_info in execution.result_data.rule_details.items() %}
-                            {% set compliance = rule_info.compliance_type %}
-                            <span title="{{ rule_name }}" aria-label="{{ rule_name }}: {{ compliance }}">
-                                {% if compliance == 'COMPLIANT' %}✅{% else %}❌{% endif %}
-                            </span>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                        {{ execution.result_data }}
-                    {% endif %}
-                </td>
-            </tr>
+    <gcds-grid columns-desktop="2fr 1fr" columns-tablet="1fr 1fr" columns="1fr">
+    {% if job_execution_latest %}
+        <section>
+            <gcds-heading tag="h2">{{ _('Evidence') }}</gcds-heading>
+            <gcds-heading tag="h3">{{ job_execution_latest.result_data.compliance_summary.COMPLIANT }} {{ _('of') }} {{ job_execution_latest.result_data.rules_scanned | length }} {{ _('rules compliant') }}</gcds-heading>
+            <ul>
+            {% for rule_name, rule_details in job_execution_latest.result_data.rule_details.items() %}
+                <li class="pb-100">
+                    <span class="cursor-help" title="{{ _(rule_details.compliance_type) }}">{% if rule_details.compliance_type == 'COMPLIANT' %}✅{% else %}❌{% endif %}</span>
+                    {% for rule in job_template.config.rules %}
+                        {% if rule_name.startswith(rule.prefix) %}
+                            <gcds-link href="{{ rule.link }}" target="_blank">{{ rule.prefix|replace('securityhub-','') }}</gcds-link>
+                        {% endif %}
+                    {% endfor %}
+                </li>
             {% endfor %}
-        </tbody>
-    </table>
-</section>
+            </ul>
+        </section>
+        <section>
+            <div class="pt-1000">
+                <canvas id="compliance-chart"
+                    {% for label, result in job_execution_latest.result_data.compliance_summary.items() %}
+                    data-{{ label }}="{{ result }}"
+                    {% endfor %}
+                    aria-label="{{ _('Compliance chart') }}"
+                    role="img">
+                </canvas>
+            </div>
+        </section>
+    {% endif %}
+    </gcds-grid>
+
+    <gcds-heading tag="h2">{{ _('History') }}</gcds-heading>
+    <section class="table-container mt-600 mb-300">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">{{ _('Scan') }}</th>
+                    <th scope="col">{{ _('Started') }}</th>
+                    <th scope="col">{{ _('Completed') }}</th>
+                    <th scope="col">{{ _('Result') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for execution in job_executions %}
+                <tr>
+                    <td>{{ _(execution.status) }}</td>
+                    <td>{{ execution.started_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{{ execution.completed_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>
+                        {% if execution.result_data and execution.result_data.rule_details %}
+                        <div>
+                            {% for rule_name, rule_info in execution.result_data.rule_details.items() %}
+                                {% set compliance = rule_info.compliance_type %}
+                                <span title="{{ rule_name }}" aria-label="{{ rule_name }}: {{ compliance }}">
+                                    {% if compliance == 'COMPLIANT' %}✅{% else %}❌{% endif %}
+                                </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
 {% endif %}
-{% endif %}
+
 
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit" type="link" button-role="primary" class="mt-300">
     {{ _("Edit") }}
