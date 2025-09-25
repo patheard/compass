@@ -1,10 +1,16 @@
 """Template utilities for localized responses."""
 
 import os
+from typing import Any, Dict
+
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
-from typing import Any, Dict
+from markupsafe import Markup
+
+import markdown as md
+import bleach
+
 from app.localization.utils import configure_jinja_i18n
 from app.localization.middleware import get_request_locale
 
@@ -14,6 +20,50 @@ class LocalizedTemplates:
 
     def __init__(self, directory: str):
         self.templates = Jinja2Templates(directory=directory)
+
+        # Register a `markdown` filter on the Jinja2 environment
+        self.templates.env.filters["markdown"] = self._markdown_to_html
+
+    def _markdown_to_html(self, text: str) -> Markup:
+        """Convert Markdown to sanitized HTML and mark it safe for Jinja2"""
+        if not text:
+            return Markup("")
+
+        # Convert markdown to HTML. Use a couple of safe extensions.
+        html = md.markdown(text, extensions=["extra", "sane_lists"])  # type: ignore[arg-type]
+
+        # Allowed tags and attributes: start from bleach defaults and extend
+        allowed_tags = set(bleach.sanitizer.ALLOWED_TAGS) | {
+            "p",
+            "pre",
+            "span",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "br",
+            "hr",
+            "code",
+            "img",
+        }
+        allowed_attrs = {
+            **bleach.sanitizer.ALLOWED_ATTRIBUTES,
+            "a": ["href", "title", "rel", "target"],
+            "img": ["src", "alt", "title"],
+            "span": ["class"],
+            "code": ["class"],
+        }
+
+        cleaned = bleach.clean(
+            html,
+            tags=list(allowed_tags),
+            attributes=allowed_attrs,
+            strip=True,
+        )
+
+        # Convert URLs into clickable links (keeps them sanitized)
+        linked = bleach.linkify(cleaned)
+        return Markup(linked)  # nosec: B704 Bandit flags use on untrusted input
 
     def TemplateResponse(
         self,

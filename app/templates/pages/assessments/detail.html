@@ -17,12 +17,6 @@
         {{ assessment.aws_account_id }}
     </li>
     {% endif %}
-    {% if assessment.github_repo_controls %}
-    <li>
-        <strong>{{ _('GitHub controls:') }}</strong>
-        <gcds-link href="{{ assessment.github_repo_controls }}" target="_blank">{{ assessment.github_repo_controls }}</gcds-link>
-    </li>
-    {% endif %}
 </ul>
 
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/edit" type="link" button-role="primary" class="mt-300">

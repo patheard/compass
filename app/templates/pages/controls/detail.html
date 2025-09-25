@@ -4,7 +4,7 @@
 <gcds-heading tag="h1">{{ control.nist_control_id }}</gcds-heading>
 <gcds-heading tag="h2">{{ control.control_title }}</gcds-heading>
 <gcds-text>
-    {{ control.control_description }}
+    {{ control.control_description | markdown }}
 </gcds-text>
 
 <ul class="list-disc mb-300" class="sm">
