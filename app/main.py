@@ -14,7 +14,6 @@ from app.assessments.services import AssessmentService
 from app.controls.routes import router as control_router
 from app.evidence.routes import router as evidence_router
 from app.job_templates.routes import router as job_templates_router
-from app.job_executions.routes import router as job_executions_router
 from app.auth.middleware import get_user_from_session
 from app.database.models.users import User
 from app.security.middleware import SecurityHeadersMiddleware
@@ -90,7 +89,6 @@ app.include_router(assessment_router)
 app.include_router(control_router)
 app.include_router(evidence_router)
 app.include_router(job_templates_router)
-app.include_router(job_executions_router)
 
 # Static files
 app.mount("/static", StaticFiles(directory="./app/templates/static"), name="static")
