@@ -93,7 +93,7 @@ app.include_router(job_templates_router)
 app.include_router(job_executions_router)
 
 # Static files
-app.mount("/static", StaticFiles(directory="./app/static"), name="static")
+app.mount("/static", StaticFiles(directory="./app/templates/static"), name="static")
 
 templates = LocalizedTemplates(directory="./app/templates")
 assessment_service = AssessmentService()
