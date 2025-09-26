@@ -197,7 +197,9 @@ class GitHubService:
         control_title = title_parts[1].strip()
 
         # Parse body for control description sections
-        control_description = self._parse_control_description(issue.body or "")
+        control_description = self._parse_control_description(
+            control_title, issue.body or ""
+        )
 
         return {
             "nist_control_id": nist_control_id,
@@ -207,7 +209,7 @@ class GitHubService:
             "github_issue_url": issue.html_url,
         }
 
-    def _parse_control_description(self, body: str) -> str:
+    def _parse_control_description(self, title: str, body: str) -> str:
         """Extract content from issue body up to Control Management section."""
         if not body:
             return ""
@@ -219,6 +221,10 @@ class GitHubService:
 
         # Remove the Control Definition header if present
         body = body.replace("# Control Definition", "")
+
+        # Remove the title prefix if present at the beginning of the body
+        pattern = r"^[^A-Za-z0-9]*" + re.escape(title) + r""
+        body = re.sub(pattern, "", body, flags=re.IGNORECASE)
 
         return body.strip()
 

@@ -13,6 +13,9 @@
 <div class="mt-400">
   <ul class="list-disc pl-500">
     <li><strong>{{ result.created_count }}</strong> {{ _('controls created') }}</li>
+    {% if result.skipped_count == 0 and result.error_count == 0 %}
+      <li>✅ {{ _('All controls imported successfully!') }}</li>
+    {% endif %}
     {% if result.skipped_count > 0 %}
       <li><strong>{{ result.skipped_count }}</strong> {{ _('controls skipped (already exist)') }}</li>
     {% endif %}
