@@ -3,7 +3,7 @@
 {% block content %}
 <gcds-heading tag="h1">{{ evidence.title }}</gcds-heading>
 <gcds-text>
-    {{ evidence.description }}
+    {{ evidence.description | markdown }}
 </gcds-text>
 
 <ul class="list-disc mb-300" class="sm">

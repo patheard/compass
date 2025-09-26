@@ -34,22 +34,28 @@ class LocalizedTemplates:
 
         # Allowed tags and attributes: start from bleach defaults and extend
         allowed_tags = set(bleach.sanitizer.ALLOWED_TAGS) | {
-            "p",
-            "pre",
-            "span",
+            "a",
+            "br",
+            "code",
             "h1",
             "h2",
             "h3",
             "h4",
-            "br",
             "hr",
-            "code",
+            "img",
+            "li",
+            "ol",
+            "p",
+            "pre",
+            "span",
+            "ul",
         }
         allowed_attrs = {
             **bleach.sanitizer.ALLOWED_ATTRIBUTES,
             "a": ["href", "title", "rel", "target"],
-            "span": ["class"],
             "code": ["class"],
+            "img": ["src", "alt", "title"],
+            "span": ["class"],
         }
 
         cleaned = bleach.clean(

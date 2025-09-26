@@ -3,7 +3,7 @@
 {% block content %}
 <gcds-heading tag="h1">{{ assessment.product_name }}</gcds-heading>
 <gcds-text>
-    {{ assessment.product_description }}
+    {{ assessment.product_description | markdown }}
 </gcds-text>
 
 <ul class="list-disc mb-300" class="sm">

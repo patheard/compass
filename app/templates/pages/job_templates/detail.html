@@ -3,7 +3,7 @@
 {% block content %}
 <gcds-heading tag="h1">{{ template.name }}</gcds-heading>
 <gcds-text>
-    {{ template.description }}
+    {{ template.description | markdown }}
 </gcds-text>
 
 <gcds-heading tag="h2">{{ _('Configuration') }}</gcds-heading>

@@ -80,32 +80,4 @@
 
 </form>
 
-<script>
-// Validate JSON configuration
-document.getElementById('config').addEventListener('blur', function() {
-    const configValue = this.value.trim();
-    if (configValue) {
-        try {
-            JSON.parse(configValue);
-            this.setCustomValidity('');
-        } catch (e) {
-            this.setCustomValidity('{{ _("Invalid JSON format") }}');
-        }
-    }
-});
-
-// Format JSON on focus out
-document.getElementById('config').addEventListener('blur', function() {
-    const configValue = this.value.trim();
-    if (configValue) {
-        try {
-            const parsed = JSON.parse(configValue);
-            this.value = JSON.stringify(parsed, null, 2);
-        } catch (e) {
-            // Keep original value if invalid JSON
-        }
-    }
-});
-</script>
-
 {% endblock %}
