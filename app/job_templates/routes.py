@@ -1,6 +1,5 @@
 """Routes for job template management."""
 
-import ast
 import json
 from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -10,7 +9,8 @@ from app.auth.middleware import require_authenticated_user
 from app.database.models.users import User
 from app.job_templates.services import JobTemplateService
 from app.templates.utils import LocalizedTemplates
-from app.assessments.base import CSRFTokenManager
+from app.assessments.base import CSRFTokenManager, format_validation_error
+from app.job_templates.validation import JobTemplateRequest
 
 router = APIRouter(prefix="/job-templates", tags=["job-templates"])
 templates = LocalizedTemplates(directory="./app/templates")
@@ -85,6 +85,7 @@ async def create_template_form(
             "csrf_token": csrf_token,
             "breadcrumbs": [
                 {"label": "Compass", "link": "/"},
+                {"label": "Job templates", "link": "/job-templates"},
             ],
         },
     )
@@ -107,30 +108,47 @@ async def create_template(
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
     try:
-        # Parse JSON config
-        try:
-            config_dict = ast.literal_eval(config)
-        except (ValueError, SyntaxError) as e:
-            raise HTTPException(
-                status_code=400, detail=f"Invalid JSON configuration: {e}"
-            )
-
-        template = JobTemplateService.create_template(
+        data = JobTemplateRequest(
             name=name,
             description=description,
             scan_type=scan_type,
-            config=config_dict,
+            config=config,
         )
 
-        print(f"Created template: {template}")
+        template = JobTemplateService.create_template(data)
 
-        # Clear CSRF token
         request.session.pop("csrf_token", None)
 
         return RedirectResponse(
             url=f"/job-templates/{template.template_id}",
             status_code=303,
         )
+    except ValueError as e:
+        csrf_token = csrf_manager.generate_csrf_token()
+        request.session["csrf_token"] = csrf_token
+
+        scan_types = ["aws_config"]
+        return templates.TemplateResponse(
+            request,
+            "pages/job_templates/form.html",
+            {
+                "title": "Create template",
+                "request": request,
+                "scan_types": scan_types,
+                "user": current_user,
+                "csrf_token": csrf_token,
+                "error": format_validation_error(e),
+                "name": name,
+                "description": description,
+                "scan_type": scan_type,
+                "config": config,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                ],
+            },
+        )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -225,6 +243,17 @@ async def edit_template_form(
                 "scan_types": scan_types,
                 "user": current_user,
                 "csrf_token": csrf_token,
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                    {
+                        "label": "Job templates",
+                        "link": "/job-templates",
+                    },
+                    {
+                        "label": template.name,
+                        "link": f"/job-templates/{template.template_id}",
+                    },
+                ],
             },
         )
     except HTTPException:
@@ -251,30 +280,58 @@ async def update_template(
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
     try:
-        # Parse JSON config
-        try:
-            config_dict = ast.literal_eval(config)
-        except (ValueError, SyntaxError) as e:
-            raise HTTPException(
-                status_code=400, detail=f"Invalid JSON configuration: {e}"
-            )
-
-        template = JobTemplateService.update_template(
-            template_id=str(template_id),
+        data = JobTemplateRequest(
             name=name,
             description=description,
             scan_type=scan_type,
-            config=config_dict,
+            config=config,
+        )
+
+        template = JobTemplateService.update_template(
+            template_id=str(template_id), data=data
         )
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
 
-        # Clear CSRF token
         request.session.pop("csrf_token", None)
 
         return RedirectResponse(
             url=f"/job-templates/{template.template_id}",
             status_code=303,
+        )
+
+    except ValueError as e:
+        csrf_token = csrf_manager.generate_csrf_token()
+        request.session["csrf_token"] = csrf_token
+
+        scan_types = ["aws_config"]
+        # Re-display the form with previously-entered values and the error
+        return templates.TemplateResponse(
+            request,
+            "pages/job_templates/form.html",
+            {
+                "title": "Edit job template",
+                "request": request,
+                "template": {
+                    "template_id": str(template_id),
+                    "name": name,
+                    "description": description,
+                    "scan_type": scan_type,
+                    "config": config,
+                    "is_active": True,
+                },
+                "scan_types": scan_types,
+                "user": current_user,
+                "csrf_token": csrf_token,
+                "error": format_validation_error(e),
+                "breadcrumbs": [
+                    {"label": "Compass", "link": "/"},
+                    {
+                        "label": "Job templates",
+                        "link": "/job-templates",
+                    },
+                ],
+            },
         )
     except HTTPException:
         raise

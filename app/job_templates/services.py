@@ -1,8 +1,9 @@
 """Service layer for job template operations."""
 
-from typing import Dict, List, Optional, Any
+from typing import List, Optional
 
 from app.database.models.job_templates import JobTemplate
+from app.job_templates.validation import JobTemplateRequest
 
 
 class JobTemplateService:
@@ -10,17 +11,14 @@ class JobTemplateService:
 
     @staticmethod
     def create_template(
-        name: str,
-        description: str,
-        scan_type: str,
-        config: Dict[str, Any],
+        data: JobTemplateRequest,
     ) -> JobTemplate:
         """Create a new job template."""
         return JobTemplate.create_template(
-            name=name,
-            description=description,
-            scan_type=scan_type,
-            config=config,
+            name=data.name,
+            description=data.description,
+            scan_type=data.scan_type,
+            config=data.config,
         )
 
     @staticmethod
@@ -46,20 +44,17 @@ class JobTemplateService:
     @staticmethod
     def update_template(
         template_id: str,
-        name: str,
-        description: str,
-        scan_type: str,
-        config: Dict[str, Any],
+        data: JobTemplateRequest,
     ) -> Optional[JobTemplate]:
         """Update a job template."""
         template = JobTemplateService.get_template(template_id)
         if not template:
             return None
 
-        template.name = name
-        template.description = description
-        template.scan_type = scan_type
-        template.update_config(config)
+        template.name = data.name
+        template.description = data.description
+        template.scan_type = data.scan_type
+        template.update_config(data.config)
         return template
 
     @staticmethod
