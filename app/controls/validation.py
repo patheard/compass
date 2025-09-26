@@ -6,61 +6,7 @@ from pydantic import BaseModel, Field, validator
 from app.assessments.base import BaseInputValidator
 
 
-class ControlCreateRequest(BaseInputValidator):
-    """Validation schema for creating a new control."""
-
-    nist_control_id: str = Field(
-        ...,
-        min_length=1,
-        max_length=20,
-        description="NIST control identifier (e.g., AC-1, AU-2)",
-    )
-    control_title: str = Field(
-        ...,
-        min_length=1,
-        max_length=200,
-        description="Title of the security control",
-    )
-    control_description: str = Field(
-        ...,
-        min_length=1,
-        max_length=5000,
-        description="Description of the security control",
-    )
-
-    @validator("nist_control_id")
-    def validate_nist_control_id(cls, value: str) -> str:
-        """Validate NIST control ID format."""
-        if not value.strip():
-            raise ValueError("NIST control ID cannot be empty")
-
-        # Basic format validation for NIST controls (e.g., AC-1, AU-2.1)
-        import re
-
-        pattern = r"^[A-Z]{2,3}-\d{1,2}([\.\(]\d{1,2}\)?)?$"
-        if not re.match(pattern, value.strip().upper()):
-            raise ValueError(
-                "NIST control ID must follow format like AC-1, AU-2, or SC-7.1"
-            )
-
-        return value.strip().upper()
-
-    @validator("control_title")
-    def validate_control_title(cls, value: str) -> str:
-        """Validate control title format."""
-        if not value.strip():
-            raise ValueError("Control title cannot be empty")
-        return value
-
-    @validator("control_description")
-    def validate_control_description(cls, value: str) -> str:
-        """Validate control description format."""
-        if not value.strip():
-            raise ValueError("Control description cannot be empty")
-        return value
-
-
-class ControlUpdateRequest(BaseInputValidator):
+class ControlRequest(BaseInputValidator):
     """Validation schema for updating a control."""
 
     nist_control_id: Optional[str] = Field(

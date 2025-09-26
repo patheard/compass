@@ -7,7 +7,7 @@ from app.database.models.users import User
 from app.evidence.services import EvidenceService
 from app.templates.utils import LocalizedTemplates
 from app.controls.services import ControlService
-from app.controls.validation import ControlCreateRequest, ControlUpdateRequest
+from app.controls.validation import ControlRequest
 from app.assessments.base import CSRFTokenManager
 from app.assessments.services import AssessmentService
 
@@ -79,7 +79,7 @@ async def create_control(
 
     try:
         # Validate input data
-        create_data = ControlCreateRequest(
+        create_data = ControlRequest(
             nist_control_id=nist_control_id,
             control_title=control_title,
             control_description=control_description,
@@ -260,7 +260,7 @@ async def update_control(
 
     try:
         # Validate input data
-        update_data = ControlUpdateRequest(
+        update_data = ControlRequest(
             nist_control_id=nist_control_id,
             control_title=control_title,
             control_description=control_description,

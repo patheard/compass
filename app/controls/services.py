@@ -7,8 +7,7 @@ from app.database.models.assessments import SecurityAssessment
 from app.database.models.evidence import Evidence
 from app.assessments.base import BaseService
 from app.controls.validation import (
-    ControlCreateRequest,
-    ControlUpdateRequest,
+    ControlRequest,
     ControlResponse,
 )
 
@@ -56,7 +55,7 @@ class ControlService(BaseService[Control]):
             raise HTTPException(status_code=404, detail="Assessment not found")
 
     def create_control(
-        self, assessment_id: str, user_id: str, data: ControlCreateRequest
+        self, assessment_id: str, user_id: str, data: ControlRequest
     ) -> ControlResponse:
         """Create a new control."""
         # Validate assessment access
@@ -159,7 +158,7 @@ class ControlService(BaseService[Control]):
             )
 
     def update_control(
-        self, control_id: str, user_id: str, data: ControlUpdateRequest
+        self, control_id: str, user_id: str, data: ControlRequest
     ) -> ControlResponse:
         """Update an existing control."""
         control = self.get_entity_or_404(control_id, user_id)
