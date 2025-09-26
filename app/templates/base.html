@@ -19,8 +19,10 @@
   <body>
     <gcds-header lang-href="/lang/{% if get_locale() == 'en' %}fr{% else %}en{% endif %}" skip-to-href="#main-content">
       <gcds-top-nav slot="menu" label="Main menu" alignment="right">
-        <gcds-nav-link slot="home" href="/">Compass</gcds-nav-link>
+        <gcds-nav-link slot="home" href="/">{{ _('Compass') }}</gcds-nav-link>
         {% if user %}
+          <gcds-nav-link href="/">{{ _('Assessments') }}</gcds-nav-link>
+          <gcds-nav-link href="/job-templates">{{ _('Job templates') }}</gcds-nav-link>
           <gcds-nav-link href="/auth/logout">{{ _('sign_out') }}</gcds-nav-link>
         {% else %}
           <gcds-nav-link href="/auth/login">{{ _('sign_in') }}</gcds-nav-link>

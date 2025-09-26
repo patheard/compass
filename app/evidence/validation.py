@@ -25,6 +25,9 @@ class EvidenceRequest(BaseInputValidator):
     aws_account_id: Optional[str] = Field(
         None, description="AWS account ID associated with this evidence (12 digits)"
     )
+    job_template_id: Optional[str] = Field(
+        None, description="ID of the job template that collected this evidence"
+    )
 
     @validator("title")
     def validate_title(cls, value: Optional[str]) -> Optional[str]:
