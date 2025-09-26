@@ -134,7 +134,6 @@ class ControlService(BaseService[Control]):
             "created_count": len(created_controls),
             "skipped_count": len(skipped_controls),
             "error_count": len(errors),
-            "created_controls": created_controls,
             "skipped_controls": skipped_controls,
             "errors": errors,
         }

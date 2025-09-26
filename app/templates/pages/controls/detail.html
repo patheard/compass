@@ -7,7 +7,7 @@
     {{ control.control_description | markdown }}
 </gcds-text>
 
-<ul class="list-disc mb-300" class="sm">
+<ul class="list-disc mt-600" class="sm">
     <li>
         <strong>{{ _('Status:') }}</strong>
         {{ _(control.implementation_status) }}
@@ -18,14 +18,14 @@
     </li>
 </ul>
 
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit" type="link" button-role="primary" class="mt-300">
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit" type="link" button-role="primary" class="mt-800">
     {{ _("Edit") }}
 </gcds-button>
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
     {{ _("Delete") }}
 </gcds-button>
 
-<hr class="mt-800 mb-600">
+<hr class="mt-1000 mb-600">
 
 <gcds-heading tag="h2">{{ _("Evidence") }}</gcds-heading>
 
@@ -59,7 +59,7 @@
 </section>
 {% endif %}
 
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/new" type="link">
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/new" type="link" class="mt-300">
     {{ _("Add") }}
 </gcds-button>
 

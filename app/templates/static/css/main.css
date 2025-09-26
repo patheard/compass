@@ -18,6 +18,14 @@
     white-space: nowrap;
 }
 
+.w-10 {
+    width: 10%;
+}
+
+.w-20 {
+    width: 20%;
+}
+
 /* Confirmation Modal */
 .modal-overlay {
     display: none;

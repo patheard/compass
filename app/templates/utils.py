@@ -44,12 +44,10 @@ class LocalizedTemplates:
             "br",
             "hr",
             "code",
-            "img",
         }
         allowed_attrs = {
             **bleach.sanitizer.ALLOWED_ATTRIBUTES,
             "a": ["href", "title", "rel", "target"],
-            "img": ["src", "alt", "title"],
             "span": ["class"],
             "code": ["class"],
         }

@@ -310,7 +310,7 @@ async def import_assessment_page(
 
         return templates.TemplateResponse(
             request,
-            "pages/assessments/import.html",
+            "pages/assessments/import_setup.html",
             {
                 "request": request,
                 "title": "Import controls",
@@ -372,10 +372,6 @@ async def import_controls_from_github(
         # Clear CSRF token
         request.session.pop("csrf_token", None)
 
-        # Generate new CSRF token for results page
-        csrf_token = csrf_manager.generate_csrf_token()
-        request.session["csrf_token"] = csrf_token
-
         return templates.TemplateResponse(
             request,
             "pages/assessments/import_results.html",
@@ -410,7 +406,7 @@ async def import_controls_from_github(
 
             return templates.TemplateResponse(
                 request,
-                "pages/assessments/import.html",
+                "pages/assessments/import_setup.html",
                 {
                     "request": request,
                     "title": "Import controls",

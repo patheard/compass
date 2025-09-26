@@ -209,58 +209,19 @@ class GitHubService:
         }
 
     def _parse_control_description(self, body: str) -> str:
-        """Extract Control Definition, Class, and Supplemental Guidance from issue body."""
+        """Extract content from issue body up to Control Management section."""
         if not body:
             return ""
 
-        # Sections to extract
-        sections = {
-            "Control Definition": None,
-            "Class": None,
-            "Supplemental Guidance": None,
-        }
+        # Find the Control Management section and cut everything after it
+        control_management_index = body.find("# Control Management")
+        if control_management_index != -1:
+            body = body[:control_management_index]
 
-        # Split body into lines for processing
-        lines = body.split("\n")
-        current_section = None
-        section_content = []
+        # Remove the Control Definition header if present
+        body = body.replace("# Control Definition", "")
 
-        for line in lines:
-            line = line.strip()
-
-            # Check if this line is a section header
-            for section_name in sections.keys():
-                if line.lower().startswith(section_name.lower()):
-                    # Save previous section if exists
-                    if current_section and section_content:
-                        sections[current_section] = "\n".join(section_content).strip()
-
-                    # Start new section
-                    current_section = section_name
-                    section_content = []
-
-                    # Check if there's content after the colon on the same line
-                    if ":" in line:
-                        after_colon = line.split(":", 1)[1].strip()
-                        if after_colon:
-                            section_content.append(after_colon)
-                    break
-            else:
-                # Add line to current section if we're in one
-                if current_section and line:
-                    section_content.append(line)
-
-        # Save the last section
-        if current_section and section_content:
-            sections[current_section] = "\n".join(section_content).strip()
-
-        # Build description from extracted sections
-        description_parts = []
-        for section_name, content in sections.items():
-            if content:
-                description_parts.append(f"**{section_name}**\n{content}")
-
-        return "\n\n".join(description_parts) if description_parts else body
+        return body.strip()
 
     def import_issues_as_controls(self, repo_url: str) -> List[Dict[str, Any]]:
         """Import all open issues from a repository as control data."""
