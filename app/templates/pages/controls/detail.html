@@ -49,7 +49,7 @@
                     <td>{{ evidence.description | markdown_no_tags | truncate(100) }}</td>
                     <td>{{ _(evidence.evidence_type) }}</td>
                     <td>
-                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit" class="me-75">{{ _("Edit") }}</gcds-link>
+                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit" class="me-50">{{ _("Edit") }}</gcds-link>
                         <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/delete" data-csrf-token="{{ csrf_token }}" class="delete-item">{{ _("Delete") }}</gcds-link>
                     </td>
                 </tr>

@@ -30,7 +30,7 @@
             <td>{{ template.description | markdown_no_tags }}</td>
             <td class="nowrap">{{ _(template.scan_type) }}</td>
             <td class="nowrap">
-                <gcds-link href="/job-templates/{{ template.template_id }}/edit" size="small" class="me-75">
+                <gcds-link href="/job-templates/{{ template.template_id }}/edit" size="small" class="me-50">
                     {{ _("Edit") }}
                 </gcds-link>
                 <gcds-link href="/job-templates/{{ template.template_id }}/delete" size="small" data-csrf-token="{{ csrf_token }}" class="delete-item">

@@ -52,8 +52,8 @@
                     </td>
                     <td>{{ control.control_title | markdown_no_tags | truncate(100) }}</td>
                     <td>{{ _(control.implementation_status) }}</td>
-                    <td>
-                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit">{{ _("Edit") }}</gcds-link>
+                    <td class="nowrap">
+                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit" class="me-50">{{ _("Edit") }}</gcds-link>
                         <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/delete" data-csrf-token="{{ csrf_token }}" class="delete-item">{{ _("Delete") }}</gcds-link>
                     </td>
                 </tr>
