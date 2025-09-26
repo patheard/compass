@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<gcds-heading tag="h1">{{ assessment.product_name }}</gcds-heading>
+<gcds-heading tag="h1">{{ assessment.product_name | markdown_no_tags }}</gcds-heading>
 <gcds-text>
     {{ assessment.product_description | markdown }}
 </gcds-text>
@@ -34,7 +34,7 @@
 </gcds-heading>
 
 {% if controls %}
-<section class="table-container mb-300">
+<section class="table-container mb-600">
     <table>
         <thead>
             <tr>
@@ -50,7 +50,7 @@
                     <td class="nowrap">
                         <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}">{{ control.nist_control_id }}</gcds-link>
                     </td>
-                    <td>{{ control.control_title }}</td>
+                    <td>{{ control.control_title | markdown_no_tags | truncate(100) }}</td>
                     <td>{{ _(control.implementation_status) }}</td>
                     <td>
                         <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit">{{ _("Edit") }}</gcds-link>

@@ -23,6 +23,19 @@ class LocalizedTemplates:
 
         # Register a `markdown` filter on the Jinja2 environment
         self.templates.env.filters["markdown"] = self._markdown_to_html
+        self.templates.env.filters["markdown_no_tags"] = self._markdown_no_tags
+
+    def _markdown_no_tags(self, text: str) -> str:
+        """Convert Markdown to plain text by stripping all HTML tags."""
+        if not text:
+            return ""
+
+        # Convert markdown to HTML. Use a couple of safe extensions.
+        html = md.markdown(text, extensions=["extra", "sane_lists"])
+
+        # Strip all HTML tags to get plain text
+        cleaned = bleach.clean(html, tags=[], strip=True)
+        return Markup(cleaned)  # nosec: B704 Bandit flags use on untrusted input
 
     def _markdown_to_html(self, text: str) -> Markup:
         """Convert Markdown to sanitized HTML and mark it safe for Jinja2"""
@@ -30,7 +43,7 @@ class LocalizedTemplates:
             return Markup("")
 
         # Convert markdown to HTML. Use a couple of safe extensions.
-        html = md.markdown(text, extensions=["extra", "sane_lists"])  # type: ignore[arg-type]
+        html = md.markdown(text, extensions=["extra", "sane_lists"])
 
         # Allowed tags and attributes: start from bleach defaults and extend
         allowed_tags = set(bleach.sanitizer.ALLOWED_TAGS) | {

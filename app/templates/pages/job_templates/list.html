@@ -25,12 +25,12 @@
         {% for template in templates %}
         <tr>
             <td>
-                <gcds-link href="/job-templates/{{ template.template_id }}">{{ template.name }}</gcds-link>
+                <gcds-link href="/job-templates/{{ template.template_id }}">{{ template.name | markdown_no_tags }}</gcds-link>
             </td>
-            <td>{{ template.description }}</td>
-            <td>{{ template.scan_type }}</td>
-            <td>
-                <gcds-link href="/job-templates/{{ template.template_id }}/edit" size="small">
+            <td>{{ template.description | markdown_no_tags }}</td>
+            <td class="nowrap">{{ _(template.scan_type) }}</td>
+            <td class="nowrap">
+                <gcds-link href="/job-templates/{{ template.template_id }}/edit" size="small" class="me-75">
                     {{ _("Edit") }}
                 </gcds-link>
                 <gcds-link href="/job-templates/{{ template.template_id }}/delete" size="small" data-csrf-token="{{ csrf_token }}" class="delete-item">

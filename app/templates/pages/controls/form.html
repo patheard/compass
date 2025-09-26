@@ -44,7 +44,7 @@
         label="{{ _('Control title') }}"
         required="true"
         maxlength="200"
-        value="{% if is_edit %}{{ control.control_title }}{% else %}{{ control_title or '' }}{% endif %}">
+        value="{% if is_edit %}{{ control.control_title | markdown_no_tags }}{% else %}{{ control_title or '' }}{% endif %}">
     </gcds-input>
 
     <gcds-textarea
@@ -53,7 +53,7 @@
         label="{{ _('Control description') }}"
         required="true"
         maxlength="5000"
-        value="{% if is_edit %}{{ control.control_description }}{% else %}{{ control_description or '' }}{% endif %}">
+        value="{% if is_edit %}{{ control.control_description | markdown_no_tags }}{% else %}{{ control_description or '' }}{% endif %}">
     </gcds-textarea>
 
     {% if is_edit %}

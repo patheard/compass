@@ -32,7 +32,7 @@
         label="{{ _('Product name') }}"
         required="true"
         maxlength="200"
-        value="{% if is_edit %}{{ assessment.product_name }}{% else %}{{ product_name or '' }}{% endif %}">
+        value="{% if is_edit %}{{ assessment.product_name | markdown_no_tags }}{% else %}{{ product_name or '' }}{% endif %}">
     </gcds-input>
 
     <gcds-textarea
@@ -41,7 +41,7 @@
         label="{{ _('Product description') }}"
         required="true"
         maxlength="2000"
-        value="{% if is_edit %}{{ assessment.product_description }}{% else %}{{ product_description or '' }}{% endif %}">
+        value="{% if is_edit %}{{ assessment.product_description | markdown_no_tags }}{% else %}{{ product_description or '' }}{% endif %}">
     </gcds-textarea>
 
     <gcds-input

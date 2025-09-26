@@ -31,7 +31,7 @@
         label="{{ _('Template name') }}"
         required="true"
         maxlength="200"
-        value="{% if template %}{{ template.name }}{% else %}{{ name or '' }}{% endif %}">
+        value="{% if template %}{{ template.name | markdown_no_tags }}{% else %}{{ name or '' }}{% endif %}">
     </gcds-input>
 
     <gcds-textarea
@@ -40,7 +40,7 @@
         label="{{ _('Template description') }}"
         required="true"
         maxlength="2000"
-        value="{% if template %}{{ template.description }}{% else %}{{ description or '' }}{% endif %}">
+        value="{% if template %}{{ template.description | markdown_no_tags }}{% else %}{{ description or '' }}{% endif %}">
     </gcds-textarea>
 
     <gcds-select

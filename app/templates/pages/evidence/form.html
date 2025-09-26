@@ -76,7 +76,7 @@
         input-id="title"
         label="{{ _('Evidence title') }}"
         maxlength="200"
-        value="{% if is_edit %}{{ evidence.title }}{% else %}{{ title_value or '' }}{% endif %}">
+        value="{% if is_edit %}{{ evidence.title | markdown_no_tags }}{% else %}{{ title_value | markdown_no_tags or '' }}{% endif %}">
     </gcds-input>
 
     <gcds-textarea
@@ -85,7 +85,7 @@
         label="{{ _('Evidence description') }}"
         required="true"
         maxlength="2000"
-        value="{% if is_edit %}{{ evidence.description }}{% else %}{{ description or '' }}{% endif %}">
+        value="{% if is_edit %}{{ evidence.description | markdown_no_tags }}{% else %}{{ description | markdown_no_tags or '' }}{% endif %}">
     </gcds-textarea>
 
 

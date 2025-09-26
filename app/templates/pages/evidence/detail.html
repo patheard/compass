@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<gcds-heading tag="h1">{{ evidence.title }}</gcds-heading>
+<gcds-heading tag="h1">{{ evidence.title | markdown_no_tags }}</gcds-heading>
 <gcds-text>
     {{ evidence.description | markdown }}
 </gcds-text>

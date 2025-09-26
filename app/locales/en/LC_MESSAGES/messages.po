@@ -481,3 +481,6 @@ msgstr ""
 
 msgid "Go to Home"
 msgstr ""
+
+msgid "aws_config"
+msgstr "AWS Config"

@@ -2,7 +2,7 @@
 
 {% block content %}
 <gcds-heading tag="h1">{{ control.nist_control_id }}</gcds-heading>
-<gcds-heading tag="h2">{{ control.control_title }}</gcds-heading>
+<gcds-heading tag="h2">{{ control.control_title | markdown_no_tags }}</gcds-heading>
 <gcds-text>
     {{ control.control_description | markdown }}
 </gcds-text>
@@ -44,12 +44,12 @@
             {% for evidence in evidences %}
                 <tr>
                     <td>
-                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}">{{ evidence.title }}</gcds-link>
+                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}">{{ evidence.title | markdown_no_tags | truncate(100) }}</gcds-link>
                     </td>
-                    <td>{{ evidence.description }}</td>
+                    <td>{{ evidence.description | markdown_no_tags | truncate(100) }}</td>
                     <td>{{ _(evidence.evidence_type) }}</td>
                     <td>
-                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit">{{ _("Edit") }}</gcds-link>
+                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit" class="me-75">{{ _("Edit") }}</gcds-link>
                         <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/delete" data-csrf-token="{{ csrf_token }}" class="delete-item">{{ _("Delete") }}</gcds-link>
                     </td>
                 </tr>
