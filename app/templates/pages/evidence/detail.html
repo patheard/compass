@@ -84,8 +84,8 @@
                 {% for execution in job_executions %}
                 <tr>
                     <td>{{ _(execution.status) }}</td>
-                    <td>{{ execution.started_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                    <td>{{ execution.completed_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{% if execution.started_at %}{{ execution.started_at.strftime('%Y-%m-%d %H:%M:%S') }}{% else %}-{% endif %}</td>
+                    <td>{% if execution.completed_at %}{{ execution.completed_at.strftime('%Y-%m-%d %H:%M:%S') }}{% else %}-{% endif %}</td>
                     <td>
                         {% if execution.result_data and execution.result_data.rule_details %}
                         <div>

@@ -208,7 +208,7 @@ async def evidence_detail_page(
             job_executions = JobExecutionService.get_evidence_executions(
                 evidence.evidence_id, current_user.user_id
             )
-            job_executions.sort(key=lambda x: x.created_at, reverse=True)
+            job_executions.sort(key=lambda x: x.completed_at, reverse=True)
 
         return templates.TemplateResponse(
             request,
@@ -320,6 +320,7 @@ async def update_evidence(
     evidence_type: str = Form(...),
     aws_account_id: Optional[str] = Form(None),
     csrf_token: str = Form(...),
+    job_template_id: Optional[str] = Form(None),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
     """Handle evidence update form submission."""
@@ -335,6 +336,7 @@ async def update_evidence(
             description=description,
             evidence_type=evidence_type,
             aws_account_id=aws_account_id,
+            job_template_id=job_template_id,
         )
 
         # Update evidence

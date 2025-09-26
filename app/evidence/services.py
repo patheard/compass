@@ -98,7 +98,6 @@ class EvidenceService(BaseService[Evidence]):
 
             # Create scan job execution for automated collection
             if data.evidence_type == "automated_collection":
-                # Send SQS message for processing
                 self.sqs_service.send_evidence_processing_message(
                     control_id=control_id,
                     evidence_id=evidence.evidence_id,
@@ -136,12 +135,6 @@ class EvidenceService(BaseService[Evidence]):
         """Update existing evidence."""
         evidence = self.get_entity_or_404(evidence_id, user_id)
 
-        # Track if evidence type is changing to automated_collection
-        becoming_automated = (
-            data.evidence_type == "automated_collection"
-            and evidence.evidence_type != "automated_collection"
-        )
-
         try:
             # Update only provided fields
             if data.title is not None:
@@ -156,10 +149,14 @@ class EvidenceService(BaseService[Evidence]):
             if data.aws_account_id is not None:
                 evidence.aws_account_id = data.aws_account_id
 
+            if data.job_template_id is not None:
+                if data.evidence_type == "automated_collection":
+                    self._validate_scan_template_access(data.job_template_id, user_id)
+                evidence.job_template_id = data.job_template_id
+
             evidence.save()
 
-            # Send SQS message if evidence type changed to automated_collection
-            if becoming_automated:
+            if data.evidence_type == "automated_collection":
                 self.sqs_service.send_evidence_processing_message(
                     control_id=evidence.control_id,
                     evidence_id=evidence.evidence_id,
