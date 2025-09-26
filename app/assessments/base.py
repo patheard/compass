@@ -3,7 +3,7 @@
 import re
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional, Type, TypeVar, Generic
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ValidationError, validator
 import html
 from fastapi import HTTPException
 
@@ -92,3 +92,27 @@ class CSRFTokenManager:
         if not session_token or not form_token:
             return False
         return session_token == form_token
+
+
+def format_validation_error(error: Exception) -> str:
+    """Convert pydantic ValidationError (and common ValueError) into a markdown format."""
+    # If it's a pydantic ValidationError, try to build a compact, human-friendly message
+    if isinstance(error, ValidationError):
+        try:
+            error_list = error.errors()
+        except Exception:
+            return str(error)
+
+        parts: list[str] = []
+        for e in error_list:
+            # message may appear under different keys across versions
+            msg = e.get("msg") or e.get("message") or e.get("error") or str(e)
+            # Clean up repetitive phrasing like 'Value error, '
+            if isinstance(msg, str) and msg.startswith("Value error, "):
+                msg = msg[len("Value error, ") :]
+
+            parts.append(f"- {msg}")
+
+        return "\n".join(parts)
+
+    return str(error)

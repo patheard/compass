@@ -6,8 +6,8 @@ from app.auth.middleware import require_authenticated_user
 from app.database.models.users import User
 from app.templates.utils import LocalizedTemplates
 from app.assessments.services import AssessmentService, GitHubService
-from app.assessments.validation import AssessmentCreateRequest, AssessmentUpdateRequest
-from app.assessments.base import CSRFTokenManager
+from app.assessments.validation import AssessmentRequest
+from app.assessments.base import CSRFTokenManager, format_validation_error
 from app.controls.services import ControlService
 
 router = APIRouter(prefix="/assessments", tags=["assessments"])
@@ -60,7 +60,7 @@ async def create_assessment(
 
     try:
         # Validate input data
-        create_data = AssessmentCreateRequest(
+        create_data = AssessmentRequest(
             product_name=product_name,
             product_description=product_description,
             aws_account_id=aws_account_id if aws_account_id.strip() else None,
@@ -96,7 +96,7 @@ async def create_assessment(
                 "user": current_user,
                 "csrf_token": csrf_token,
                 "is_edit": False,
-                "error": str(e),
+                "error": format_validation_error(e),
                 "product_name": product_name,
                 "product_description": product_description,
                 "aws_account_id": aws_account_id,
@@ -209,7 +209,7 @@ async def update_assessment(
 
     try:
         # Validate input data
-        update_data = AssessmentUpdateRequest(
+        update_data = AssessmentRequest(
             product_name=product_name,
             product_description=product_description,
             status=status,
@@ -251,7 +251,7 @@ async def update_assessment(
                     "csrf_token": csrf_token,
                     "is_edit": True,
                     "assessment": assessment,
-                    "error": str(e),
+                    "error": format_validation_error(e),
                     "breadcrumbs": [
                         {"label": "Compass", "link": "/"},
                         {
@@ -413,7 +413,7 @@ async def import_controls_from_github(
                     "user": current_user,
                     "csrf_token": csrf_token,
                     "assessment": assessment,
-                    "error": str(e),
+                    "error": format_validation_error(e),
                     "github_repo_controls": github_repo_controls,
                     "breadcrumbs": [
                         {"label": "Compass", "link": "/"},

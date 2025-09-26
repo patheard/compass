@@ -8,7 +8,7 @@ from app.evidence.services import EvidenceService
 from app.templates.utils import LocalizedTemplates
 from app.controls.services import ControlService
 from app.controls.validation import ControlRequest
-from app.assessments.base import CSRFTokenManager
+from app.assessments.base import CSRFTokenManager, format_validation_error
 from app.assessments.services import AssessmentService
 
 router = APIRouter(prefix="/assessments/{assessment_id}/controls", tags=["controls"])
@@ -116,7 +116,7 @@ async def create_control(
                     "assessment": assessment,
                     "csrf_token": csrf_token,
                     "is_edit": False,
-                    "error": str(e),
+                    "error": format_validation_error(e),
                     "nist_control_id": nist_control_id,
                     "control_title": control_title,
                     "control_description": control_description,
@@ -302,7 +302,7 @@ async def update_control(
                     "csrf_token": csrf_token,
                     "is_edit": True,
                     "control": control,
-                    "error": str(e),
+                    "error": format_validation_error(e),
                     "breadcrumbs": [
                         {"label": "Compass", "link": "/"},
                         {

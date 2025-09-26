@@ -14,8 +14,8 @@
 </gcds-text>
 
 {% if error %}
-<gcds-notice type="danger" notice-title-tag="h2" notice-title="{{ _('Error') }}">
-  <gcds-text>{{ error }}</gcds-text>
+<gcds-notice type="danger" notice-title-tag="h2" notice-title="{{ _('Errors') }}" class="mb-300">
+  <gcds-text>{{ error | markdown }}</gcds-text>
 </gcds-notice>
 {% endif %}
 

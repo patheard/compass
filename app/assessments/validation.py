@@ -6,48 +6,7 @@ from pydantic import BaseModel, Field, validator
 from app.assessments.base import BaseInputValidator
 
 
-class AssessmentCreateRequest(BaseInputValidator):
-    """Validation schema for creating a new assessment."""
-
-    product_name: str = Field(
-        ...,
-        min_length=1,
-        max_length=200,
-        description="Name of the product being assessed",
-    )
-    product_description: str = Field(
-        ...,
-        min_length=1,
-        max_length=2000,
-        description="Description of the product being assessed",
-    )
-    aws_account_id: Optional[str] = Field(
-        None,
-        max_length=12,
-        description="AWS account ID associated with this assessment",
-    )
-    github_repo_controls: Optional[str] = Field(
-        None,
-        max_length=1000,
-        description="GitHub repository for controls",
-    )
-
-    @validator("product_name")
-    def validate_product_name(cls, value: str) -> str:
-        """Validate product name format."""
-        if not value.strip():
-            raise ValueError("Product name cannot be empty")
-        return value
-
-    @validator("product_description")
-    def validate_product_description(cls, value: str) -> str:
-        """Validate product description format."""
-        if not value.strip():
-            raise ValueError("Product description cannot be empty")
-        return value
-
-
-class AssessmentUpdateRequest(BaseInputValidator):
+class AssessmentRequest(BaseInputValidator):
     """Validation schema for updating an assessment."""
 
     product_name: Optional[str] = Field(
@@ -81,9 +40,6 @@ class AssessmentUpdateRequest(BaseInputValidator):
             if not value.strip():
                 raise ValueError("Product name cannot be empty")
 
-            if len(value.strip()) < 2:
-                raise ValueError("Product name must be at least 2 characters")
-
         return value
 
     @validator("product_description")
@@ -92,9 +48,6 @@ class AssessmentUpdateRequest(BaseInputValidator):
         if value is not None:
             if not value.strip():
                 raise ValueError("Product description cannot be empty")
-
-            if len(value.strip()) < 10:
-                raise ValueError("Product description must be at least 10 characters")
 
         return value
 
@@ -105,6 +58,15 @@ class AssessmentUpdateRequest(BaseInputValidator):
             valid_statuses = {"draft", "in_progress", "completed"}
             if value not in valid_statuses:
                 raise ValueError(f"Status must be one of: {', '.join(valid_statuses)}")
+
+        return value
+
+    @validator("aws_account_id")
+    def validate_aws_account_id(cls, value: Optional[str]) -> Optional[str]:
+        """Ensure AWS account ID is exactly 12 numeric digits when provided."""
+        if value is not None:
+            if not value.isdigit() or len(value) != 12:
+                raise ValueError("AWS account ID must be 12 digits")
 
         return value
 

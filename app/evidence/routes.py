@@ -7,10 +7,10 @@ from app.auth.middleware import require_authenticated_user
 from app.database.models.users import User
 from app.templates.utils import LocalizedTemplates
 from app.evidence.services import EvidenceService
-from app.evidence.validation import EvidenceCreateRequest, EvidenceUpdateRequest
+from app.evidence.validation import EvidenceRequest
 from app.job_templates.services import JobTemplateService
 from app.job_executions.services import JobExecutionService
-from app.assessments.base import CSRFTokenManager
+from app.assessments.base import CSRFTokenManager, format_validation_error
 
 
 router = APIRouter(
@@ -101,7 +101,7 @@ async def create_evidence(
 
     try:
         # Validate input data
-        create_data = EvidenceCreateRequest(
+        create_data = EvidenceRequest(
             title=title,
             description=description,
             evidence_type=evidence_type,
@@ -144,7 +144,7 @@ async def create_evidence(
                     "control": control,
                     "csrf_token": csrf_token,
                     "is_edit": False,
-                    "error": str(e),
+                    "error": format_validation_error(e),
                     "title_value": title,
                     "description": description,
                     "evidence_type": evidence_type,
@@ -330,7 +330,7 @@ async def update_evidence(
 
     try:
         # Validate input data
-        update_data = EvidenceUpdateRequest(
+        update_data = EvidenceRequest(
             title=title,
             description=description,
             evidence_type=evidence_type,
@@ -376,7 +376,7 @@ async def update_evidence(
                     "csrf_token": csrf_token,
                     "is_edit": True,
                     "evidence": evidence,
-                    "error": str(e),
+                    "error": format_validation_error(e),
                     "job_templates": job_templates,
                     "breadcrumbs": [
                         {"label": "Compass", "link": "/"},

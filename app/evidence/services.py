@@ -16,8 +16,7 @@ from app.database.models.job_templates import JobTemplate
 from app.job_executions.services import JobExecutionService
 from app.assessments.base import BaseService
 from app.evidence.validation import (
-    EvidenceCreateRequest,
-    EvidenceUpdateRequest,
+    EvidenceRequest,
     EvidenceResponse,
 )
 
@@ -77,7 +76,7 @@ class EvidenceService(BaseService[Evidence]):
             raise HTTPException(status_code=404, detail="Assessment not found")
 
     def create_evidence(
-        self, control_id: str, user_id: str, data: EvidenceCreateRequest
+        self, control_id: str, user_id: str, data: EvidenceRequest
     ) -> EvidenceResponse:
         """Create new evidence."""
         # Validate control access
@@ -132,7 +131,7 @@ class EvidenceService(BaseService[Evidence]):
             )
 
     def update_evidence(
-        self, evidence_id: str, user_id: str, data: EvidenceUpdateRequest
+        self, evidence_id: str, user_id: str, data: EvidenceRequest
     ) -> EvidenceResponse:
         """Update existing evidence."""
         evidence = self.get_entity_or_404(evidence_id, user_id)

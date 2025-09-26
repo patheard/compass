@@ -11,8 +11,7 @@ from app.database.models.controls import Control
 from app.database.models.evidence import Evidence
 from app.assessments.base import BaseService
 from app.assessments.validation import (
-    AssessmentCreateRequest,
-    AssessmentUpdateRequest,
+    AssessmentRequest,
     AssessmentResponse,
 )
 
@@ -37,7 +36,7 @@ class AssessmentService(BaseService[SecurityAssessment]):
             )
 
     def create_assessment(
-        self, user_id: str, data: AssessmentCreateRequest
+        self, user_id: str, data: AssessmentRequest
     ) -> AssessmentResponse:
         """Create a new assessment."""
         try:
@@ -65,7 +64,7 @@ class AssessmentService(BaseService[SecurityAssessment]):
         return [self._to_response(assessment) for assessment in assessments]
 
     def update_assessment(
-        self, assessment_id: str, user_id: str, data: AssessmentUpdateRequest
+        self, assessment_id: str, user_id: str, data: AssessmentRequest
     ) -> AssessmentResponse:
         """Update an existing assessment."""
         assessment = self.get_entity_or_404(assessment_id, user_id)
