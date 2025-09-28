@@ -69,7 +69,9 @@
           <a href="#" id="sliding-panel-close" aria-controls="sliding-panel"><gcds-icon name="close" size="h3"></gcds-icon></a>
         </div>
         <div class="sliding-panel-body">
-          <div id="llmChat" class="chat-container" aria-live="polite" role="log"></div>
+          <div id="llmChat" class="chat-container" aria-live="polite" role="log">
+            <div class="dot-flashing"></div>
+          </div>
           <gcds-textarea
             textarea-id="prompt"
             label="{{ _('Prompt') }}"
