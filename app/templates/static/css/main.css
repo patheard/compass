@@ -64,3 +64,123 @@ ul {
 ol {
     list-style: decimal;
 }
+
+/* Sliding panel */
+.sliding-panel-toggle {
+    position: fixed;
+    right: 2rem;
+    bottom: 2rem;
+    z-index: 1;
+    background: var(--gcds-link-default);
+    padding: 25px 20px;
+    border-radius: 999px;
+    text-decoration: none;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    font-size: 2.5rem;
+}
+
+.sliding-panel-toggle:focus,
+.sliding-panel-toggle:hover {
+    outline: none;
+    transform: translateY(-5px);
+    background: var(--gcds-link-hover)
+}
+
+.sliding-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 100%; /* mobile default */
+    max-width: 100%;
+    background: #fff;
+    box-shadow: -3px 0 9px rgba(0,0,0,0.08);
+    transform: translateX(100%);
+    transition: transform 320ms ease-in-out;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+.sliding-panel[aria-hidden="false"],
+.sliding-panel.open {
+    transform: translateX(0);
+}
+
+.sliding-panel-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+}
+
+.sliding-panel-header a {
+    height: 2.5rem
+}
+
+.sliding-panel-body {
+    padding: 0 0 0 1.5rem;
+    overflow: auto;
+    
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.sliding-panel gcds-textarea {
+    margin-right: 1rem;
+}
+
+@media (min-width: 768px) {
+    .sliding-panel {
+        width: 50%;
+        max-width: 50%;
+    }
+}
+
+@media (max-width: 420px) {
+    .sliding-panel-toggle {
+        right: 0.75rem;
+        bottom: 0.75rem;
+    }
+}
+
+/*
+ * Chat styles
+ */
+.chat-container {
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.chat-message {
+    display: flex;
+}
+
+.chat-message.user {
+    justify-content: flex-end;
+}
+
+.chat-message.user .bubble {
+    background: var(--gcds-color-grayscale-50);
+    border-radius: 8px;
+    padding: 1rem;
+    word-wrap: break-word;
+}
+
+.chat-message.llm {
+    justify-content: flex-start;
+}
+
+.chat-message.llm .bubble {
+    padding: 0.6rem 0;
+    word-wrap: break-word;
+}
+
+@media (max-width: 480px) {
+    .chat-container { max-height: 35vh; }
+    .chat-message .bubble { font-size: 0.95rem; }
+}

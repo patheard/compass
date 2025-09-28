@@ -97,8 +97,9 @@ document.addEventListener('DOMContentLoaded', function() {
         jobTemplateSelect.addEventListener('change', updateEvidenceWithJobTemplate);
     }
 
-    // Initialize compliance chart if present
+    // Initialize components
     initComplianceChart();
+    initSlidingPanel();
 });
 
 /**
@@ -148,8 +149,8 @@ function updateEvidenceWithJobTemplate(event) {
     }
 }
 
-/**
- * Initialize the compliance donut chart if the canvas exists.
+/*
+ * Initialize the compliance chart
  */
 function initComplianceChart() {
     const canvas = document.getElementById('compliance-chart');
@@ -200,6 +201,50 @@ function initComplianceChart() {
                     }
                 }
             }
+        }
+    });
+}
+
+/* 
+ * Sliding panel behavior 
+ */
+function initSlidingPanel() {
+    const toggle = document.getElementById('sliding-panelToggle');
+    const panel = document.getElementById('sliding-panel');
+    const close = document.getElementById('sliding-panel-close');
+    if (!toggle || !panel || !close) return;
+
+    const prompt = panel.querySelector('gcds-textarea');
+
+    function openPanel(e) {
+        if (e) e.preventDefault();
+        panel.classList.add('open');
+        panel.setAttribute('aria-hidden', 'false');
+        toggle.setAttribute('aria-expanded', 'true');
+        prompt.focus();
+        prompt.shadowRoot.querySelector('textarea').setAttribute('placeholder', prompt.getAttribute('data-placeholder'));
+    }
+
+    function closePanel(e) {
+        if (e) e.preventDefault();
+        panel.classList.remove('open');
+        panel.setAttribute('aria-hidden', 'true');
+        toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    toggle.addEventListener('click', openPanel);
+    close.addEventListener('click', closePanel);
+
+    document.addEventListener('click', function(e) {
+        if (!panel.classList.contains('open')) return;
+        const target = e.target;
+        if (panel.contains(target) || toggle.contains(target)) return;
+        closePanel(e);
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('open')) {
+            closePanel();
         }
     });
 }

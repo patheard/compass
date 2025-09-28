@@ -47,7 +47,6 @@
 
     <gcds-footer display="full"></gcds-footer>
     
-    <!-- Confirmation Modal -->
     <div id="confirmModal" class="modal-overlay">
       <div class="modal-content">
         <gcds-text id="modalMessage">{{ _('Are you sure you want to continue? This action cannot be undone.') }}</gcds-text>
@@ -55,5 +54,33 @@
         <gcds-button id="modalCancel" button-role="secondary">{{ _('Cancel') }}</gcds-button>
       </div>
     </div>
+
+    {% if user %}
+      <a id="sliding-panelToggle" 
+        class="sliding-panel-toggle" 
+        href="#" aria-controls="sliding-panel" 
+        aria-expanded="false" title="{{ _('Ask AI questions about your assessment') }}">
+        🧭
+      </a>
+
+      <section id="sliding-panel" class="sliding-panel" role="complementary" aria-hidden="true">
+        <div class="sliding-panel-header">
+          <gcds-text>{{ _('Ask questions about your assessment') }}</gcds-text>
+          <a href="#" id="sliding-panel-close" aria-controls="sliding-panel"><gcds-icon name="close" size="h3"></gcds-icon></a>
+        </div>
+        <div class="sliding-panel-body">
+          <div id="llmChat" class="chat-container" aria-live="polite" role="log"></div>
+          <gcds-textarea
+            textarea-id="prompt"
+            label="{{ _('Prompt') }}"
+            name="prompt"
+            hide-label="true"
+            rows="3"
+            data-placeholder="{{ _('Ask your question and press Enter') }}">
+          </gcds-textarea>
+        </div>
+      </section>
+    {% endif %}
+
   </body>
 </html>
