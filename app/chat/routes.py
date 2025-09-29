@@ -16,10 +16,11 @@ from pydantic import BaseModel
 from app.auth.middleware import get_user_from_session
 from app.auth.websocket import get_websocket_auth
 from app.database.models.users import User
-from app.chat.streaming import chat_service
+from app.chat.services import ChatStreamingService
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 logger = logging.getLogger(__name__)
+chat_service = ChatStreamingService()
 
 class ChatMessage(BaseModel):
     """Request model for chat messages."""

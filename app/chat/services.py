@@ -127,6 +127,3 @@ class ChatStreamingService:
         async for chunk in self.stream_response(user_message, user):
             chunks.append(chunk)
         return "".join(chunks)
-
-
-chat_service = ChatStreamingService()
