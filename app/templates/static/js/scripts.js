@@ -212,9 +212,8 @@ function initSlidingPanel() {
     const toggle = document.getElementById('sliding-panelToggle');
     const panel = document.getElementById('sliding-panel');
     const close = document.getElementById('sliding-panel-close');
-    if (!toggle || !panel || !close) return;
-
     const prompt = panel.querySelector('gcds-textarea');
+    if (!toggle || !panel || !close || !prompt) return;
 
     function openPanel(e) {
         if (e) e.preventDefault();
@@ -223,6 +222,7 @@ function initSlidingPanel() {
         toggle.setAttribute('aria-expanded', 'true');
         prompt.focus();
         prompt.shadowRoot.querySelector('textarea').setAttribute('placeholder', prompt.getAttribute('data-placeholder'));
+        initWebSocketChat();
     }
 
     function closePanel(e) {
@@ -230,6 +230,34 @@ function initSlidingPanel() {
         panel.classList.remove('open');
         panel.setAttribute('aria-hidden', 'true');
         toggle.setAttribute('aria-expanded', 'false');
+
+        // Clean up WebSocket when panel is closed. Do NOT permanently disable
+        // websockets (useWebSocket) so users can reopen the panel and reconnect.
+        try {
+            if (chatWebSocket) {
+                // Close the socket gracefully if open/connecting. This will
+                // trigger onclose but since we null it below reconnect logic
+                // will create a fresh socket on next open.
+                if (chatWebSocket.readyState === WebSocket.OPEN || chatWebSocket.readyState === WebSocket.CONNECTING) {
+                    try {
+                        chatWebSocket.close(1000, 'Panel closed');
+                    } catch (closeErr) {
+                        console.debug('Error while closing WebSocket:', closeErr);
+                    }
+                }
+
+                // Reset the socket reference so initWebSocketChat can create a new one
+                chatWebSocket = null;
+                // Reset reconnect attempts so user gets full retry budget on reopen
+                reconnectAttempts = 0;
+            }
+        } catch (err) {
+            console.error('Error cleaning up WebSocket on panel close:', err);
+        }
+
+        // Reset streaming/UI state to avoid stale loaders or partial messages
+        isStreaming = false;
+        currentAiMessage = null;
     }
 
     toggle.addEventListener('click', openPanel);
@@ -247,4 +275,202 @@ function initSlidingPanel() {
             closePanel();
         }
     });
+
+    // Add Enter key handler for chat
+    prompt.addEventListener('keydown', handleChatKeydown);
 }
+
+// WebSocket chat functionality
+let chatWebSocket = null;
+let isStreaming = false;
+let currentAiMessage = null;
+let useWebSocket = true;
+let reconnectAttempts = 0;
+let maxReconnectAttempts = 3;
+let reconnectDelay = 3000; // 3 seconds
+const markdown = window.markdownit();
+
+/**
+ * Initialize WebSocket connection for chat
+ */
+function initWebSocketChat() {
+    // If an existing socket is present and still open/connecting, do nothing
+    if (chatWebSocket && (chatWebSocket.readyState === WebSocket.OPEN || chatWebSocket.readyState === WebSocket.CONNECTING)) {
+        console.log('WebSocket already initialized');
+        return;
+    }
+
+    // Don't try to reconnect if we've exceeded max attempts
+    if (reconnectAttempts >= maxReconnectAttempts) {
+        console.warn('Max reconnect attempts reached, using REST API only');
+        useWebSocket = false;
+        return;
+    }
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/chat/ws`;
+    
+    try {
+        chatWebSocket = new WebSocket(wsUrl);
+        chatWebSocket.onopen = function() {
+            console.log('WebSocket connected');
+            console.log('Chat status: connected');
+            reconnectAttempts = 0;
+        };
+        
+        chatWebSocket.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            } catch (error) {
+                console.error('Failed to parse WebSocket message:', error);
+            }
+        };
+        
+        chatWebSocket.onclose = function(event) {
+            console.log('WebSocket disconnected:', event.code, event.reason);
+            console.log('Chat status: disconnected');
+            
+            // Handle different close codes
+            if (event.code === 1008) {
+                // Authentication failed
+                console.error('WebSocket authentication failed');
+                useWebSocket = false;
+                console.log('Chat status: authentication failed');
+                return;
+            }
+            
+            // Try to reconnect after a delay if it wasn't a clean close
+            if (event.code !== 1000 && useWebSocket && reconnectAttempts < maxReconnectAttempts) {
+                reconnectAttempts++;
+                console.log(`Chat status: reconnecting... (${reconnectAttempts}/${maxReconnectAttempts})`);
+                setTimeout(() => {
+                    console.log(`Attempting to reconnect WebSocket... (${reconnectAttempts}/${maxReconnectAttempts})`);
+                    initWebSocketChat();
+                }, reconnectDelay);
+            } else if (reconnectAttempts >= maxReconnectAttempts) {
+                useWebSocket = false;
+                console.log('Chat status: max reconnect attempts reached');
+            }
+        };
+        
+        chatWebSocket.onerror = function(error) {
+            console.error('WebSocket error:', error);
+            console.log('Chat status: connection error');
+        };
+        
+    } catch (error) {
+        console.error('Failed to create WebSocket:', error);
+        useWebSocket = false;
+        console.log('Chat status: failed to create WebSocket');
+    }
+}
+
+/**
+ * Handle WebSocket messages
+ */
+let buffer = '';
+function handleWebSocketMessage(data) {
+    switch (data.type) {
+        case 'start':
+            buffer = '';
+            isStreaming = true;
+            currentAiMessage = addChatMessage('', 'llm');
+            break;
+            
+        case 'chunk':
+            if (currentAiMessage) {
+                buffer += data.content;
+                const bubble = currentAiMessage.querySelector('.bubble');
+                bubble.innerHTML = DOMPurify.sanitize(markdown.render(buffer));
+                const chatContainer = document.getElementById('llmChat');
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            break;
+            
+        case 'end':
+            isStreaming = false;
+            currentAiMessage = null;
+            console.log('Chat status: send finished');
+            break;
+            
+        case 'error':
+            isStreaming = false;
+            addChatMessage(data.content || 'Sorry, I encountered an error. Please try again.', 'llm');
+            console.log('Chat status: error');
+            break;
+    }
+}
+
+/**
+ * Handle keydown events for the chat textarea
+ */
+function handleChatKeydown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendChatMessage();
+    }
+}
+
+/**
+ * Send a chat message via WebSocket
+ */
+async function sendChatMessage() {
+    const prompt = document.querySelector('#sliding-panel gcds-textarea');
+    const chatContainer = document.getElementById('llmChat');
+    
+    if (!prompt || !chatContainer) return;
+    
+    const textarea = prompt.shadowRoot.querySelector('textarea');
+    const message = textarea.value.trim();
+    
+    if (!message || isStreaming) return;
+    textarea.value = '';
+    
+    addChatMessage(message, 'user');
+    
+    if (useWebSocket && chatWebSocket && chatWebSocket.readyState === WebSocket.OPEN) {
+        sendMessageViaWebSocket(message);
+    }
+}
+
+/**
+ * Send message via WebSocket
+ */
+function sendMessageViaWebSocket(message) {
+    try {
+        chatWebSocket.send(JSON.stringify({
+            type: 'message',
+            content: message
+        }));
+        console.log('Chat status: sending...');
+    } catch (error) {
+        console.error('Failed to send WebSocket message:', error);
+    }
+}
+
+/**
+ * Add a message to the chat container
+ */
+function addChatMessage(message, sender) {
+    const chatContainer = document.getElementById('llmChat');
+    if (!chatContainer) return;
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender}`;
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    
+    // Convert newlines to <br> for proper display
+    bubble.innerHTML = message.replace(/\n/g, '<br>');
+    
+    messageDiv.appendChild(bubble);
+    chatContainer.appendChild(messageDiv);
+    
+    // Scroll to bottom
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    return messageDiv
+}
+

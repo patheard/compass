@@ -1,7 +1,13 @@
 """Main FastAPI application module."""
 
 import logging
-from fastapi import FastAPI, Request, Depends, HTTPException, status
+from fastapi import (
+    FastAPI,
+    Request,
+    Depends,
+    HTTPException,
+    status,
+)
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +17,7 @@ from typing import Optional
 from app.auth.routes import router as auth_router
 from app.assessments.routes import router as assessment_router
 from app.assessments.services import AssessmentService
+from app.chat.routes import router as chat_router
 from app.controls.routes import router as control_router
 from app.evidence.routes import router as evidence_router
 from app.job_templates.routes import router as job_templates_router
@@ -93,6 +100,7 @@ async def http_exception_handler(
 # Routes
 app.include_router(auth_router)
 app.include_router(assessment_router)
+app.include_router(chat_router)
 app.include_router(control_router)
 app.include_router(evidence_router)
 app.include_router(job_templates_router)

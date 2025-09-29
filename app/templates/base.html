@@ -9,8 +9,10 @@
     <link rel="stylesheet" href="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-components@0.40.0/dist/gcds/gcds.css">
     <link rel="stylesheet" href="/static/css/main.css">
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
     <script type="module" src="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-components@0.40.0/dist/gcds/gcds.esm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.7/dist/purify.min.js"></script>
     <script src="/static/js/scripts.js"></script>
 
     <link rel="icon" type="image/x-icon" sizes="96x96" href="/static/favicon.ico">
@@ -69,9 +71,7 @@
           <a href="#" id="sliding-panel-close" aria-controls="sliding-panel"><gcds-icon name="close" size="h3"></gcds-icon></a>
         </div>
         <div class="sliding-panel-body">
-          <div id="llmChat" class="chat-container" aria-live="polite" role="log">
-            <div class="dot-flashing"></div>
-          </div>
+          <div id="llmChat" class="chat-container" aria-live="polite" role="log"></div>
           <gcds-textarea
             textarea-id="prompt"
             label="{{ _('Prompt') }}"
