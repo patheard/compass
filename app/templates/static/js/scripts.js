@@ -380,8 +380,7 @@ class ChatClient {
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
 
-        // Convert newlines to <br> for proper display
-        bubble.innerHTML = (message || '').replace(/\n/g, '<br>');
+        bubble.innerHTML = DOMPurify.sanitize(this.markdown.render(message));
 
         messageDiv.appendChild(bubble);
         chatContainer.appendChild(messageDiv);

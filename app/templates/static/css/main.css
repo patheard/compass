@@ -160,6 +160,10 @@ ol {
     display: flex;
 }
 
+.chat-message *:last-child {
+    margin-bottom: 0;
+}
+
 .chat-message.user {
     justify-content: flex-end;
     margin-right: 0.25rem;
