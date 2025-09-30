@@ -251,8 +251,7 @@ function initSlidingPanel() {
     const toggle = document.getElementById('sliding-panelToggle');
     const panel = document.getElementById('sliding-panel');
     const close = document.getElementById('sliding-panel-close');
-    const prompt = panel.querySelector('gcds-textarea');
-    const restartLink = panel.querySelector('#new-chat-session');
+    const prompt = panel ? panel.querySelector('gcds-textarea') : null;
     if (!toggle || !panel || !close || !prompt) return;
 
     function openPanel(e) {
@@ -276,13 +275,6 @@ function initSlidingPanel() {
     toggle.addEventListener('click', openPanel);
     close.addEventListener('click', closePanel);
 
-    restartLink.addEventListener('click', function(e) {
-        e.preventDefault();
-        chatClient.resetSession();
-        chatClient.clearMessages();
-        prompt.focus();
-    });
-
     document.addEventListener('click', function(e) {
         if (!panel.classList.contains('open')) return;
         const target = e.target;
@@ -293,18 +285,6 @@ function initSlidingPanel() {
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && panel.classList.contains('open')) {
             closePanel();
-        }
-    });
-
-    prompt.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            const textarea = prompt.shadowRoot.querySelector('textarea');
-            const message = textarea ? textarea.value.trim() : '';
-            if (!message || chatClient.isStreaming) return;
-            textarea.value = '';
-            chatClient.addMessage(message, 'user');
-            chatClient.send(message);
         }
     });
 }
@@ -331,10 +311,14 @@ class ChatClient {
         this.maxReconnectAttempts = options.maxReconnectAttempts || 3;
         this.reconnectDelay = options.reconnectDelay || 3000;
         this.urlPath = options.urlPath || '/chat/ws';
-        this.enabled = true;
         this.markdown = null;
         this.buffer = '';
         this.sessionId = null;
+        this.useWebSocket = typeof WebSocket !== 'undefined';
+        this.restEndpoint = options.restEndpoint || '/chat/response';
+        this.elemClear = null;
+        this.elemPrompt = null;
+        this.elemSend = null;
     }
 
     /**
@@ -349,24 +333,42 @@ class ChatClient {
      * Initialize the WebSocket connection and set up event handlers.
      * If the client is disabled or already connecting/open it will no-op.
      * Reconnection is attempted up to `maxReconnectAttempts`.
+     * Falls back to REST API if WebSocket is not supported.
      *
      * @returns {void}
      */
-    init() {
-        if (!this.enabled) return;
-        if (this.isOpen) return;
-        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-            console.warn('Max reconnect attempts reached, disabling WebSocket');
-            this.enabled = false;
+    init() {   
+        this.markdown = window.markdownit();
+        if (!this.sessionId) {
+            this.sessionId = crypto.randomUUID();
+        }
+
+        if (!this.useWebSocket) {
+            console.log('WebSocket not supported, using REST API');
             return;
         }
 
-        this.markdown = window.markdownit();
-        this.sessionId = crypto.randomUUID();
+        if (this.isOpen) return;
+        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+            console.warn('Max reconnect attempts reached, falling back to REST API');
+            this.useWebSocket = false;
+            return;
+        }
 
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${protocol}//${window.location.host}${this.urlPath}`;
 
+        // Bind event handlers
+        this.elemClear = document.querySelector('#sliding-panel #clear-session');
+        this.elemPrompt = document.querySelector('#sliding-panel gcds-textarea');
+        this.elemSend = document.querySelector('#sliding-panel #send-message');
+
+        this.elemClear.addEventListener('click', this.clearHandler.bind(this));
+        this.elemPrompt.addEventListener('keydown', this.sendHandler.bind(this));
+        this.elemSend.addEventListener('click', this.sendHandler.bind(this));
+        
+
+        // Setup WebSocket
         try {
             this.ws = new WebSocket(wsUrl);
             this.ws.onopen = () => {
@@ -387,18 +389,17 @@ class ChatClient {
                 console.log('WebSocket disconnected:', event.code, event.reason);
 
                 if (event.code === 1008) {
-                    // Authentication failed; stop reconnecting
-                    console.error('WebSocket authentication failed');
-                    this.enabled = false;
+                    console.error('WebSocket authentication failed, falling back to REST API');
+                    this.useWebSocket = false;
                     return;
                 }
 
-                if (event.code !== 1000 && this.enabled && this.reconnectAttempts < this.maxReconnectAttempts) {
+                if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
                     this.reconnectAttempts++;
                     console.log(`Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
                     setTimeout(() => this.init(), this.reconnectDelay);
                 } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-                    this.enabled = false;
+                    this.useWebSocket = false;
                 }
             };
 
@@ -406,8 +407,8 @@ class ChatClient {
                 console.error('WebSocket error:', error);
             };
         } catch (error) {
-            console.error('Failed to create WebSocket:', error);
-            this.enabled = false;
+            console.error('Failed to create WebSocket, falling back to REST API:', error);
+            this.useWebSocket = false;
         }
     }
 
@@ -474,19 +475,44 @@ class ChatClient {
     }
 
     /**
+     * Handle the send button click or Enter key press.
+     * @param {*} event 
+     * @returns {void} 
+     */
+    sendHandler(event) {
+        if (event.type === 'click' || (event.key === 'Enter' && !event.shiftKey)) {
+            event.preventDefault();
+            const textarea = this.elemPrompt.shadowRoot.querySelector('textarea');
+            const message = textarea ? textarea.value.trim() : '';
+            if (!message || this.isStreaming) return;
+            textarea.value = '';
+            this.addMessage(message, 'user');
+            this.send(message);
+        }
+    }
+
+    /**
      * Send a message over the WebSocket. If the socket is not open the
      * message will be ignored and a warning will be logged.
+     * Falls back to REST API if WebSocket is not available.
      *
      * @param {string} message - The plain-text message to send.
      * @returns {void}
      */
-    send(message) {
+    async send(message) {
         if (!message || this.isStreaming) return;
+        
+        if (!this.sessionId) {
+            this.sessionId = crypto.randomUUID();
+        }
+
+        if (!this.useWebSocket) {
+            await this.sendViaRest(message);
+            return;
+        }
+
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             try {
-                if (!this.sessionId) {
-                    this.sessionId = crypto.randomUUID();
-                }
                 this.ws.send(JSON.stringify({ 
                     type: 'message', 
                     content: message,
@@ -498,7 +524,55 @@ class ChatClient {
                 console.error('Failed to send WebSocket message:', err);
             }
         } else {
-            console.warn('WebSocket not open, message not sent');
+            console.warn('WebSocket not open, falling back to REST API');
+            await this.sendViaRest(message);
+        }
+    }
+
+    /**
+     * Send a message via REST API and simulate streaming by processing the response.
+     *
+     * @param {string} message - The plain-text message to send.
+     * @returns {Promise<void>}
+     */
+    async sendViaRest(message) {
+        this.isStreaming = true;
+        this.buffer = '';
+        this.currentAiMessage = this.addMessage('', 'llm');
+
+        try {
+            const response = await fetch(this.restEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    session_id: this.sessionId,
+                    current_page: document.querySelector('#main-content') ? document.querySelector('#main-content').innerText : ''
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (this.currentAiMessage) {
+                const bubble = this.currentAiMessage.querySelector('.bubble');
+                bubble.innerHTML = DOMPurify.sanitize(this.markdown.render(data.response || ''));
+                const chatContainer = document.getElementById('llm-chat');
+                if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            this.isStreaming = false;
+            this.currentAiMessage = null;
+            console.log('Chat status: send finished (REST)');
+        } catch (err) {
+            console.error('Failed to send REST message:', err);
+            this.isStreaming = false;
+            this.addMessage('Sorry, I encountered an error. Please try again.', 'llm');
         }
     }
 
@@ -510,7 +584,7 @@ class ChatClient {
      */
     close(graceful = true) {
         try {
-            if (this.ws) {
+            if (this.ws && this.useWebSocket) {
                 if (graceful && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
                     try { this.ws.close(1000, 'Panel closed'); } catch (e) { /* ignore */ }
                 }
@@ -535,6 +609,13 @@ class ChatClient {
         this.buffer = '';
         this.currentAiMessage = null;
         this.isStreaming = false;
+    }
+
+    clearHandler(event) {
+        event.preventDefault();
+        this.resetSession();
+        this.clearMessages();
+        this.elemPrompt.focus();
     }
 
     /**

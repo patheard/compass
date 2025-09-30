@@ -97,7 +97,7 @@ class LocalizedTemplates:
         configure_jinja_i18n(self.templates.env, language)
 
         # Add version from environment variable
-        context["version"] = os.getenv("APP_VERSION", "1.0.0")
+        context["version"] = os.getenv("APP_VERSION", "0.0.1")
 
         # The translation function is now available globally in templates as '_'
         return self.templates.TemplateResponse(name, context, status_code=status_code)

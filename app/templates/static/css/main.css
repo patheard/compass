@@ -113,6 +113,13 @@ ol {
     padding: 1rem 1.25rem;
 }
 
+.sliding-panel-header h2 {
+    font: var(--gcds-font-text);
+    font-weight: 600;
+    margin: 0.25rem 0;
+    padding: 0;
+}
+
 .sliding-panel-header a {
     height: 2.5rem
 }
@@ -133,6 +140,27 @@ ol {
 
 .sliding-panel gcds-textarea {
     margin-right: 1rem;
+}
+
+.sliding-panel #actions {
+    display: flex;
+    justify-content: flex-end;
+
+    position: absolute;
+    z-index: 3;
+    bottom: 1.5rem;
+    right: 1.7rem;
+}
+
+.sliding-panel #actions img {
+    width: 1.5rem;
+    margin: 0.5rem 0.25rem;
+    height: auto;
+}
+
+.sliding-panel #actions a:focus {
+    background: none;
+    outline: 0;
 }
 
 .sliding-panel .chat-container li p {

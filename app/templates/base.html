@@ -67,19 +67,25 @@
 
       <section id="sliding-panel" class="sliding-panel" role="complementary" aria-hidden="true">
         <div class="sliding-panel-header">
-          <a href="#" id="new-chat-session">{{ _('Start a new chat') }}</a>
+          <h2>{{ _('SAAP chat') }}</h2>
           <a href="#" id="sliding-panel-close" aria-controls="sliding-panel"><gcds-icon name="close" size="h3"></gcds-icon></a>
         </div>
         <div class="sliding-panel-body">
           <div id="llm-chat" class="chat-container" aria-live="polite" role="log"></div>
-          <gcds-textarea
-            textarea-id="prompt"
-            label="{{ _('Prompt') }}"
-            name="prompt"
-            hide-label="true"
-            rows="3"
-            data-placeholder="{{ _('Ask your question and press Enter') }}">
-          </gcds-textarea>
+          <div class="sliding-panel-footer">
+            <gcds-textarea
+              textarea-id="prompt"
+              label="{{ _('Prompt') }}"
+              name="prompt"
+              hide-label="true"
+              rows="3"
+              data-placeholder="{{ _('Ask your question and press Enter') }}">
+            </gcds-textarea>
+            <div id="actions">
+              <a href="#" id="clear-session"><img src="/static/img/clear.svg" title="{{ _('Clear') }}" alt="{{ _('Clear') }}"></a>
+              <a href="#" id="send-message"><img src="/static/img/send.svg" title="{{ _('Send') }}" alt="{{ _('Send') }}"></a>
+            </div>
+          </div>
         </div>
       </section>
     {% endif %}
