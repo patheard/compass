@@ -3,6 +3,28 @@ variable "account_id" {
   type        = string
 }
 
+variable "azure_openai_api_key" {
+  description = "Azure OpenAI API key."
+  type        = string
+  sensitive   = true
+}
+
+variable "azure_openai_endpoint" {
+  description = "Azure OpenAI endpoint URL."
+  type        = string
+  sensitive   = true
+}
+
+variable "azure_openai_api_version" {
+  description = "Azure OpenAI API version."
+  type        = string
+}
+
+variable "azure_openai_model" {
+  description = "Azure OpenAI model to use (e.g. gpt-4, gpt-4o, gpt-4o-mini, gpt-35-turbo)."
+  type        = string
+}
+
 variable "billing_code" {
   description = "Billing code tag value."
   type        = string

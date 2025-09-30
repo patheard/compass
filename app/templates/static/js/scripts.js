@@ -314,9 +314,10 @@ class ChatClient {
         this.markdown = null;
         this.buffer = '';
         this.sessionId = null;
-        this.useWebSocket = typeof WebSocket !== 'undefined';
+        this.useWebSocket = typeof WebSocket !== 'undefined' && !window.location.href.includes('lambda-url');
         this.restEndpoint = options.restEndpoint || '/chat/response';
         this.elemClear = null;
+        this.elemLoading = null;
         this.elemPrompt = null;
         this.elemSend = null;
     }
@@ -343,6 +344,17 @@ class ChatClient {
             this.sessionId = crypto.randomUUID();
         }
 
+        // Bind event handlers
+        this.elemClear = document.querySelector('#sliding-panel #clear-session');
+        this.elemLoading = document.querySelector('#sliding-panel #loading');
+        this.elemPrompt = document.querySelector('#sliding-panel gcds-textarea');
+        this.elemSend = document.querySelector('#sliding-panel #send-message');
+
+        this.elemClear.addEventListener('click', this.clearHandler.bind(this));
+        this.elemPrompt.addEventListener('keydown', this.sendHandler.bind(this));
+        this.elemSend.addEventListener('click', this.sendHandler.bind(this));
+        
+
         if (!this.useWebSocket) {
             console.log('WebSocket not supported, using REST API');
             return;
@@ -356,17 +368,7 @@ class ChatClient {
         }
 
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}${this.urlPath}`;
-
-        // Bind event handlers
-        this.elemClear = document.querySelector('#sliding-panel #clear-session');
-        this.elemPrompt = document.querySelector('#sliding-panel gcds-textarea');
-        this.elemSend = document.querySelector('#sliding-panel #send-message');
-
-        this.elemClear.addEventListener('click', this.clearHandler.bind(this));
-        this.elemPrompt.addEventListener('keydown', this.sendHandler.bind(this));
-        this.elemSend.addEventListener('click', this.sendHandler.bind(this));
-        
+        const wsUrl = `${protocol}//${window.location.host}${this.urlPath}`;        
 
         // Setup WebSocket
         try {
@@ -539,6 +541,7 @@ class ChatClient {
         this.isStreaming = true;
         this.buffer = '';
         this.currentAiMessage = this.addMessage('', 'llm');
+        this.elemLoading.classList.add('show');
 
         try {
             const response = await fetch(this.restEndpoint, {
@@ -561,7 +564,7 @@ class ChatClient {
             
             if (this.currentAiMessage) {
                 const bubble = this.currentAiMessage.querySelector('.bubble');
-                bubble.innerHTML = DOMPurify.sanitize(this.markdown.render(data.response || ''));
+                bubble.innerHTML = DOMPurify.sanitize(this.markdown.render(data.message || ''));
                 const chatContainer = document.getElementById('llm-chat');
                 if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
             }
@@ -573,6 +576,8 @@ class ChatClient {
             console.error('Failed to send REST message:', err);
             this.isStreaming = false;
             this.addMessage('Sorry, I encountered an error. Please try again.', 'llm');
+        } finally {
+            this.elemLoading.classList.remove('show');
         }
     }
 

@@ -10,11 +10,15 @@ module "compass" {
   enable_lambda_insights = true
 
   environment_variables = {
-    GOOGLE_CLIENT_ID     = var.google_oauth_client_id
-    GOOGLE_CLIENT_SECRET = var.google_oauth_client_secret
-    SECRET_KEY           = var.secret_key
-    BASE_URL             = "https://${var.domain}"
-    SQS_QUEUE_URL        = aws_sqs_queue.compass_jobs.id
+    AZURE_OPENAI_API_KEY     = var.azure_openai_api_key
+    AZURE_OPENAI_ENDPOINT    = var.azure_openai_endpoint
+    AZURE_OPENAI_API_VERSION = var.azure_openai_api_version
+    AZURE_OPENAI_MODEL       = var.azure_openai_model
+    GOOGLE_CLIENT_ID         = var.google_oauth_client_id
+    GOOGLE_CLIENT_SECRET     = var.google_oauth_client_secret
+    SECRET_KEY               = var.secret_key
+    BASE_URL                 = "https://${var.domain}"
+    SQS_QUEUE_URL            = aws_sqs_queue.compass_jobs.id
   }
 
   policies = [
