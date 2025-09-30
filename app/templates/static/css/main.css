@@ -210,6 +210,10 @@ ol {
     margin: 1rem 0;
 }
 
+.chat-message .bubble {
+    margin-right: 1rem;
+}
+
 .chat-message.user {
     justify-content: flex-end;
     margin-right: 0.25rem;
