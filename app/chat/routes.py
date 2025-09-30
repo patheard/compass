@@ -68,6 +68,7 @@ async def websocket_chat_endpoint(websocket: WebSocket):
 
             user_message = message_data.get("content", "").strip()
             session_id = message_data.get("session_id")
+            current_page = message_data.get("current_page", "").strip()
             if not user_message:
                 continue
 
@@ -77,6 +78,7 @@ async def websocket_chat_endpoint(websocket: WebSocket):
                 user,
                 websocket,
                 session_id=session_id,
+                current_page=current_page,
             )
 
     except WebSocketDisconnect:

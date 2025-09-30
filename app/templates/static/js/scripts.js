@@ -490,6 +490,7 @@ class ChatClient {
                 this.ws.send(JSON.stringify({ 
                     type: 'message', 
                     content: message,
+                    current_page: document.querySelector('#main-content').innerText,
                     session_id: this.sessionId
                 }));
                 console.log('Chat status: sending...');

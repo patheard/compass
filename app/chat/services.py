@@ -26,6 +26,7 @@ class ChatStreamingService:
         "controls and documenting how the system meets each control. Use concise language "
         "and provide accurate information. When unsure, say 'I don't know' or suggest "
         "consulting a professional. Never make up answers. Always respond using markdown."
+        "To help with context here is the current page content:\n"
     )
 
     def __init__(self, repository: Optional[ChatHistoryRepository] = None) -> None:
@@ -41,7 +42,11 @@ class ChatStreamingService:
         )
 
     async def stream_response(
-        self, user_message: str, user: User, session_id: Optional[str] = None
+        self,
+        user_message: str,
+        user: User,
+        session_id: Optional[str] = None,
+        current_page: Optional[str] = None,
     ) -> Tuple[str, AsyncGenerator[str, None]]:
         """Stream a chat response based on user input."""
 
@@ -49,6 +54,7 @@ class ChatStreamingService:
             user=user,
             session_id=session_id,
             user_message=user_message,
+            current_page=current_page,
         )
 
         client = self._build_client()
@@ -98,12 +104,14 @@ class ChatStreamingService:
         user: User,
         websocket: WebSocket,
         session_id: Optional[str] = None,
+        current_page: Optional[str] = None,
     ) -> None:
         """Stream response directly to WebSocket connection."""
         stream_session_id, response_stream = await self.stream_response(
             user_message,
             user,
             session_id,
+            current_page,
         )
 
         try:
@@ -199,6 +207,7 @@ class ChatStreamingService:
         user: User,
         session_id: Optional[str],
         user_message: str,
+        current_page: Optional[str],
     ) -> tuple[str, List[Dict[str, Any]]]:
         session_id, _ = await self.repository.ensure_session(
             user_id=user.user_id,
@@ -225,7 +234,7 @@ class ChatStreamingService:
         )
 
         messages: List[Dict[str, Any]] = [
-            {"role": "system", "content": self.DEFAULT_SYSTEM_PROMPT}
+            {"role": "system", "content": self.DEFAULT_SYSTEM_PROMPT + (current_page or "")},
         ]
         messages.extend(history_messages)
 
