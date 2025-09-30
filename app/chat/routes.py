@@ -28,6 +28,7 @@ class ChatMessage(BaseModel):
 
     message: str
     session_id: Optional[str] = None
+    current_page: Optional[str] = None
 
 
 @router.post("/response")
@@ -43,7 +44,10 @@ async def get_chat_response(
 
     # Use the streaming service to get a complete response
     result = await chat_service.get_full_response(
-        chat_message.message, current_user, chat_message.session_id
+        chat_message.message,
+        current_user,
+        chat_message.session_id,
+        chat_message.current_page,
     )
 
     return JSONResponse(content=result)

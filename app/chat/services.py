@@ -161,7 +161,11 @@ class ChatStreamingService:
                 await response_stream.aclose()
 
     async def get_full_response(
-        self, user_message: str, user: User, session_id: Optional[str] = None
+        self,
+        user_message: str,
+        user: User,
+        session_id: Optional[str] = None,
+        current_page: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Get complete response for REST API (non-streaming)."""
 
@@ -169,6 +173,7 @@ class ChatStreamingService:
             user_message,
             user,
             session_id,
+            current_page,
         )
 
         chunks: List[str] = []
@@ -234,7 +239,10 @@ class ChatStreamingService:
         )
 
         messages: List[Dict[str, Any]] = [
-            {"role": "system", "content": self.DEFAULT_SYSTEM_PROMPT + (current_page or "")},
+            {
+                "role": "system",
+                "content": self.DEFAULT_SYSTEM_PROMPT + (current_page or ""),
+            },
         ]
         messages.extend(history_messages)
 

@@ -135,6 +135,11 @@ ol {
     margin-right: 1rem;
 }
 
+.sliding-panel .chat-container li p {
+    -webkit-margin-after: var(--gcds-heading-spacing-0);
+    margin-block-end: var(--gcds-heading-spacing-0);
+}
+
 @media (min-width: 768px) {
     .sliding-panel {
         width: 45%;
