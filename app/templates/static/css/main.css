@@ -206,8 +206,8 @@ ol {
     display: flex;
 }
 
-.chat-message *:last-child {
-    margin-bottom: 0;
+.chat-message p {
+    margin: 1rem 0;
 }
 
 .chat-message.user {
@@ -218,7 +218,7 @@ ol {
 .chat-message.user .bubble {
     background: var(--gcds-color-grayscale-50);
     border-radius: 8px;
-    padding: 1rem;
+    padding: 0 1rem;
     word-wrap: break-word;
 }
 
