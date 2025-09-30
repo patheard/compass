@@ -12,6 +12,7 @@ from app.database.models import (
     User,
     JobTemplate,
     JobExecution,
+    ChatSessionMessage,
 )
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ class DatabaseManager:
             Evidence,
             JobTemplate,
             JobExecution,
+            ChatSessionMessage,
         ]
 
     @staticmethod

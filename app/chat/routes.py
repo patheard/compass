@@ -22,10 +22,12 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 logger = logging.getLogger(__name__)
 chat_service = ChatStreamingService()
 
+
 class ChatMessage(BaseModel):
     """Request model for chat messages."""
 
     message: str
+    session_id: Optional[str] = None
 
 
 @router.post("/response")
@@ -40,11 +42,11 @@ async def get_chat_response(
         raise HTTPException(status_code=401, detail="Authentication required")
 
     # Use the streaming service to get a complete response
-    response_message = await chat_service.get_full_response(
-        chat_message.message, current_user
+    result = await chat_service.get_full_response(
+        chat_message.message, current_user, chat_message.session_id
     )
 
-    return JSONResponse(content={"message": response_message})
+    return JSONResponse(content=result)
 
 
 @router.websocket("/ws")
@@ -65,11 +67,17 @@ async def websocket_chat_endpoint(websocket: WebSocket):
             message_data = json.loads(data)
 
             user_message = message_data.get("content", "").strip()
+            session_id = message_data.get("session_id")
             if not user_message:
                 continue
 
             # Stream response back to client
-            await chat_service.stream_to_websocket(user_message, user, websocket)
+            await chat_service.stream_to_websocket(
+                user_message,
+                user,
+                websocket,
+                session_id=session_id,
+            )
 
     except WebSocketDisconnect:
         logger.debug("WebSocket disconnected by client")

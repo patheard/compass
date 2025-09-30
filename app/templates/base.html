@@ -67,11 +67,11 @@
 
       <section id="sliding-panel" class="sliding-panel" role="complementary" aria-hidden="true">
         <div class="sliding-panel-header">
-          <gcds-text>{{ _('Ask questions about your assessment') }}</gcds-text>
+          <a href="#" id="new-chat-session">{{ _('Start a new chat') }}</a>
           <a href="#" id="sliding-panel-close" aria-controls="sliding-panel"><gcds-icon name="close" size="h3"></gcds-icon></a>
         </div>
         <div class="sliding-panel-body">
-          <div id="llmChat" class="chat-container" aria-live="polite" role="log"></div>
+          <div id="llm-chat" class="chat-container" aria-live="polite" role="log"></div>
           <gcds-textarea
             textarea-id="prompt"
             label="{{ _('Prompt') }}"

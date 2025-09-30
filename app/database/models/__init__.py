@@ -6,6 +6,7 @@ from app.database.models.evidence import Evidence
 from app.database.models.job_templates import JobTemplate
 from app.database.models.job_executions import JobExecution
 from app.database.models.users import User
+from app.database.models.chat_sessions import ChatSessionMessage
 
 __all__ = [
     "User",
@@ -14,4 +15,5 @@ __all__ = [
     "Evidence",
     "JobTemplate",
     "JobExecution",
+    "ChatSessionMessage",
 ]

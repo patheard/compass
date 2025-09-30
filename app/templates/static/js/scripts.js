@@ -27,8 +27,13 @@ async function deleteItem(deleteUrl, csrfToken) {
 }
 
 /**
- * Show confirmation modal
- * @param {Function} onConfirm - Callback function when confirmed
+ * Show a generic confirmation modal and wire up its controls.
+ * The modal is assumed to exist in the DOM with IDs `confirmModal`,
+ * `modalConfirm`, and `modalCancel`. When the confirm button is clicked
+ * the provided callback is executed after the modal is hidden.
+ *
+ * @param {Function} onConfirm - Callback executed when the user confirms.
+ * @returns {void}
  */
 function showConfirmModal(onConfirm) {
     const modal = document.getElementById('confirmModal');
@@ -56,7 +61,11 @@ function showConfirmModal(onConfirm) {
 }
 
 /**
- * Hide confirmation modal
+ * Hide the confirmation modal and clear any attached event handlers.
+ * This prevents leaked references to callbacks and ensures that the
+ * modal can be reused safely.
+ *
+ * @returns {void}
  */
 function hideConfirmModal() {
     const modal = document.getElementById('confirmModal');
@@ -69,7 +78,12 @@ function hideConfirmModal() {
 }
 
 /**
- * Initialize event handlers when the DOM is loaded
+ * Initialize event handlers and UI components after DOMContentLoaded.
+ * Binds delete buttons to the confirmation flow, wires form change
+ * events for evidence automation, initializes the compliance chart
+ * and sliding panel components.
+ *
+ * @returns {void}
  */
 document.addEventListener('DOMContentLoaded', function() {
     // Bind all delete buttons (assessments, controls, evidence)
@@ -103,7 +117,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
- * Update visibility and required attributes for automated collection related fields.
+ * Toggle visibility of the automated collection fields inside the
+ * evidence form based on the selected evidence type.
+ *
+ * This looks for a form with id `evidence-form` and a select named
+ * `evidence_type`. When `evidence_type` equals `'automated_collection'`
+ * the container with id `automated-collection-fields` is shown.
+ *
+ * @returns {void}
  */
 function updateEvidenceAutomatedCollection() {
     const form = document.querySelector('form#evidence-form');
@@ -119,8 +140,15 @@ function updateEvidenceAutomatedCollection() {
 }
 
 /**
- * When a job template is selected, find the hidden div[data-id] with the same id
- * and copy its data-name and data-description into the title and description fields.
+ * Auto-fill the evidence title and description when a job template is selected.
+ *
+ * The function finds a hidden element with a matching `data-id` attribute
+ * and reads its `[data-name]` and `[data-description]` child attributes.
+ * These values are copied into the form fields named `title` and
+ * `description` respectively.
+ *
+ * @param {Event} event - The change event from the job template select.
+ * @returns {void}
  */
 function updateEvidenceWithJobTemplate(event) {
     // `this` may be the select element if called with .call
@@ -207,12 +235,24 @@ function initComplianceChart() {
 
 /* 
  * Sliding panel behavior 
+ *
+ * Expected DOM structure:
+ * - toggle button with id `sliding-panelToggle`
+ * - panel container with id `sliding-panel`
+ * - close control with id `sliding-panel-close`
+ * - a `gcds-textarea` inside the panel that provides the prompt
+ *
+ * This function wires open/close actions, outside-click and Escape
+ * behavior, and handles Enter-to-send for the embedded textarea.
+ *
+ * @returns {void}
  */
 function initSlidingPanel() {
     const toggle = document.getElementById('sliding-panelToggle');
     const panel = document.getElementById('sliding-panel');
     const close = document.getElementById('sliding-panel-close');
     const prompt = panel.querySelector('gcds-textarea');
+    const restartLink = panel.querySelector('#new-chat-session');
     if (!toggle || !panel || !close || !prompt) return;
 
     function openPanel(e) {
@@ -236,6 +276,13 @@ function initSlidingPanel() {
     toggle.addEventListener('click', openPanel);
     close.addEventListener('click', closePanel);
 
+    restartLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        chatClient.resetSession();
+        chatClient.clearMessages();
+        prompt.focus();
+    });
+
     document.addEventListener('click', function(e) {
         if (!panel.classList.contains('open')) return;
         const target = e.target;
@@ -249,7 +296,6 @@ function initSlidingPanel() {
         }
     });
 
-    // Add Enter key handler for chat
     prompt.addEventListener('keydown', function(event) {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
@@ -263,6 +309,19 @@ function initSlidingPanel() {
     });
 }
 
+/**
+ * Chat client that manages a WebSocket connection to a chat backend and
+ * handles streaming messages for an AI assistant UI.
+ *
+ * Options:
+ * - maxReconnectAttempts: number (default: 3)
+ * - reconnectDelay: number in ms (default: 3000)
+ * - urlPath: path to the WebSocket endpoint (default: '/chat/ws')
+ *
+ * Properties exposed:
+ * - isStreaming: boolean flag indicating streaming in progress
+ * - sessionId: UUID for the current chat session
+ */
 class ChatClient {
     constructor(options = {}) {
         this.ws = null;
@@ -274,12 +333,25 @@ class ChatClient {
         this.urlPath = options.urlPath || '/chat/ws';
         this.enabled = true;
         this.markdown = null;
+        this.buffer = '';
+        this.sessionId = null;
     }
 
+    /**
+     * Whether the WebSocket is currently open or connecting.
+     * @returns {boolean}
+     */
     get isOpen() {
         return this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING);
     }
 
+    /**
+     * Initialize the WebSocket connection and set up event handlers.
+     * If the client is disabled or already connecting/open it will no-op.
+     * Reconnection is attempted up to `maxReconnectAttempts`.
+     *
+     * @returns {void}
+     */
     init() {
         if (!this.enabled) return;
         if (this.isOpen) return;
@@ -290,6 +362,8 @@ class ChatClient {
         }
 
         this.markdown = window.markdownit();
+        this.sessionId = crypto.randomUUID();
+
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${protocol}//${window.location.host}${this.urlPath}`;
 
@@ -337,6 +411,13 @@ class ChatClient {
         }
     }
 
+    /**
+     * Handle an incoming parsed WebSocket message payload.
+     * Recognized types: 'start', 'chunk', 'end', 'error'.
+     *
+     * @param {Object} data - Parsed message object from the server.
+     * @returns {void}
+     */
     handleMessage(data) {
         switch (data.type) {
             case 'start':
@@ -349,7 +430,7 @@ class ChatClient {
                     this.buffer += data.content;
                     const bubble = this.currentAiMessage.querySelector('.bubble');
                     bubble.innerHTML = DOMPurify.sanitize(this.markdown.render(this.buffer));
-                    const chatContainer = document.getElementById('llmChat');
+                    const chatContainer = document.getElementById('llm-chat');
                     if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
                 break;
@@ -367,11 +448,14 @@ class ChatClient {
     }
 
     /**
-     * Add a message to the chat container
-     * Returns the created message element (useful for streaming updates)
+     * Append a message bubble into the chat container.
+     *
+     * @param {string} message - Markdown-formatted message text.
+     * @param {string} sender - Sender type, e.g. 'user' or 'llm'.
+     * @returns {HTMLElement|null} The created message element or null if the container is missing.
      */
     addMessage(message, sender) {
-        const chatContainer = document.getElementById('llmChat');
+        const chatContainer = document.getElementById('llm-chat');
         if (!chatContainer) return null;
 
         const messageDiv = document.createElement('div');
@@ -385,17 +469,29 @@ class ChatClient {
         messageDiv.appendChild(bubble);
         chatContainer.appendChild(messageDiv);
 
-        // Scroll to bottom
         chatContainer.scrollTop = chatContainer.scrollHeight;
-
         return messageDiv;
     }
 
+    /**
+     * Send a message over the WebSocket. If the socket is not open the
+     * message will be ignored and a warning will be logged.
+     *
+     * @param {string} message - The plain-text message to send.
+     * @returns {void}
+     */
     send(message) {
         if (!message || this.isStreaming) return;
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             try {
-                this.ws.send(JSON.stringify({ type: 'message', content: message }));
+                if (!this.sessionId) {
+                    this.sessionId = crypto.randomUUID();
+                }
+                this.ws.send(JSON.stringify({ 
+                    type: 'message', 
+                    content: message,
+                    session_id: this.sessionId
+                }));
                 console.log('Chat status: sending...');
             } catch (err) {
                 console.error('Failed to send WebSocket message:', err);
@@ -405,6 +501,12 @@ class ChatClient {
         }
     }
 
+    /**
+     * Close the WebSocket and reset streaming state.
+     *
+     * @param {boolean} [graceful=true] - If true, attempt a graceful close with code 1000.
+     * @returns {void}
+     */
     close(graceful = true) {
         try {
             if (this.ws) {
@@ -419,6 +521,31 @@ class ChatClient {
         this.isStreaming = false;
         this.currentAiMessage = null;
         this.reconnectAttempts = 0;
+    }
+
+    /**
+     * Reset the internal session state for the chat client. Does not
+     * close the WebSocket.
+     *
+     * @returns {void}
+     */
+    resetSession() {
+        this.sessionId = null;
+        this.buffer = '';
+        this.currentAiMessage = null;
+        this.isStreaming = false;
+    }
+
+    /**
+     * Remove all messages from the UI chat container.
+     *
+     * @returns {void}
+     */
+    clearMessages() {
+        const chatContainer = document.getElementById('llm-chat');
+        if (chatContainer) {
+            chatContainer.innerHTML = '';
+        }
     }
 }
 const chatClient = new ChatClient();

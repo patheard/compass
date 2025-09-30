@@ -13,6 +13,7 @@ from app.security.session import session_config
 
 logger = logging.getLogger(__name__)
 
+
 class WebSocketAuth:
     """WebSocket authentication helper."""
 

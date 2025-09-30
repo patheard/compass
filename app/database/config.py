@@ -43,6 +43,11 @@ class DatabaseConfig:
         """Get the job executions table name."""
         return f"{self.table_prefix}-job-executions"
 
+    @property
+    def chat_sessions_table_name(self) -> str:
+        """Get the chat sessions table name."""
+        return f"{self.table_prefix}-chat-sessions"
+
 
 # Global configuration instance
 db_config = DatabaseConfig()
