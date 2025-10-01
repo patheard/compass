@@ -75,7 +75,7 @@ ol {
     padding: 25px 20px;
     border-radius: 999px;
     text-decoration: none;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    border: 4px solid #fff;
     font-size: 2.5rem;
 }
 
@@ -91,7 +91,7 @@ ol {
     top: 0;
     right: 0;
     height: 100vh;
-    width: 100%; /* mobile default */
+    width: 100%;
     max-width: 100%;
     background: #fff;
     box-shadow: -3px 0 9px rgba(0,0,0,0.08);
@@ -151,7 +151,7 @@ ol {
     margin-right: 1rem;
 }
 
-.sliding-panel #actions {
+.sliding-panel .actions {
     display: flex;
     justify-content: flex-end;
 
@@ -161,13 +161,17 @@ ol {
     right: 1.7rem;
 }
 
-.sliding-panel #actions img {
+.sliding-panel .actions img {
     width: 1.5rem;
     margin: 0.5rem 0.25rem;
+}
+
+.actions img {
+    width: 1.75rem;
     height: auto;
 }
 
-.sliding-panel #actions a:focus {
+.actions a:focus {
     background: none;
     outline: 0;
 }
