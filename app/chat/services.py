@@ -7,6 +7,7 @@ import logging
 import os
 from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 
+import boto3
 from fastapi import WebSocket
 from openai import AsyncAzureOpenAI
 
@@ -29,16 +30,30 @@ class ChatStreamingService:
         "To help with context here is the current page content:\n"
     )
 
+    VECTOR_CONTEXT_PROMPT = "Use the following context from embeddings search to assist with the user's query:\n"
+
     def __init__(self, repository: Optional[ChatHistoryRepository] = None) -> None:
         """Initialize the chat streaming service."""
         self.azure_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
-        self.azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
         self.azure_api_version = os.environ.get("AZURE_OPENAI_API_VERSION")
-        self.model_name = os.environ.get("AZURE_OPENAI_MODEL")
+        self.azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+        self.completions_model_name = os.environ.get(
+            "AZURE_OPENAI_COMPLETIONS_MODEL_NAME"
+        )
+        self.embeddings_model_name = os.environ.get(
+            "AZURE_OPENAI_EMBEDDINGS_MODEL_NAME"
+        )
+        self.s3_vector_bucket = os.environ.get("S3_VECTOR_BUCKET_NAME")
+        self.s3_vector_index = os.environ.get("S3_VECTOR_INDEX_NAME")
+        self.s3_vector_region = os.environ.get("S3_VECTOR_REGION")
+        self.s3_vector_top_k = int(os.environ.get("S3_VECTOR_TOP_K", "3"))
         self.repository = repository or ChatHistoryRepository()
         self.max_history_tokens = int(os.environ.get("CHAT_HISTORY_MAX_TOKENS", "2500"))
         self.max_history_messages = int(
             os.environ.get("CHAT_HISTORY_MAX_MESSAGES", "40")
+        )
+        self.s3_vectors_client = boto3.client(
+            "s3vectors", region_name=self.s3_vector_region
         )
 
     async def stream_response(
@@ -69,7 +84,7 @@ class ChatStreamingService:
 
             try:
                 stream = await client.chat.completions.create(
-                    model=self.model_name,
+                    model=self.completions_model_name,
                     messages=messages,
                     stream=True,
                 )
@@ -189,13 +204,50 @@ class ChatStreamingService:
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+    async def _generate_embeddings(self, text: str) -> Optional[List[float]]:
+        """Generate embeddings from text using Azure OpenAI embeddings model."""
+        if not self.embeddings_model_name:
+            logger.warning("Embeddings model not configured; skipping vector search")
+            return None
+
+        client = self._build_client()
+        if client is None:
+            return None
+
+        try:
+            response = await client.embeddings.create(
+                model=self.embeddings_model_name,
+                input=text,
+            )
+            return response.data[0].embedding
+        except Exception as exc:
+            logger.exception("Failed to generate embeddings: %s", exc)
+            return None
+
+    def _query_s3_vectors(self, embeddings: List[float]) -> Optional[Dict[str, Any]]:
+        """Query S3 vector index for matching vectors."""
+        try:
+            response = self.s3_vectors_client.query_vectors(
+                vectorBucketName=self.s3_vector_bucket,
+                indexName=self.s3_vector_index,
+                queryVector={"float32": embeddings},
+                topK=self.s3_vector_top_k,
+                returnDistance=True,
+                returnMetadata=True,
+            )
+
+            return response["vectors"]
+        except Exception as exc:
+            logger.exception("Failed to query S3 vectors: %s", exc)
+            return None
+
     def _build_client(self) -> Optional[AsyncAzureOpenAI]:
         if not all(
             [
                 self.azure_api_key,
                 self.azure_endpoint,
                 self.azure_api_version,
-                self.model_name,
+                self.completions_model_name,
             ]
         ):
             return None
@@ -238,12 +290,31 @@ class ChatStreamingService:
             {"role": "user", "content": persisted_user_message.content}
         )
 
+        # Generate embeddings and query S3 vectors for additional context
+        vector_context = ""
+        embeddings = await self._generate_embeddings(user_message)
+        if embeddings:
+            vectors = self._query_s3_vectors(embeddings)
+            if vectors:
+                vector_context = "\n\n".join(
+                    v.get("metadata", {}).get("chunk_text", "") for v in vectors
+                )
+
         messages: List[Dict[str, Any]] = [
             {
                 "role": "system",
                 "content": self.DEFAULT_SYSTEM_PROMPT + (current_page or ""),
             },
         ]
+
+        if vector_context:
+            messages.append(
+                {
+                    "role": "system",
+                    "content": self.VECTOR_CONTEXT_PROMPT + vector_context,
+                }
+            )
+
         messages.extend(history_messages)
 
         return session_id, messages

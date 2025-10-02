@@ -27,7 +27,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "pytest>=8.4.2",
     "ruff>=0.8.0",
     "bandit>=1.7.5",
+    "langchain>=0.3.27",
 ]

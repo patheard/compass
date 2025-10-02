@@ -8,7 +8,6 @@ using Azure OpenAI, and stores them in an S3 Vector bucket with metadata.
 
 import argparse
 import hashlib
-import json
 import logging
 import os
 import sys
@@ -19,6 +18,7 @@ from typing import Any
 
 import boto3
 from dotenv import load_dotenv
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from openai import AzureOpenAI
 
 # Load environment variables from .env file if present
@@ -39,8 +39,9 @@ class Config:
         self.azure_openai_embeddings_model = os.getenv("AZURE_OPENAI_EMBEDDINGS_MODEL")
         self.s3_vector_bucket_name = os.getenv("S3_VECTOR_BUCKET_NAME")
         self.s3_vector_index_name = os.getenv("S3_VECTOR_INDEX_NAME")
-        self.chunk_size = int(os.getenv("CHUNK_SIZE", "2000"))
-        self.chunk_overlap = int(os.getenv("CHUNK_OVERLAP", "200"))
+        self.s3_vector_region = os.getenv("S3_VECTOR_REGION")
+        self.chunk_size = int(os.getenv("CHUNK_SIZE", "1024"))
+        self.chunk_overlap = int(os.getenv("CHUNK_OVERLAP", "100"))
         self.log_level = os.getenv("LOG_LEVEL", "INFO")
 
     def validate(self) -> list[str]:
@@ -156,7 +157,11 @@ class FileProcessor:
             return False
 
         # Skip dependency files
-        if "node_modules" in file_path.parts or "__pycache__" in file_path.parts or ".terragrunt-cache" in file_path.parts:
+        if (
+            "node_modules" in file_path.parts
+            or "__pycache__" in file_path.parts
+            or ".terragrunt-cache" in file_path.parts
+        ):
             logger.debug(f"Skipping dependency file: {file_path}")
             return False
 
@@ -179,17 +184,13 @@ class FileProcessor:
         if len(text) <= self.config.chunk_size:
             return [text]
 
-        chunks = []
-        start = 0
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=self.config.chunk_size,
+            chunk_overlap=self.config.chunk_overlap,
+            length_function=len,
+        )
 
-        while start < len(text):
-            end = start + self.config.chunk_size
-            chunk = text[start:end]
-            chunks.append(chunk)
-
-            # Move start forward by chunk_size minus overlap
-            start += self.config.chunk_size - self.config.chunk_overlap
-
+        chunks = splitter.split_text(text)
         return chunks
 
     def generate_chunk_id(
@@ -240,10 +241,10 @@ class FileProcessor:
             ".html": "code",
             ".css": "code",
             ".json": "code",
-            ".xml": "code",
-            ".yml": "code",
-            ".yaml": "code",
-            "*.tf": "infrastructure",
+            ".xml": "configuration",
+            ".yml": "configuration",
+            ".yaml": "configuration",
+            ".tf": "terraform",
         }
         return mapping.get(extension.lower(), "unknown")
 
@@ -337,8 +338,6 @@ class FileProcessor:
                 content = f.read()
 
             # Get file metadata
-            stat = file_path.stat()
-            file_size = stat.st_size
             file_extension = file_path.suffix.lower()
             processed_at = datetime.now(timezone.utc).isoformat()
 
@@ -367,10 +366,9 @@ class FileProcessor:
                     "file_path": str(file_path.absolute()),
                     "file_name": file_path.name,
                     "file_extension": file_extension,
-                    "file_size_bytes": file_size,
                     "chunk_index": chunk_index,
+                    "chunk_text": chunk_text,
                     "type": self.get_type_from_extension(file_extension),
-                    "content_hash": self.generate_content_hash(chunk_text),
                 }
 
                 # Generate chunk ID
@@ -545,7 +543,7 @@ def main():
 
     # Initialize S3 Vectors client
     try:
-        s3_client = boto3.client("s3vectors")
+        s3_client = boto3.client("s3vectors", region_name=config.s3_vector_region)
     except Exception as e:
         logger.error(f"Failed to initialize S3 Vectors client: {e}")
         sys.exit(1)
