@@ -10,33 +10,8 @@ This script uses dependencies from the parent project's `pyproject.toml`:
 
 ### Required Environment Variables
 
-Create a `.env` file in the project root or set these environment variables:
+Create a `.env` by copying `.env.example` and filling in your values.
 
-```bash
-# Azure OpenAI Configuration
-AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_KEY=your-api-key-here
-AZURE_OPENAI_EMBEDDINGS_MODEL=text-embedding-3-small
-
-# S3 Configuration
-S3_VECTOR_BUCKET_NAME=your-vector-bucket-name
-
-# Optional: AWS credentials (if not using default boto3 credentials)
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_DEFAULT_REGION=us-east-1
-```
-
-### Optional Environment Variables
-
-```bash
-# Text chunking (default: 2000 characters)
-CHUNK_SIZE=2000
-CHUNK_OVERLAP=200
-
-# Logging level (default: INFO)
-LOG_LEVEL=DEBUG
-```
 
 ## Usage
 
