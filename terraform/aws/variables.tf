@@ -20,8 +20,13 @@ variable "azure_openai_api_version" {
   type        = string
 }
 
-variable "azure_openai_model" {
+variable "azure_openai_completions_model" {
   description = "Azure OpenAI model to use (e.g. gpt-4, gpt-4o, gpt-4o-mini, gpt-35-turbo)."
+  type        = string
+}
+
+variable "azure_openai_embeddings_model" {
+  description = "Azure OpenAI embeddings model to use."
   type        = string
 }
 
@@ -59,6 +64,21 @@ variable "product_name" {
 
 variable "region" {
   description = "AWS region."
+  type        = string
+}
+
+variable "s3_vector_bucket" {
+  description = "S3 bucket name for vector storage."
+  type        = string
+}
+
+variable "s3_vector_index" {
+  description = "S3 index name for vector storage."
+  type        = string
+}
+
+variable "s3_vector_region" {
+  description = "S3 region for vector storage."
   type        = string
 }
 
