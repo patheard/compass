@@ -65,7 +65,7 @@
         🧭
       </a>
 
-      <section id="sliding-panel" class="sliding-panel" role="complementary" aria-hidden="true">
+      <section id="sliding-panel" class="sliding-panel" role="complementary" aria-hidden="true" data-csrf-token="{{ csrf_token if csrf_token else '' }}">
         <div class="sliding-panel-header">
           <h2><abbr title="{{ _('Security Assessment Automation Platform') }}">{{ _('SAAP') }}</abbr> {{ _('chat') }}</h2>
           <a href="#" id="sliding-panel-close" aria-controls="sliding-panel"><gcds-icon name="close" size="h3"></gcds-icon></a>

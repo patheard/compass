@@ -117,6 +117,7 @@ class ChatHistoryRepository:
         role: str,
         content: str,
         created_at: Optional[datetime] = None,
+        actions: Optional[List[dict]] = None,
     ) -> ChatSessionMessage:
         """Persist a single message for the session."""
 
@@ -134,6 +135,7 @@ class ChatHistoryRepository:
                 created_at=created_at,
                 sequence=sequence,
                 token_count=token_count,
+                actions=actions,
                 ttl_days=self.ttl_days,
             )
             message.save()

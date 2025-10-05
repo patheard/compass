@@ -17,7 +17,7 @@ async function deleteItem(deleteUrl, csrfToken) {
 
         // Handle both successful deletion (200) and redirect (3xx)
         if (response.ok || response.redirected) {
-            window.location.href = response.url || '/';
+            await reloadPageContent();
         } else {
             console.error('Failed to delete item:', response.status);
         }
@@ -86,18 +86,16 @@ function hideConfirmModal() {
  * @returns {void}
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // Bind all delete buttons (assessments, controls, evidence)
-    const deleteButtons = document.querySelectorAll('.delete-item');
-    deleteButtons.forEach(function(deleteBtn) {
-        deleteBtn.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent default link behavior
-            const deleteUrl = this.getAttribute('href');
-            const csrfToken = this.getAttribute('data-csrf-token');
-            
+    document.querySelector('#main-content').addEventListener('click', function(event) {
+        const deleteBtn = event.target.closest && event.target.closest('.delete-item');
+        if (deleteBtn) {
+            event.preventDefault();
+            const deleteUrl = deleteBtn.getAttribute('href');
+            const csrfToken = deleteBtn.getAttribute('data-csrf-token');
             showConfirmModal(function() {
                 deleteItem(deleteUrl, csrfToken);
             });
-        });
+        }
     });
 
     // Initialize visibility on load
@@ -231,6 +229,40 @@ function initComplianceChart() {
             }
         }
     });
+}
+
+/**
+ * Reload the current page content and inject it into the #main-content element.
+ * Also updates CSRF tokens across the entire page if present.
+ *
+ * @returns {Promise<void>}
+ */
+async function reloadPageContent() {
+    try {
+        const pageResponse = await fetch(window.location.pathname);
+        if (pageResponse.ok) {
+            const html = await pageResponse.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newContent = doc.querySelector('#main-content');
+            const currentContent = document.querySelector('#main-content');
+            
+            if (newContent && currentContent) {
+                currentContent.innerHTML = newContent.innerHTML;
+
+                // Check if there are any CSRF tokens to update
+                const csrfElement = newContent.querySelector('[data-csrf-token]');
+                if (csrfElement) {
+                    const csrfToken = csrfElement.getAttribute('data-csrf-token');
+                    document.querySelectorAll('[data-csrf-token]').forEach((element) => {
+                        element.setAttribute('data-csrf-token', csrfToken);
+                    });
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Failed to reload page content:', error);
+    }
 }
 
 /* 
@@ -433,12 +465,15 @@ class ChatClient {
                     this.buffer += data.content;
                     const bubble = this.currentAiMessage.querySelector('.bubble');
                     bubble.innerHTML = DOMPurify.sanitize(this.markdown.render(this.buffer));
-                    const chatContainer = document.getElementById('llm-chat');
-                    if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
                 break;
             case 'end':
                 this.isStreaming = false;
+                // Add action buttons if actions are present
+                if (data.actions && data.actions.length > 0 && this.currentAiMessage) {
+                    this.addActionButtons(this.currentAiMessage, data.actions);
+                }
                 this.currentAiMessage = null;
                 console.log('Chat status: send finished');
                 break;
@@ -448,6 +483,8 @@ class ChatClient {
                 console.log('Chat status: error');
                 break;
         }
+        const chatContainer = document.getElementById('llm-chat');
+        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
     /**
@@ -474,6 +511,84 @@ class ChatClient {
 
         chatContainer.scrollTop = chatContainer.scrollHeight;
         return messageDiv;
+    }
+
+    /**
+     * Add action buttons to a message element.
+     *
+     * @param {HTMLElement} messageElement - The message div to add actions to.
+     * @param {Array} actions - Array of action objects with label, description, action_type, and params.
+     * @returns {void}
+     */
+    addActionButtons(messageElement, actions) {
+        if (!messageElement || !actions || actions.length === 0) return;
+
+        const actionsContainer = document.createElement('div');
+        actionsContainer.className = 'chat-actions';
+
+        actions.forEach((action) => {
+            const button = document.createElement('button');
+            button.className = 'chat-action-button';
+            button.textContent = action.label;
+            button.title = action.description;
+            button.setAttribute('data-action-type', action.action_type);
+            button.setAttribute('data-action-params', JSON.stringify(action.params));
+            
+            button.addEventListener('click', () => {
+                this.executeAction(action.action_type, action.params);
+            });
+
+            actionsContainer.appendChild(button);
+        });
+
+        messageElement.appendChild(actionsContainer);
+    }
+
+    /**
+     * Execute a chat action by calling the server endpoint.
+     *
+     * @param {string} actionType - The type of action to execute.
+     * @param {Object} params - Parameters for the action.
+     * @returns {Promise<void>}
+     */
+    async executeAction(actionType, params) {
+        const panel = document.getElementById('sliding-panel');
+        const csrfToken = panel ? panel.getAttribute('data-csrf-token') : '';
+
+        if (!csrfToken) {
+            this.addMessage('Error: Unable to execute action (missing CSRF token)', 'llm');
+            return;
+        }
+
+        // Show feedback message
+        this.addMessage('Applying...', 'user');
+
+        try {
+            const response = await fetch('/chat/action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action_type: actionType,
+                    params: params,
+                    csrf_token: csrfToken
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to execute action');
+            }
+
+            const result = await response.json();
+            this.addMessage(result.message || 'Action completed successfully', 'llm');
+
+            await reloadPageContent();
+        } catch (error) {
+            console.error('Failed to execute action:', error);
+            this.addMessage(`Error: ${error.message}`, 'llm');
+        }
     }
 
     /**
@@ -519,6 +634,7 @@ class ChatClient {
                     type: 'message', 
                     content: message,
                     current_page: document.querySelector('#main-content').innerText,
+                    current_url: window.location.pathname,
                     session_id: this.sessionId
                 }));
                 console.log('Chat status: sending...');
@@ -552,7 +668,8 @@ class ChatClient {
                 body: JSON.stringify({
                     message: message,
                     session_id: this.sessionId,
-                    current_page: document.querySelector('#main-content') ? document.querySelector('#main-content').innerText : ''
+                    current_page: document.querySelector('#main-content') ? document.querySelector('#main-content').innerText : '',
+                    current_url: window.location.pathname
                 })
             });
 
@@ -565,6 +682,12 @@ class ChatClient {
             if (this.currentAiMessage) {
                 const bubble = this.currentAiMessage.querySelector('.bubble');
                 bubble.innerHTML = DOMPurify.sanitize(this.markdown.render(data.message || ''));
+                
+                // Add action buttons if actions are present
+                if (data.actions && data.actions.length > 0) {
+                    this.addActionButtons(this.currentAiMessage, data.actions);
+                }
+                
                 const chatContainer = document.getElementById('llm-chat');
                 if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
             }

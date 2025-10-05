@@ -11,6 +11,7 @@ import boto3
 from fastapi import WebSocket
 from openai import AsyncAzureOpenAI
 
+from app.chat.action_context import ActionContext
 from app.chat.repository import ChatHistoryRepository
 from app.database.models.chat_sessions import ChatSessionMessage
 from app.database.models.users import User
@@ -22,12 +23,11 @@ class ChatStreamingService:
     """Service for handling streaming chat responses."""
 
     DEFAULT_SYSTEM_PROMPT = (
-        "You are a helpful assistant for guiding teams through a Security Assessment and "
+        "You are a security assistant for guiding teams through a Security Assessment and "
         "Authorization process. This process involves evaluating NIST 800-53 revision 5 "
         "controls and documenting how the system meets each control. Use concise language "
-        "and provide accurate information. When unsure, say 'I don't know' or suggest "
-        "consulting a professional. Never make up answers. Always respond using markdown."
-        "To help with context here is the current page content:\n"
+        "and provide accurate information. When unsure, suggest consulting a professional. "
+        "Never make up answers. Always respond using markdown.\n"
     )
 
     VECTOR_CONTEXT_PROMPT = "Use the following context from embeddings search to assist with the user's query:\n"
@@ -48,6 +48,7 @@ class ChatStreamingService:
         self.s3_vector_region = os.environ.get("S3_VECTOR_REGION")
         self.s3_vector_top_k = int(os.environ.get("S3_VECTOR_TOP_K", "3"))
         self.repository = repository or ChatHistoryRepository()
+        self.action_context = ActionContext()
         self.max_history_tokens = int(os.environ.get("CHAT_HISTORY_MAX_TOKENS", "2500"))
         self.max_history_messages = int(
             os.environ.get("CHAT_HISTORY_MAX_MESSAGES", "40")
@@ -58,21 +59,29 @@ class ChatStreamingService:
 
     async def stream_response(
         self,
-        user_message: str,
         user: User,
+        user_message: str,
         session_id: Optional[str] = None,
         current_page: Optional[str] = None,
-    ) -> Tuple[str, AsyncGenerator[str, None]]:
-        """Stream a chat response based on user input."""
+        current_url: Optional[str] = None,
+    ) -> Tuple[str, AsyncGenerator[str, None], List[Dict[str, Any]]]:
+        """Stream a chat response based on user input.
 
-        session_id, messages = await self._prepare_session_messages(
+        Returns:
+            Tuple of (session_id, response_generator, actions)
+        """
+
+        session_id, messages, actions = await self._prepare_session_messages(
             user=user,
             session_id=session_id,
             user_message=user_message,
             current_page=current_page,
+            current_url=current_url,
         )
 
         client = self._build_client()
+        if client is None:
+            raise RuntimeError("Azure OpenAI client not configured")
 
         async def _generator() -> AsyncGenerator[str, None]:
             assistant_chunks: List[str] = []
@@ -100,18 +109,20 @@ class ChatStreamingService:
                 assistant_text = "".join(assistant_chunks).strip()
                 if assistant_text:
                     try:
+                        # Persist the message with actions from context
                         await self.repository.append_message(
                             user_id=user.user_id,
                             session_id=session_id,
                             role="assistant",
                             content=assistant_text,
+                            actions=actions if actions else None,
                         )
                     except Exception as exc:
                         logger.exception(
                             "Failed to persist assistant response: %s", exc
                         )
 
-        return session_id, _generator()
+        return session_id, _generator(), actions
 
     async def stream_to_websocket(
         self,
@@ -120,13 +131,15 @@ class ChatStreamingService:
         websocket: WebSocket,
         session_id: Optional[str] = None,
         current_page: Optional[str] = None,
+        current_url: Optional[str] = None,
     ) -> None:
         """Stream response directly to WebSocket connection."""
-        stream_session_id, response_stream = await self.stream_response(
-            user_message,
+        stream_session_id, response_stream, actions = await self.stream_response(
             user,
+            user_message,
             session_id,
             current_page,
+            current_url,
         )
 
         try:
@@ -149,9 +162,15 @@ class ChatStreamingService:
                     )
                 )
 
+            # Send `end` message with actions from context
             await websocket.send_text(
                 json.dumps(
-                    {"type": "end", "content": "", "session_id": stream_session_id}
+                    {
+                        "type": "end",
+                        "content": "",
+                        "session_id": stream_session_id,
+                        "actions": actions if actions else [],
+                    }
                 )
             )
 
@@ -177,18 +196,20 @@ class ChatStreamingService:
 
     async def get_full_response(
         self,
-        user_message: str,
         user: User,
+        message: str,
         session_id: Optional[str] = None,
         current_page: Optional[str] = None,
+        current_url: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Get complete response for REST API (non-streaming)."""
 
-        resolved_session_id, response_stream = await self.stream_response(
-            user_message,
+        resolved_session_id, response_stream, actions = await self.stream_response(
             user,
+            message,
             session_id,
             current_page,
+            current_url,
         )
 
         chunks: List[str] = []
@@ -199,11 +220,48 @@ class ChatStreamingService:
         if hasattr(response_stream, "aclose"):
             await response_stream.aclose()
 
-        return {"session_id": resolved_session_id, "message": "".join(chunks)}
+        full_response = "".join(chunks)
+
+        return {
+            "session_id": resolved_session_id,
+            "message": full_response,
+            "actions": actions if actions else [],
+        }
 
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+    def build_system_prompt(self, context: str, current_page: str, actions: List[Dict[str, Any]]) -> str:
+        """Build system prompt with context and available actions.
+
+        Args:
+            context: Context information about current page
+            current_page: Current page content
+            actions: Available actions for the current context
+
+        Returns:
+            System prompt text
+        """
+        prompt = self.DEFAULT_SYSTEM_PROMPT
+
+        if context:
+            prompt += f"Current page context:\n{context}\n\n"
+
+        if current_page:
+            prompt += f"Current page content:\n{current_page}\n\n"
+
+        if actions:
+            prompt += (
+                "The following actions are available for the user to perform. "
+                "When the user asks about adding evidence or checking compliance, "
+                "you can suggest these actions:\n"
+            )
+            for idx, action in enumerate(actions, 1):
+                prompt += f"{idx}. {action['label']}: {action['description']}\n"
+            prompt += "\n"
+
+        return prompt
+
     async def _generate_embeddings(self, text: str) -> Optional[List[float]]:
         """Generate embeddings from text using Azure OpenAI embeddings model."""
         if not self.embeddings_model_name:
@@ -265,11 +323,25 @@ class ChatStreamingService:
         session_id: Optional[str],
         user_message: str,
         current_page: Optional[str],
-    ) -> tuple[str, List[Dict[str, Any]]]:
+        current_url: Optional[str] = None,
+    ) -> tuple[str, List[Dict[str, Any]], List[Dict[str, Any]]]:
+        """Prepare session messages with context and actions.
+
+        Returns:
+            Tuple of (session_id, messages, actions)
+        """
         session_id, _ = await self.repository.ensure_session(
             user_id=user.user_id,
             session_id=session_id,
         )
+
+        # Get context and actions based on current URL
+        context, actions = await self.action_context.get_context_and_actions(
+            current_url, user.user_id
+        )
+
+        # Build system prompt with context and actions
+        system_prompt = self.build_system_prompt(context, current_page, actions)
 
         window = await self.repository.load_recent_history(
             user_id=user.user_id,
@@ -303,7 +375,7 @@ class ChatStreamingService:
         messages: List[Dict[str, Any]] = [
             {
                 "role": "system",
-                "content": self.DEFAULT_SYSTEM_PROMPT + (current_page or ""),
+                "content": system_prompt,
             },
         ]
 
@@ -317,7 +389,7 @@ class ChatStreamingService:
 
         messages.extend(history_messages)
 
-        return session_id, messages
+        return session_id, messages, actions
 
     @staticmethod
     def _extract_chunk_content(chunk: Any) -> Optional[str]:

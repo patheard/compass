@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Iterable, List, Optional
 from uuid import uuid4
@@ -45,6 +46,7 @@ class ChatSessionMessage(BaseModel):
     role = UnicodeAttribute()
     content = UnicodeAttribute()
     summary_chunk = UnicodeAttribute(null=True)
+    actions = UnicodeAttribute(null=True)
     ttl = NumberAttribute(null=True)
     token_count = NumberAttribute(null=True)
     sequence = NumberAttribute(null=True)
@@ -77,6 +79,7 @@ class ChatSessionMessage(BaseModel):
         sequence: int = 0,
         token_count: Optional[int] = None,
         summary_chunk: Optional[str] = None,
+        actions: Optional[List[Dict[str, Any]]] = None,
         ttl_days: int = _DEFAULT_TTL_DAYS,
     ) -> "ChatSessionMessage":
         """Factory helper for building a message instance with sensible defaults."""
@@ -84,6 +87,9 @@ class ChatSessionMessage(BaseModel):
         message_id = str(uuid4())
         message_key = cls.build_message_key(session_id, created_at, sequence)
         ttl_value = cls.ttl_timestamp(ttl_days)
+
+        # Serialize actions to JSON if provided
+        actions_json = json.dumps(actions) if actions else None
 
         instance = cls(
             user_id=user_id,
@@ -93,6 +99,7 @@ class ChatSessionMessage(BaseModel):
             role=role,
             content=content,
             summary_chunk=summary_chunk,
+            actions=actions_json,
             ttl=ttl_value,
             token_count=token_count,
             sequence=sequence or None,
@@ -110,3 +117,12 @@ class ChatSessionMessage(BaseModel):
         for item in messages:
             history.append({"role": item.role, "content": item.content})
         return history
+
+    def get_actions(self) -> Optional[List[Dict[str, Any]]]:
+        """Parse and return the actions list from JSON."""
+        if not self.actions:
+            return None
+        try:
+            return json.loads(self.actions)
+        except (json.JSONDecodeError, TypeError):
+            return None
