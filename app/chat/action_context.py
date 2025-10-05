@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from app.assessments.services import AssessmentService
 from app.controls.services import ControlService
+from app.evidence.services import EvidenceService
 from app.job_templates.services import JobTemplateService
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,7 @@ class ActionContext:
         """Initialize action context service."""
         self.assessment_service = AssessmentService()
         self.control_service = ControlService()
+        self.evidence_service = EvidenceService()
         self.job_template_service = JobTemplateService()
 
     async def get_context_and_actions(
@@ -136,6 +138,7 @@ class ActionContext:
             # Get available job templates and build action suggestions
             actions = await self._build_evidence_actions(
                 control_id=control_id,
+                user_id=user_id,
                 assessment=assessment_response,
             )
 
@@ -177,6 +180,7 @@ class ActionContext:
     async def _build_evidence_actions(
         self,
         control_id: str,
+        user_id: str,
         assessment: Any,
     ) -> List[Dict[str, Any]]:
         """Build action suggestions for creating automated evidence.
@@ -201,6 +205,17 @@ class ActionContext:
                 if template.scan_type == "aws_config":
                     if assessment.aws_account_id:
                         relevant_templates.append(template)
+
+            # Remove evidence templates that are already associated with the control
+            existing_evidence = self.evidence_service.list_evidence_by_control(
+                control_id, user_id
+            )
+            existing_job_templates = {e.job_template_id for e in existing_evidence}
+            relevant_templates = [
+                t
+                for t in relevant_templates
+                if t.template_id not in existing_job_templates
+            ]
 
             # Build action for each relevant template
             for template in relevant_templates:

@@ -231,7 +231,9 @@ class ChatStreamingService:
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
-    def build_system_prompt(self, context: str, current_page: str, actions: List[Dict[str, Any]]) -> str:
+    def build_system_prompt(
+        self, context: str, current_page: str, actions: List[Dict[str, Any]]
+    ) -> str:
         """Build system prompt with context and available actions.
 
         Args:
