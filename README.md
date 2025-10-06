@@ -65,7 +65,7 @@ The AWS account you are checking needs an IAM role named `compass-aws-config-job
 The project is setup to use Azure OpenAI models for chat completions and embeddings:
 
 1. Create an [S3 Vector bucket and index](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-getting-started.html) (no Terraform support yet).
-1. Use `./scripts/generate_embeddings.py` to generate and store the vector embeddings.
+1. Use `./scripts/generate_embeddings` to generate and store the vector embeddings.
 1. These embeddings will be automatically used by the chat.
 
 
