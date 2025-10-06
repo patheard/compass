@@ -465,7 +465,6 @@ class ChatClient {
                     this.buffer += data.content;
                     const bubble = this.currentAiMessage.querySelector('.bubble');
                     bubble.innerHTML = DOMPurify.sanitize(this.markdown.render(this.buffer));
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
                 break;
             case 'end':
