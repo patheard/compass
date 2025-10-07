@@ -19,6 +19,7 @@ class JobTemplateService:
             description=data.description,
             scan_type=data.scan_type,
             config=data.config,
+            aws_resources=data.aws_resources,
         )
 
     @staticmethod
@@ -54,6 +55,7 @@ class JobTemplateService:
         template.name = data.name
         template.description = data.description
         template.scan_type = data.scan_type
+        template.aws_resources = data.aws_resources
         template.update_config(data.config)
         return template
 

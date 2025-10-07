@@ -1,6 +1,6 @@
 """Validation schemas for job template operations."""
 
-from typing import Optional, Any
+from typing import List, Optional, Any
 import ast
 import html
 import json
@@ -32,6 +32,10 @@ class JobTemplateRequest(BaseInputValidator):
     config: Optional[Any] = Field(
         None,
         description="Configuration object for the job template",
+    )
+    aws_resources: Optional[List[str]] = Field(
+        None,
+        description="List of AWS resource names associated with this job template",
     )
 
     @validator("name")

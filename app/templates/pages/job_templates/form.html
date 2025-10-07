@@ -67,6 +67,17 @@
         value="{% if template %}{{ template.config }}{% else %}{% endif %}">
     </gcds-textarea>
 
+    <gcds-checkboxes
+        name="aws_resources"
+        legend="{{ _('AWS Resources (optional)') }}"
+        hint="{{ _('Select the AWS resources this template applies to') }}"
+        options='[
+            {% for resource in aws_resources %}
+            {"label": "{{ resource }}", "id": "aws_resource_{{ loop.index }}", "value": "{{ resource }}"{% if (template and template.aws_resources and resource in template.aws_resources) or (selected_aws_resources and resource in selected_aws_resources) %}, "checked": true{% endif %}}{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]'>
+    </gcds-checkboxes>
+
     <gcds-button type="submit" button-role="primary" class="mt-300">
       {% if template %}
         {{ _("Update") }}

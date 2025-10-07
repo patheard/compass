@@ -17,6 +17,16 @@
         {{ assessment.aws_account_id }}
     </li>
     {% endif %}
+    {% if assessment.aws_resources %}
+    <li>
+        <strong>{{ _('AWS Resources:') }}</strong>
+        <ol class="list-disc ml-400">
+            {% for resource in assessment.aws_resources %}
+            <li>{{ resource }}</li>
+            {% endfor %}
+        </ol>
+    </li>
+    {% endif %}
 </ul>
 
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/edit" type="link" button-role="primary" class="mt-300">

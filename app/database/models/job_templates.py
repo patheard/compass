@@ -3,7 +3,7 @@
 import uuid
 from typing import Dict, List, Optional, Any
 
-from pynamodb.attributes import UnicodeAttribute, MapAttribute
+from pynamodb.attributes import ListAttribute, MapAttribute, UnicodeAttribute
 
 from app.database.base import BaseModel
 from app.database.config import db_config
@@ -29,6 +29,7 @@ class JobTemplate(BaseModel):
     scan_type = UnicodeAttribute()  # aws_config/nessus/qualys/custom_script/etc
     config = MapAttribute()  # Scan-specific configuration parameters
     is_active = UnicodeAttribute(default="true")  # "true"/"false" for soft delete
+    aws_resources = ListAttribute(null=True)  # Optional list of AWS resource names
 
     def __init__(
         self,
@@ -38,6 +39,7 @@ class JobTemplate(BaseModel):
         scan_type: str = "",
         config: Optional[Dict[str, Any]] = None,
         is_active: str = "true",
+        aws_resources: Optional[List[str]] = None,
         **kwargs,
     ) -> None:
         """Initialize JobTemplate model."""
@@ -54,6 +56,7 @@ class JobTemplate(BaseModel):
             scan_type=scan_type,
             config=config,
             is_active=is_active,
+            aws_resources=aws_resources,
             **kwargs,
         )
 
@@ -89,6 +92,7 @@ class JobTemplate(BaseModel):
         description: str,
         scan_type: str,
         config: Dict[str, Any],
+        aws_resources: Optional[List[str]] = None,
     ) -> "JobTemplate":
         """Create new scan job template."""
         template = cls(
@@ -96,6 +100,7 @@ class JobTemplate(BaseModel):
             description=description,
             scan_type=scan_type,
             config=config,
+            aws_resources=aws_resources,
         )
         template.save()
         return template

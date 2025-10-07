@@ -1,8 +1,10 @@
 """Assessment routes for web interface and API endpoints."""
 
+from typing import List
 from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.auth.middleware import require_authenticated_user
+from app.constants import AWS_RESOURCES
 from app.database.models.users import User
 from app.templates.utils import LocalizedTemplates
 from app.assessments.services import AssessmentService, GitHubService
@@ -35,6 +37,7 @@ async def create_assessment_page(
             "user": current_user,
             "csrf_token": csrf_token,
             "is_edit": False,
+            "aws_resources": AWS_RESOURCES,
             "breadcrumbs": [
                 {"label": "Compass", "link": "/"},
             ],
@@ -49,6 +52,7 @@ async def create_assessment(
     product_description: str = Form(...),
     aws_account_id: str = Form(""),
     github_repo_controls: str = Form(""),
+    aws_resources: List[str] = Form([]),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -67,6 +71,7 @@ async def create_assessment(
             github_repo_controls=github_repo_controls
             if github_repo_controls.strip()
             else None,
+            aws_resources=aws_resources if aws_resources else None,
         )
 
         # Create assessment
@@ -101,6 +106,8 @@ async def create_assessment(
                 "product_description": product_description,
                 "aws_account_id": aws_account_id,
                 "github_repo_controls": github_repo_controls,
+                "selected_aws_resources": aws_resources,
+                "aws_resources": AWS_RESOURCES,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                 ],
@@ -174,6 +181,7 @@ async def edit_assessment_page(
                 "csrf_token": csrf_token,
                 "is_edit": True,
                 "assessment": assessment,
+                "aws_resources": AWS_RESOURCES,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {
@@ -198,6 +206,7 @@ async def update_assessment(
     status: str = Form(...),
     aws_account_id: str = Form(""),
     github_repo_controls: str = Form(""),
+    aws_resources: List[str] = Form([]),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -217,6 +226,7 @@ async def update_assessment(
             github_repo_controls=github_repo_controls
             if github_repo_controls.strip()
             else None,
+            aws_resources=aws_resources if aws_resources else None,
         )
 
         # Update assessment
@@ -252,6 +262,7 @@ async def update_assessment(
                     "is_edit": True,
                     "assessment": assessment,
                     "error": format_validation_error(e),
+                    "aws_resources": AWS_RESOURCES,
                     "breadcrumbs": [
                         {"label": "Compass", "link": "/"},
                         {

@@ -20,6 +20,16 @@
         <strong>{{ _('Active:') }}</strong>
         {{ _(template.is_active) }}
     </li>
+    {% if template.aws_resources %}
+    <li>
+        <strong>{{ _('AWS Resources:') }}</strong>
+        <ol class="list-disc ml-400">
+            {% for resource in template.aws_resources %}
+            <li>{{ resource }}</li>
+            {% endfor %}
+        </ol>
+    </li>
+    {% endif %}
 </ul>
 
 <gcds-button href="/job-templates/{{ template.template_id }}/edit" type="link" button-role="primary" class="mt-300">

@@ -1,11 +1,13 @@
 """Routes for job template management."""
 
 import json
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import UUID4
 
 from app.auth.middleware import require_authenticated_user
+from app.constants import AWS_RESOURCES
 from app.database.models.users import User
 from app.job_templates.services import JobTemplateService
 from app.templates.utils import LocalizedTemplates
@@ -83,6 +85,7 @@ async def create_template_form(
             "scan_types": scan_types,
             "user": current_user,
             "csrf_token": csrf_token,
+            "aws_resources": AWS_RESOURCES,
             "breadcrumbs": [
                 {"label": "Compass", "link": "/"},
                 {"label": "Job templates", "link": "/job-templates"},
@@ -98,6 +101,7 @@ async def create_template(
     description: str = Form(...),
     scan_type: str = Form(...),
     config: str = Form(...),
+    aws_resources: List[str] = Form([]),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -113,6 +117,7 @@ async def create_template(
             description=description,
             scan_type=scan_type,
             config=config,
+            aws_resources=aws_resources if aws_resources else None,
         )
 
         template = JobTemplateService.create_template(data)
@@ -142,6 +147,8 @@ async def create_template(
                 "description": description,
                 "scan_type": scan_type,
                 "config": config,
+                "selected_aws_resources": aws_resources,
+                "aws_resources": AWS_RESOURCES,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                 ],
@@ -177,6 +184,7 @@ async def get_template(
             "scan_type": template.scan_type,
             "config": json.dumps(template.config.as_dict(), indent=2),
             "is_active": template.is_active,
+            "aws_resources": template.aws_resources,
             "created_at": getattr(template, "created_at", None),
             "updated_at": getattr(template, "updated_at", None),
         }
@@ -231,6 +239,7 @@ async def edit_template_form(
             "scan_type": template.scan_type,
             "config": template.config.as_dict(),
             "is_active": template.is_active,
+            "aws_resources": template.aws_resources,
         }
 
         return templates.TemplateResponse(
@@ -243,6 +252,7 @@ async def edit_template_form(
                 "scan_types": scan_types,
                 "user": current_user,
                 "csrf_token": csrf_token,
+                "aws_resources": AWS_RESOURCES,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {
@@ -270,6 +280,7 @@ async def update_template(
     description: str = Form(...),
     scan_type: str = Form(...),
     config: str = Form(...),
+    aws_resources: List[str] = Form([]),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -285,6 +296,7 @@ async def update_template(
             description=description,
             scan_type=scan_type,
             config=config,
+            aws_resources=aws_resources if aws_resources else None,
         )
 
         template = JobTemplateService.update_template(
@@ -319,11 +331,13 @@ async def update_template(
                     "scan_type": scan_type,
                     "config": config,
                     "is_active": True,
+                    "aws_resources": aws_resources,
                 },
                 "scan_types": scan_types,
                 "user": current_user,
                 "csrf_token": csrf_token,
                 "error": format_validation_error(e),
+                "aws_resources": AWS_RESOURCES,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {

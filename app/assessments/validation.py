@@ -1,7 +1,7 @@
 """Validation schemas for assessment operations."""
 
 from datetime import datetime
-from typing import Optional, Union
+from typing import List, Optional, Union
 from pydantic import BaseModel, Field, validator
 from app.assessments.base import BaseInputValidator
 
@@ -31,6 +31,10 @@ class AssessmentRequest(BaseInputValidator):
         None,
         max_length=1000,
         description="GitHub repository for controls",
+    )
+    aws_resources: Optional[List[str]] = Field(
+        None,
+        description="List of AWS resource names associated with this assessment",
     )
 
     @validator("product_name")
@@ -81,6 +85,7 @@ class AssessmentResponse(BaseModel):
     status: str
     aws_account_id: Optional[str] = None
     github_repo_controls: Optional[str] = None
+    aws_resources: Optional[List[str]] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 

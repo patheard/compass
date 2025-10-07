@@ -4,6 +4,7 @@ import uuid
 from typing import List, Optional
 
 from pynamodb.attributes import (
+    ListAttribute,
     UnicodeAttribute,
 )
 
@@ -32,6 +33,7 @@ class SecurityAssessment(BaseModel):
     status = UnicodeAttribute()  # draft/in_progress/completed
     aws_account_id = UnicodeAttribute(null=True)  # Optional AWS account ID
     github_repo_controls = UnicodeAttribute(null=True)  # Optional GitHub repo controls
+    aws_resources = ListAttribute(null=True)  # Optional list of AWS resource names
 
     def __init__(
         self,
@@ -42,6 +44,7 @@ class SecurityAssessment(BaseModel):
         status: str = "draft",
         aws_account_id: Optional[str] = None,
         github_repo_controls: Optional[str] = None,
+        aws_resources: Optional[List[str]] = None,
         **kwargs,
     ) -> None:
         """Initialize SecurityAssessment model."""
@@ -56,6 +59,7 @@ class SecurityAssessment(BaseModel):
             status=status,
             aws_account_id=aws_account_id,
             github_repo_controls=github_repo_controls,
+            aws_resources=aws_resources,
             **kwargs,
         )
 
@@ -89,6 +93,7 @@ class SecurityAssessment(BaseModel):
         product_description: str,
         aws_account_id: Optional[str] = None,
         github_repo_controls: Optional[str] = None,
+        aws_resources: Optional[List[str]] = None,
     ) -> "SecurityAssessment":
         """Create a new security assessment."""
         assessment = cls(
@@ -98,6 +103,7 @@ class SecurityAssessment(BaseModel):
             status="draft",
             aws_account_id=aws_account_id,
             github_repo_controls=github_repo_controls,
+            aws_resources=aws_resources,
         )
         assessment.save()
         return assessment
