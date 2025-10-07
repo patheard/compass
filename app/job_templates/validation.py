@@ -105,8 +105,6 @@ class JobTemplateRequest(BaseInputValidator):
         if value is not None:
             valid_resources = {resource for resource in AWS_RESOURCES}
             if not set(value).issubset(valid_resources):
-                raise ValueError(
-                    f"AWS resources contains invalid entries."
-                )
+                raise ValueError("AWS resources contains invalid entries.")
 
         return value

@@ -200,21 +200,31 @@ class ActionContext:
 
             # Filter templates based on assessment infrastructure
             relevant_templates = []
+            assessment_aws_resources = set(assessment.aws_resources or [])
             for template in templates:
-                # For AWS Config templates, require AWS account
+                # For AWS Config templates, require AWS account and filter on resources
                 if template.scan_type == "aws_config":
                     if assessment.aws_account_id:
-                        relevant_templates.append(template)
+                        template_aws_resource = set(template.aws_resources or [])
+                        if (
+                            not assessment_aws_resources
+                            or assessment_aws_resources.intersection(
+                                template_aws_resource
+                            )
+                        ):
+                            relevant_templates.append(template)
 
             # Remove evidence templates that are already associated with the control
             existing_evidence = self.evidence_service.list_evidence_by_control(
                 control_id, user_id
             )
-            existing_job_templates = {e.job_template_id for e in existing_evidence}
+            existing_job_templates = {
+                evidence.job_template_id for evidence in existing_evidence
+            }
             relevant_templates = [
-                t
-                for t in relevant_templates
-                if t.template_id not in existing_job_templates
+                template
+                for template in relevant_templates
+                if template.template_id not in existing_job_templates
             ]
 
             # Build action for each relevant template
