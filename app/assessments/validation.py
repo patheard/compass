@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List, Optional, Union
 from pydantic import BaseModel, Field, validator
 from app.assessments.base import BaseInputValidator
+from app.constants import AWS_RESOURCES
 
 
 class AssessmentRequest(BaseInputValidator):
@@ -71,6 +72,18 @@ class AssessmentRequest(BaseInputValidator):
         if value is not None:
             if not value.isdigit() or len(value) != 12:
                 raise ValueError("AWS account ID must be 12 digits")
+
+        return value
+
+    @validator("aws_resources")
+    def validate_aws_resources(cls, value: Optional[List[str]]) -> Optional[List[str]]:
+        """Ensure AWS resources contains only valid entries when provided."""
+        if value is not None:
+            valid_resources = {resource for resource in AWS_RESOURCES}
+            if not set(value).issubset(valid_resources):
+                raise ValueError(
+                    f"AWS resources contains invalid entries."
+                )
 
         return value
 

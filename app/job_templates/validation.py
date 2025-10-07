@@ -8,6 +8,7 @@ import json
 from pydantic import Field, validator
 
 from app.assessments.base import BaseInputValidator
+from app.constants import AWS_RESOURCES
 
 
 class JobTemplateRequest(BaseInputValidator):
@@ -97,3 +98,15 @@ class JobTemplateRequest(BaseInputValidator):
                 raise ValueError("Config is not valid JSON")
 
             return parsed
+
+    @validator("aws_resources")
+    def validate_aws_resources(cls, value: Optional[List[str]]) -> Optional[List[str]]:
+        """Ensure AWS resources contains only valid entries when provided."""
+        if value is not None:
+            valid_resources = {resource for resource in AWS_RESOURCES}
+            if not set(value).issubset(valid_resources):
+                raise ValueError(
+                    f"AWS resources contains invalid entries."
+                )
+
+        return value
