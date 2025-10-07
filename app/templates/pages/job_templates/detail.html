@@ -25,7 +25,7 @@
         <strong>{{ _('AWS Resources:') }}</strong>
         <ol class="list-disc ml-400">
             {% for resource in template.aws_resources %}
-            <li>{{ resource }}</li>
+            <li>{{ _(resource) }}</li>
             {% endfor %}
         </ol>
     </li>

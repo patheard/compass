@@ -73,7 +73,7 @@
         hint="{{ _('Select the AWS resources this template applies to') }}"
         options='[
             {% for resource in aws_resources %}
-            {"label": "{{ resource }}", "id": "aws_resource_{{ loop.index }}", "value": "{{ resource }}"{% if (template and template.aws_resources and resource in template.aws_resources) or (selected_aws_resources and resource in selected_aws_resources) %}, "checked": true{% endif %}}{% if not loop.last %},{% endif %}
+            {"label": "{{ _(resource) }}", "id": "{{ resource }}", "value": "{{ resource }}"{% if (template and template.aws_resources and resource in template.aws_resources) or (selected_aws_resources and resource in selected_aws_resources) %}, "checked": true{% endif %}}{% if not loop.last %},{% endif %}
             {% endfor %}
         ]'>
     </gcds-checkboxes>

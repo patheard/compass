@@ -58,7 +58,7 @@
         hint="{{ _('Select the AWS resources used by this product') }}"
         options='[
             {% for resource in aws_resources %}
-            {"label": "{{ resource }}", "id": "aws_resource_{{ loop.index }}", "value": "{{ resource }}"{% if (is_edit and assessment.aws_resources and resource in assessment.aws_resources) or (selected_aws_resources and resource in selected_aws_resources) %}, "checked": true{% endif %}}{% if not loop.last %},{% endif %}
+            {"label": "{{ _(resource) }}", "id": "{{ resource }}", "value": "{{ resource }}"{% if (is_edit and assessment.aws_resources and resource in assessment.aws_resources) or (selected_aws_resources and resource in selected_aws_resources) %}, "checked": true{% endif %}}{% if not loop.last %},{% endif %}
             {% endfor %}
         ]'>
     </gcds-checkboxes>
