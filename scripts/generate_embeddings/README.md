@@ -1,67 +1,32 @@
-# Generate Embeddings Script (PocketFlow Implementation)
+# Generate Embeddings Script
 
-A PocketFlow-based Python application that uses Azure OpenAI to generate text embeddings for files in a directory and stores them in an S3 Vector bucket. **Now with automatic Terraform module detection and processing!**
+A Python script that uses Azure OpenAI to generate text embeddings for files in a directory and stores them in an S3 Vector bucket.
 
-## What's New
-
-### Terraform Module Support
-
-The system now automatically detects Terraform module references in your code and downloads them for embedding generation:
-
-```terraform
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 3.0"
-}
-```
-
-When detected, the system will:
-- Download the module source code
-- Extract all `.tf` files
-- Generate embeddings for the module content
-- Store them alongside your primary code embeddings
-
-**Supported Sources**:
-- Terraform Registry: `terraform-aws-modules/vpc/aws`
-- Git repositories: `git::https://github.com/user/repo.git?ref=v1.0.0`
-- Git with subdirectories: `git::https://github.com/user/repo.git//subdir`
-
-### PocketFlow Architecture
-
-The script has been refactored using [PocketFlow](https://github.com/The-Pocket/PocketFlow) for better:
-- **Modularity**: Each processing step is a separate node
-- **Error Handling**: Built-in retry mechanism with exponential backoff
-- **Flexibility**: Easy to modify the workflow
-- **Maintainability**: Clear data contracts between components
 
 ## Architecture
-
 ### Processing Flow
 
-```
-DiscoverFiles → FilterFiles → ReadFiles → ChunkFiles
-                                              ↓
-                                    DetectTerraformModules
-                                              ↓
-                        (if modules found) DownloadModules
-                                              ↓
-                                    ProcessModuleFiles
-                                              ↓
-                                    ChunkModuleFiles
-                                              ↓
-                                    GenerateEmbeddings → StoreVectors → Summary
+```mermaid
+flowchart TB
+  Discover[DiscoverFiles] --> Filter[FilterFiles]
+  Filter --> Read[ReadFiles]
+  Read --> Chunk[ChunkFiles]
+  Chunk --> Detect{Detect Terraform Modules?}
+  Detect -- yes --> Download[DownloadModules]
+  Download --> Process[ProcessModuleFiles]
+  Process --> ChunkModules[ChunkModuleFiles]
+  ChunkModules --> Embeddings[GenerateEmbeddings]
+  Detect -- no --> Embeddings
+  Embeddings --> Store[StoreVectors]
+  Store --> Summary[Summary]
 ```
 
 ## Prerequisites
 
 This script uses dependencies from the parent project's `pyproject.toml`.
 
-**Additional Requirement**: This implementation requires [PocketFlow](https://github.com/The-Pocket/PocketFlow) to be available at `/Users/patrick.heard/dev/util/PocketFlow`. You can either:
-- Clone PocketFlow to that location, or
-- Update the path in `nodes.py` and `flow.py`
 
 ## Configuration
-
 ### Required Environment Variables
 
 Create a `.env` by copying `.env.example` and filling in your values:
@@ -178,39 +143,3 @@ TF modules downloaded:   3
 Failures:                0
 ================================================================================
 ```
-
-## How It Works
-
-### Nodes (nodes.py)
-
-Individual processing units that each handle one specific task:
-
-- **DiscoverFilesNode**: Recursively finds all files in input directory
-- **FilterFilesNode**: Applies include/exclude patterns, skips binaries
-- **ReadFilesNode**: Reads file contents
-- **ChunkFilesNode**: Splits files into manageable chunks
-- **DetectTerraformModulesNode**: Scans chunks for `module "name"` declarations
-- **DownloadModulesNode**: Downloads detected modules from their sources
-- **ProcessModuleFilesNode**: Reads `.tf` files from downloaded modules
-- **ChunkModuleFilesNode**: Chunks module content
-- **GenerateEmbeddingsNode**: Creates embeddings with automatic retry
-- **StoreVectorsNode**: Uploads vectors to S3 with metadata
-- **PrintSummaryNode**: Displays processing statistics
-
-### Flows (flow.py)
-
-Orchestrates nodes into a coherent workflow:
-
-- **Main Flow**: Coordinates the entire embedding generation process
-- **Module Processing Flow**: Handles Terraform module downloading and processing
-
-### Shared Store
-
-All nodes communicate via a shared dictionary that contains:
-- Configuration and clients
-- Discovered and filtered files
-- Text chunks and embeddings
-- Detected and downloaded modules
-- Processing statistics
-
-See `utils/data_schema.py` for complete documentation.
