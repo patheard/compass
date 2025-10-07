@@ -1,6 +1,5 @@
 """Assessment routes for web interface and API endpoints."""
-
-from typing import List
+import json
 from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.auth.middleware import require_authenticated_user
@@ -52,7 +51,7 @@ async def create_assessment(
     product_description: str = Form(...),
     aws_account_id: str = Form(""),
     github_repo_controls: str = Form(""),
-    aws_resources: List[str] = Form([]),
+    aws_resources: str = Form("[]"),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -63,6 +62,11 @@ async def create_assessment(
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
     try:
+        try:
+            aws_resources_list = json.loads(aws_resources) if aws_resources else []
+        except json.JSONDecodeError:
+            aws_resources_list = []
+
         # Validate input data
         create_data = AssessmentRequest(
             product_name=product_name,
@@ -71,7 +75,7 @@ async def create_assessment(
             github_repo_controls=github_repo_controls
             if github_repo_controls.strip()
             else None,
-            aws_resources=aws_resources if aws_resources else None,
+            aws_resources=aws_resources_list if aws_resources_list else None,
         )
 
         # Create assessment
@@ -92,6 +96,12 @@ async def create_assessment(
         csrf_token = csrf_manager.generate_csrf_token()
         request.session["csrf_token"] = csrf_token
 
+        # Parse aws_resources for error display
+        try:
+            aws_resources_list = json.loads(aws_resources) if aws_resources else []
+        except json.JSONDecodeError:
+            aws_resources_list = []
+
         return templates.TemplateResponse(
             request,
             "pages/assessments/form.html",
@@ -106,7 +116,7 @@ async def create_assessment(
                 "product_description": product_description,
                 "aws_account_id": aws_account_id,
                 "github_repo_controls": github_repo_controls,
-                "selected_aws_resources": aws_resources,
+                "selected_aws_resources": aws_resources_list,
                 "aws_resources": AWS_RESOURCES,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
@@ -206,7 +216,7 @@ async def update_assessment(
     status: str = Form(...),
     aws_account_id: str = Form(""),
     github_repo_controls: str = Form(""),
-    aws_resources: List[str] = Form([]),
+    aws_resources: str = Form("[]"),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -217,6 +227,11 @@ async def update_assessment(
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
     try:
+        try:
+            aws_resources_list = json.loads(aws_resources) if aws_resources else []
+        except json.JSONDecodeError:
+            aws_resources_list = []
+
         # Validate input data
         update_data = AssessmentRequest(
             product_name=product_name,
@@ -226,7 +241,7 @@ async def update_assessment(
             github_repo_controls=github_repo_controls
             if github_repo_controls.strip()
             else None,
-            aws_resources=aws_resources if aws_resources else None,
+            aws_resources=aws_resources_list if aws_resources_list else None,
         )
 
         # Update assessment

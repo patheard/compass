@@ -1,7 +1,6 @@
 """Routes for job template management."""
 
 import json
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import UUID4
@@ -101,7 +100,7 @@ async def create_template(
     description: str = Form(...),
     scan_type: str = Form(...),
     config: str = Form(...),
-    aws_resources: List[str] = Form([]),
+    aws_resources: str = Form("[]"),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -112,12 +111,18 @@ async def create_template(
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
     try:
+        # Parse aws_resources from JSON string
+        try:
+            aws_resources_list = json.loads(aws_resources) if aws_resources else []
+        except json.JSONDecodeError:
+            aws_resources_list = []
+
         data = JobTemplateRequest(
             name=name,
             description=description,
             scan_type=scan_type,
             config=config,
-            aws_resources=aws_resources if aws_resources else None,
+            aws_resources=aws_resources_list if aws_resources_list else None,
         )
 
         template = JobTemplateService.create_template(data)
@@ -131,6 +136,12 @@ async def create_template(
     except ValueError as e:
         csrf_token = csrf_manager.generate_csrf_token()
         request.session["csrf_token"] = csrf_token
+
+        # Parse aws_resources for error display
+        try:
+            aws_resources_list = json.loads(aws_resources) if aws_resources else []
+        except json.JSONDecodeError:
+            aws_resources_list = []
 
         scan_types = ["aws_config"]
         return templates.TemplateResponse(
@@ -147,7 +158,7 @@ async def create_template(
                 "description": description,
                 "scan_type": scan_type,
                 "config": config,
-                "selected_aws_resources": aws_resources,
+                "selected_aws_resources": aws_resources_list,
                 "aws_resources": AWS_RESOURCES,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
@@ -280,7 +291,7 @@ async def update_template(
     description: str = Form(...),
     scan_type: str = Form(...),
     config: str = Form(...),
-    aws_resources: List[str] = Form([]),
+    aws_resources: str = Form("[]"),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -291,12 +302,18 @@ async def update_template(
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
     try:
+        # Parse aws_resources from JSON string
+        try:
+            aws_resources_list = json.loads(aws_resources) if aws_resources else []
+        except json.JSONDecodeError:
+            aws_resources_list = []
+
         data = JobTemplateRequest(
             name=name,
             description=description,
             scan_type=scan_type,
             config=config,
-            aws_resources=aws_resources if aws_resources else None,
+            aws_resources=aws_resources_list if aws_resources_list else None,
         )
 
         template = JobTemplateService.update_template(
@@ -316,6 +333,12 @@ async def update_template(
         csrf_token = csrf_manager.generate_csrf_token()
         request.session["csrf_token"] = csrf_token
 
+        # Parse aws_resources for error display
+        try:
+            aws_resources_list = json.loads(aws_resources) if aws_resources else []
+        except json.JSONDecodeError:
+            aws_resources_list = []
+
         scan_types = ["aws_config"]
         # Re-display the form with previously-entered values and the error
         return templates.TemplateResponse(
@@ -331,7 +354,7 @@ async def update_template(
                     "scan_type": scan_type,
                     "config": config,
                     "is_active": True,
-                    "aws_resources": aws_resources,
+                    "aws_resources": aws_resources_list,
                 },
                 "scan_types": scan_types,
                 "user": current_user,

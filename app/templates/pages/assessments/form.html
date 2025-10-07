@@ -52,16 +52,14 @@
         value="{% if is_edit %}{{ assessment.aws_account_id or '' }}{% else %}{{ aws_account_id or '' }}{% endif %}">
     </gcds-input>
 
-    <gcds-checkboxes
-        name="aws_resources"
-        legend="{{ _('AWS Resources (optional)') }}"
-        hint="{{ _('Select the AWS resources used by this product') }}"
-        options='[
-            {% for resource in aws_resources %}
-            {"label": "{{ _(resource) }}", "id": "{{ resource }}", "value": "{{ resource }}"{% if (is_edit and assessment.aws_resources and resource in assessment.aws_resources) or (selected_aws_resources and resource in selected_aws_resources) %}, "checked": true{% endif %}}{% if not loop.last %},{% endif %}
-            {% endfor %}
-        ]'>
-    </gcds-checkboxes>
+    <gcds-input
+        name="aws_resources_autocomplete"
+        input-id="aws_resources_input"
+        label="{{ _('AWS Resources') }}"
+        hint="{{ _('Type to search for AWS resources used by this project') }}"
+        data-resources='{{ aws_resources | tojson }}'
+        data-selected='{% if is_edit and assessment.aws_resources %}{{ assessment.aws_resources | tojson }}{% elif selected_aws_resources %}{{ selected_aws_resources | tojson }}{% else %}[]{% endif %}'>
+    </gcds-input>
 
     {% if is_edit %}
         <gcds-select

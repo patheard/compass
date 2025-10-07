@@ -67,16 +67,14 @@
         value="{% if template %}{{ template.config }}{% else %}{% endif %}">
     </gcds-textarea>
 
-    <gcds-checkboxes
-        name="aws_resources"
-        legend="{{ _('AWS Resources (optional)') }}"
-        hint="{{ _('Select the AWS resources this template applies to') }}"
-        options='[
-            {% for resource in aws_resources %}
-            {"label": "{{ _(resource) }}", "id": "{{ resource }}", "value": "{{ resource }}"{% if (template and template.aws_resources and resource in template.aws_resources) or (selected_aws_resources and resource in selected_aws_resources) %}, "checked": true{% endif %}}{% if not loop.last %},{% endif %}
-            {% endfor %}
-        ]'>
-    </gcds-checkboxes>
+    <gcds-input
+        name="aws_resources_autocomplete"
+        input-id="aws_resources_input"
+        label="{{ _('AWS Resources') }}"
+        hint="{{ _('Type to search for AWS resources this template applies to') }}"
+        data-resources='{{ aws_resources | tojson }}'
+        data-selected='{% if template and template.aws_resources %}{{ template.aws_resources | tojson }}{% elif selected_aws_resources %}{{ selected_aws_resources | tojson }}{% else %}[]{% endif %}'>
+    </gcds-input>
 
     <gcds-button type="submit" button-role="primary" class="mt-300">
       {% if template %}

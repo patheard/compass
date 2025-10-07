@@ -23,11 +23,13 @@
     {% if template.aws_resources %}
     <li>
         <strong>{{ _('AWS Resources:') }}</strong>
-        <ol class="list-disc ml-400">
-            {% for resource in template.aws_resources %}
-            <li>{{ _(resource) }}</li>
+        <div class="aws-resource-badges">
+             {% for resource in template.aws_resources %}
+            <span class="aws-resource-badge">
+                {{ _(resource) }}
+            </span>
             {% endfor %}
-        </ol>
+        </div>
     </li>
     {% endif %}
 </ul>

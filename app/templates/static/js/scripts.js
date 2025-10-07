@@ -758,3 +758,188 @@ class ChatClient {
     }
 }
 const chatClient = new ChatClient();
+
+/**
+ * AWS Resources Autocomplete Component
+ * Provides autocomplete functionality for AWS resource selection with badge display.
+ */
+class AwsResourcesAutocomplete {
+    constructor(element, resources) {
+        this.input = element;
+        if (!this.input) return;
+
+        this.allResources = resources || [];
+        this.selectedResources = new Set();
+        this.dropdown = null;
+        this.badgeContainer = null;
+        this.hiddenInput = null;
+
+        this.init();
+    }
+
+    init() {
+        // Create dropdown element
+        this.dropdown = document.createElement('div');
+        this.dropdown.className = 'aws-autocomplete-dropdown';
+        this.dropdown.style.display = 'none';
+
+        // Create badge container
+        this.badgeContainer = document.createElement('div');
+        this.badgeContainer.className = 'aws-resource-badges';
+
+        // Create hidden input for form submission
+        this.hiddenInput = document.createElement('input');
+        this.hiddenInput.type = 'hidden';
+        this.hiddenInput.name = 'aws_resources';
+
+        // Insert elements after the input
+        this.input.parentNode.insertBefore(this.badgeContainer, this.input.nextSibling);
+        this.input.parentNode.insertBefore(this.dropdown, this.badgeContainer.nextSibling);
+        this.input.parentNode.insertBefore(this.hiddenInput, this.dropdown.nextSibling);
+
+        // Bind events
+        this.input.addEventListener('input', this.handleInput.bind(this));
+        this.input.addEventListener('focus', this.handleFocus.bind(this));
+        this.input.addEventListener('keydown', this.handleKeydown.bind(this));
+        document.addEventListener('click', this.handleClickOutside.bind(this));
+
+        // Load pre-selected resources
+        this.loadPreselectedResources();
+    }
+
+    loadPreselectedResources() {
+        // Look for pre-selected resources in data attribute
+        const preselected = this.input.getAttribute('data-selected');
+        if (preselected) {
+            try {
+                const resources = JSON.parse(preselected);
+                resources.forEach(resource => this.addResource(resource, false));
+            } catch (e) {
+                console.error('Failed to parse preselected resources:', e);
+            }
+        }
+    }
+
+    handleInput(event) {
+        const value = event.target.value.trim().toLowerCase();
+        this.filterResources(value);
+    }
+
+    handleFocus() {
+        this.filterResources(this.input.value.trim().toLowerCase());
+    }
+
+    handleKeydown(event) {
+        if (event.key === 'Escape') {
+            this.hideDropdown();
+        } else if (event.key === 'Enter') {
+            event.preventDefault();
+            const firstOption = this.dropdown.querySelector('.aws-autocomplete-option');
+            if (firstOption && this.dropdown.style.display !== 'none') {
+                firstOption.click();
+            }
+        }
+    }
+
+    handleClickOutside(event) {
+        if (!this.input.contains(event.target) && !this.dropdown.contains(event.target)) {
+            this.hideDropdown();
+        }
+    }
+
+    filterResources(query) {
+        const filtered = this.allResources.filter(resource => 
+            resource.toLowerCase().includes(query) && !this.selectedResources.has(resource)
+        );
+
+        if (filtered.length === 0) {
+            this.hideDropdown();
+            return;
+        }
+
+        this.showDropdown(filtered);
+    }
+
+    showDropdown(resources) {
+        this.dropdown.innerHTML = '';
+        
+        resources.forEach(resource => {
+            const option = document.createElement('div');
+            option.className = 'aws-autocomplete-option';
+            option.textContent = resource;
+            option.addEventListener('click', () => {
+                this.addResource(resource);
+                this.input.value = '';
+                this.hideDropdown();
+                this.input.focus();
+            });
+            this.dropdown.appendChild(option);
+        });
+
+        this.dropdown.style.display = 'block';
+    }
+
+    hideDropdown() {
+        this.dropdown.style.display = 'none';
+    }
+
+    addResource(resource, updateInput = true) {
+        if (this.selectedResources.has(resource)) return;
+
+        this.selectedResources.add(resource);
+        this.renderBadges();
+        
+        if (updateInput) {
+            this.updateHiddenInput();
+        }
+    }
+
+    removeResource(resource) {
+        this.selectedResources.delete(resource);
+        this.renderBadges();
+        this.updateHiddenInput();
+    }
+
+    renderBadges() {
+        this.badgeContainer.innerHTML = '';
+        
+        this.selectedResources.forEach(resource => {
+            const badge = document.createElement('span');
+            badge.className = 'aws-resource-badge';
+            badge.innerHTML = `
+                ${resource}
+                <button type="button" class="badge-remove" aria-label="Remove ${resource}" title="Remove ${resource}">
+                    ×
+                </button>
+            `;
+            
+            const removeBtn = badge.querySelector('.badge-remove');
+            removeBtn.addEventListener('click', () => this.removeResource(resource));
+            
+            this.badgeContainer.appendChild(badge);
+        });
+    }
+
+    updateHiddenInput() {
+        // Store as JSON array for backend processing
+        this.hiddenInput.value = JSON.stringify([...this.selectedResources]);
+    }
+}
+
+/**
+ * Initialize AWS resources autocomplete on form pages
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const awsResourceInput = document.querySelector('[name="aws_resources_autocomplete"]');
+    if (awsResourceInput) {
+        const resourcesData = awsResourceInput.getAttribute('data-resources');
+        if (resourcesData) {
+            try {
+                const resources = JSON.parse(resourcesData);
+                new AwsResourcesAutocomplete(awsResourceInput, resources);
+            } catch (e) {
+                console.error('Failed to initialize AWS resources autocomplete:', e);
+            }
+        }
+    }
+});
