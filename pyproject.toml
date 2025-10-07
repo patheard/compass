@@ -21,7 +21,6 @@ dependencies = [
     "pygithub>=2.5.0",
     "markdown>=3.4.4",
     "bleach>=6.0.0",
-    "pocketflow>=0.0.3",
     "openai>=1.109.1",
 ]
 
@@ -30,4 +29,5 @@ dev = [
     "ruff>=0.8.0",
     "bandit>=1.7.5",
     "langchain>=0.3.27",
+    "pocketflow>=0.0.3",
 ]
