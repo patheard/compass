@@ -352,7 +352,7 @@ ol {
     overflow-y: auto;
     z-index: 5;
     width: 100%;
-    max-width: 600px;
+    max-width: 75ch;
 }
 
 .aws-autocomplete-option {
@@ -408,4 +408,129 @@ ol {
     outline: 2px solid var(--gcds-link-default);
     outline-offset: 2px;
     border-radius: 2px;
+}
+
+/*
+ * Assessment Progress Bar
+ */
+.assessment-progress-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 0;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    min-width: 80px;
+}
+
+.progress-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.progress-step.complete .progress-circle {
+    background: var(--gcds-color-green-500);
+    color: #fff;
+    border: 3px solid var(--gcds-color-green-500);
+    box-shadow: 0 0 0 4px rgba(47, 147, 72, 0.2);
+}
+
+.progress-step.active .progress-circle {
+    background: var(--gcds-color-blue-500);
+    color: #fff;
+    border: 3px solid var(--gcds-color-blue-500);
+    box-shadow: 0 0 0 4px rgba(38, 109, 211, 0.2);
+}
+
+.progress-step.pending .progress-circle {
+    background: #fff;
+    color: var(--gcds-color-grayscale-400);
+    border: 3px solid var(--gcds-color-grayscale-100);
+}
+
+.check-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.progress-label {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    color: var(--gcds-color-grayscale-700);
+    white-space: nowrap;
+}
+
+.progress-step.complete .progress-label {
+    color: var(--gcds-color-green-700);
+    font-weight: 600;
+}
+
+.progress-step.active .progress-label {
+    color: var(--gcds-color-blue-650);
+    font-weight: 600;
+}
+
+.progress-line {
+    flex: 1;
+    height: 3px;
+    margin: 0 0.5rem;
+    margin-bottom: 2.5rem;
+    transition: background-color 0.3s ease;
+    min-width: 40px;
+}
+
+.progress-line.complete {
+    background: var(--gcds-color-green-500);
+}
+
+.progress-line.pending {
+    background: var(--gcds-color-grayscale-100);
+}
+
+@media (max-width: 1024px) {
+    .assessment-progress-bar {
+        padding: 1rem 0;
+    }
+    
+    .progress-step {
+        min-width: 60px;
+    }
+    
+    .progress-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 0.875rem;
+    }
+    
+    .check-icon {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .progress-label {
+        font-size: 0.75rem;
+    }
+    
+    .progress-line {
+        min-width: 20px;
+        margin-bottom: 2rem;
+    }
 }

@@ -1,5 +1,15 @@
 """Application-wide constants."""
 
+ASSESSMENT_STATUSES = [
+    "prepare",
+    "categorize",
+    "select",
+    "implement",
+    "assess",
+    "authorize",
+    "monitor",
+]
+
 # Common AWS resource types for assessment filtering
 AWS_RESOURCES = [
     "acm",
@@ -12,7 +22,6 @@ AWS_RESOURCES = [
     "dynamodb",
     "ecs",
     "eks",
-    "elb",
     "iam",
     "internet_gateway",
     "kms",

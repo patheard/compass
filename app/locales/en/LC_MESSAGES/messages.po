@@ -484,3 +484,105 @@ msgstr ""
 
 msgid "aws_config"
 msgstr "AWS Config"
+
+msgid "prepare_status_description"
+msgstr  "Foundational phase with early engagement, architectural threat visibility, and clarity around roles, scope, and system context."
+
+msgid "categorize_status_description"
+msgstr "Define the security impact levels of the system based on confidentiality, integrity, and availability (CIA), and formally register the system for governance and tracking."
+
+msgid "select_status_description"
+msgstr "Select an initial set of security controls, tailor them to the system and environment of operation, and document them in security planning artifacts."
+
+msgid "implement_status_description"
+msgstr "Implement the security controls selected and tailored during the SELECT phase and document how each control is deployed within the information system and its operational environment"
+
+msgid "assess_status_description"
+msgstr "Determine if the security controls are implemented correctly, operating as intended, and producing the desired outcome with respect to meeting security requirements."
+
+msgid "authorize_status_description"
+msgstr "Authorizing Officer makes their final decision around accepting the system's residual risks."
+
+msgid "monitor_status_description"
+msgstr "Monitor the control compliance and residual risks of the system as it operates."
+
+msgid "acm"
+msgstr "ACM"
+
+msgid "api_gateway"
+msgstr "API Gateway"
+
+msgid "alb"
+msgstr "Load Balancer"
+
+msgid "athena"
+msgstr "Athena"
+
+msgid "cloudfront"
+msgstr "CloudFront"
+
+msgid "cloudwatch"
+msgstr "CloudWatch"
+
+msgid "db_proxy"
+msgstr "RDS Proxy"
+
+msgid "dynamodb"
+msgstr "DynamoDB"
+
+msgid "ecs"
+msgstr "ECS"
+
+msgid "eks"
+msgstr "EKS"
+
+msgid "iam"
+msgstr "IAM"
+
+msgid "internet_gateway"
+msgstr "Internet Gateway"
+
+msgid "kms"
+msgstr "KMS"
+
+msgid "lambda"
+msgstr "Lambda"
+
+msgid "nat_gateway"
+msgstr "NAT Gateway"
+
+msgid "network_acl"
+msgstr "Network ACL"
+
+msgid "rds"
+msgstr "RDS"
+
+msgid "route53"
+msgstr "Route53"
+
+msgid "s3"
+msgstr "S3"
+
+msgid "secretsmanager"
+msgstr "Secrets Manager"
+
+msgid "security_group"
+msgstr "Security Group"
+
+msgid "ses"
+msgstr "SES"
+
+msgid "sns"
+msgstr "SNS"
+
+msgid "sqs"
+msgstr "SQS"
+
+msgid "ssm_parameter"
+msgstr "SSM Parameter"
+
+msgid "vpc"
+msgstr "VPC"
+
+msgid "waf"
+msgstr "WAF"

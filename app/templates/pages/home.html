@@ -20,7 +20,7 @@
       card-title="{{ assessment.product_name }}"
       href="/assessments/{{ assessment.assessment_id }}">
       <gcds-text class="mt-200">{{ assessment.product_description | truncate(100) }}</gcds-text>
-      <gcds-text text-role="secondary" size="small"><em>{{ _('Status:') }} {{ _(assessment.status) }}</em></gcds-text>
+      <gcds-text text-role="secondary" size="small"><em>{{ _('Step:') }} {{ _(assessment.status) }}</em></gcds-text>
     </gcds-card>
   {% endfor %}
   </gcds-grid>

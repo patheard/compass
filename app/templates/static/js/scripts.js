@@ -762,6 +762,7 @@ const chatClient = new ChatClient();
 /**
  * AWS Resources Autocomplete Component
  * Provides autocomplete functionality for AWS resource selection with badge display.
+ * Expects resources as an array of objects with {value, label} properties.
  */
 class AwsResourcesAutocomplete {
     constructor(element, resources) {
@@ -769,7 +770,7 @@ class AwsResourcesAutocomplete {
         if (!this.input) return;
 
         this.allResources = resources || [];
-        this.selectedResources = new Set();
+        this.selectedResources = new Map(); // Map value -> label
         this.dropdown = null;
         this.badgeContainer = null;
         this.hiddenInput = null;
@@ -794,7 +795,7 @@ class AwsResourcesAutocomplete {
 
         // Insert elements after the input
         this.input.parentNode.insertBefore(this.badgeContainer, this.input.nextSibling);
-        this.input.parentNode.insertBefore(this.dropdown, this.badgeContainer.nextSibling);
+        this.input.parentNode.insertBefore(this.dropdown, this.input.nextSibling);
         this.input.parentNode.insertBefore(this.hiddenInput, this.dropdown.nextSibling);
 
         // Bind events
@@ -803,8 +804,9 @@ class AwsResourcesAutocomplete {
         this.input.addEventListener('keydown', this.handleKeydown.bind(this));
         document.addEventListener('click', this.handleClickOutside.bind(this));
 
-        // Load pre-selected resources
+        // Load pre-selected resources and update hidden input with the current resources
         this.loadPreselectedResources();
+        this.updateHiddenInput();
     }
 
     loadPreselectedResources() {
@@ -813,7 +815,11 @@ class AwsResourcesAutocomplete {
         if (preselected) {
             try {
                 const resources = JSON.parse(preselected);
-                resources.forEach(resource => this.addResource(resource, false));
+                resources.forEach(resource => {
+                    if (typeof resource === 'object' && resource.value && resource.label) {
+                        this.addResource(resource, false);
+                    }
+                });
             } catch (e) {
                 console.error('Failed to parse preselected resources:', e);
             }
@@ -826,7 +832,9 @@ class AwsResourcesAutocomplete {
     }
 
     handleFocus() {
-        this.filterResources(this.input.value.trim().toLowerCase());
+        if (this.input.value) {
+            this.filterResources(this.input.value.trim().toLowerCase());
+        }
     }
 
     handleKeydown(event) {
@@ -848,9 +856,11 @@ class AwsResourcesAutocomplete {
     }
 
     filterResources(query) {
-        const filtered = this.allResources.filter(resource => 
-            resource.toLowerCase().includes(query) && !this.selectedResources.has(resource)
-        );
+        const filtered = this.allResources.filter(resource => {
+            const labelMatch = resource.label && resource.label.toLowerCase().includes(query);
+            const valueMatch = resource.value && resource.value.toLowerCase().includes(query);
+            return (labelMatch || valueMatch) && !this.selectedResources.has(resource.value);
+        });
 
         if (filtered.length === 0) {
             this.hideDropdown();
@@ -866,7 +876,7 @@ class AwsResourcesAutocomplete {
         resources.forEach(resource => {
             const option = document.createElement('div');
             option.className = 'aws-autocomplete-option';
-            option.textContent = resource;
+            option.textContent = resource.label || resource.value;
             option.addEventListener('click', () => {
                 this.addResource(resource);
                 this.input.value = '';
@@ -884,9 +894,12 @@ class AwsResourcesAutocomplete {
     }
 
     addResource(resource, updateInput = true) {
-        if (this.selectedResources.has(resource)) return;
+        const value = typeof resource === 'object' ? resource.value : resource;
+        const label = typeof resource === 'object' ? resource.label : resource;
+        
+        if (this.selectedResources.has(value)) return;
 
-        this.selectedResources.add(resource);
+        this.selectedResources.set(value, label);
         this.renderBadges();
         
         if (updateInput) {
@@ -894,8 +907,8 @@ class AwsResourcesAutocomplete {
         }
     }
 
-    removeResource(resource) {
-        this.selectedResources.delete(resource);
+    removeResource(value) {
+        this.selectedResources.delete(value);
         this.renderBadges();
         this.updateHiddenInput();
     }
@@ -903,26 +916,26 @@ class AwsResourcesAutocomplete {
     renderBadges() {
         this.badgeContainer.innerHTML = '';
         
-        this.selectedResources.forEach(resource => {
+        this.selectedResources.forEach((label, value) => {
             const badge = document.createElement('span');
             badge.className = 'aws-resource-badge';
             badge.innerHTML = `
-                ${resource}
-                <button type="button" class="badge-remove" aria-label="Remove ${resource}" title="Remove ${resource}">
+                ${label}
+                <button type="button" class="badge-remove" aria-label="Remove ${label}" title="Remove ${label}">
                     ×
                 </button>
             `;
             
             const removeBtn = badge.querySelector('.badge-remove');
-            removeBtn.addEventListener('click', () => this.removeResource(resource));
+            removeBtn.addEventListener('click', () => this.removeResource(value));
             
             this.badgeContainer.appendChild(badge);
         });
     }
 
     updateHiddenInput() {
-        // Store as JSON array for backend processing
-        this.hiddenInput.value = JSON.stringify([...this.selectedResources]);
+        // Store as JSON array of values for backend processing
+        this.hiddenInput.value = JSON.stringify([...this.selectedResources.keys()]);
     }
 }
 

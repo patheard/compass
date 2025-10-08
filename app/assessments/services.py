@@ -80,13 +80,13 @@ class AssessmentService(BaseService[SecurityAssessment]):
 
             if data.github_repo_controls is not None:
                 assessment.github_repo_controls = data.github_repo_controls
-                
+
             assessment.aws_account_id = data.aws_account_id
             assessment.aws_resources = data.aws_resources
 
             if data.status is not None:
                 assessment.update_status(data.status)
-            
+
             assessment.save()
 
             return self._to_response(assessment)

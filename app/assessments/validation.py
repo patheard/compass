@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Optional, Union
 from pydantic import BaseModel, Field, validator
 from app.assessments.base import BaseInputValidator
-from app.constants import AWS_RESOURCES
+from app.constants import ASSESSMENT_STATUSES, AWS_RESOURCES
 
 
 class AssessmentRequest(BaseInputValidator):
@@ -60,9 +60,10 @@ class AssessmentRequest(BaseInputValidator):
     def validate_status(cls, value: Optional[str]) -> Optional[str]:
         """Validate status value if provided."""
         if value is not None:
-            valid_statuses = {"draft", "in_progress", "completed"}
-            if value not in valid_statuses:
-                raise ValueError(f"Status must be one of: {', '.join(valid_statuses)}")
+            if value not in ASSESSMENT_STATUSES:
+                raise ValueError(
+                    f"Status must be one of: {', '.join(ASSESSMENT_STATUSES)}"
+                )
 
         return value
 

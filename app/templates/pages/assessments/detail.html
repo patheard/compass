@@ -2,36 +2,59 @@
 
 {% block content %}
 <gcds-heading tag="h1">{{ assessment.product_name | markdown_no_tags }}</gcds-heading>
+
 <gcds-text>
     {{ assessment.product_description | markdown }}
 </gcds-text>
 
-<ul class="list-disc mb-300" class="sm">
-    <li>
-        <strong>{{ _('Status:') }}</strong>
-        {{ _(assessment.status) }}
-    </li>
-    {% if assessment.aws_account_id %}
-    <li>
-        <strong>{{ _('AWS account ID:') }}</strong>
-        {{ assessment.aws_account_id }}
-    </li>
-    {% endif %}
-    {% if assessment.aws_resources %}
-    <li>
-        <strong>{{ _('AWS Resources:') }}</strong>
-        <div class="aws-resource-badges">
-             {% for resource in assessment.aws_resources %}
-            <span class="aws-resource-badge">
-                {{ _(resource) }}
-            </span>
-            {% endfor %}
+<gcds-text>
+    {{ _('The assessment is on the') }} <code>{{ _(assessment.status|capitalize) }}</code> {{ _('step of the') }} <gcds-link href="https://docs.google.com/document/d/1IEOR7mDjfkkVN-mJIdLOZBoALR6slXQFSErxI43EYSg" target="_blank">{{ _('Agile SA&A process') }}</gcds-link>:
+</gcds-text>
+<div class="assessment-progress-bar mb-300">
+    {% for status in assessment_statuses %}
+        {% set current_index = assessment_statuses.index(assessment.status) %}
+        {% set status_index = loop.index0 %}
+        {% if status_index < current_index %}
+            {% set status_class = 'complete' %}
+        {% elif status_index == current_index %}
+            {% set status_class = 'active' %}
+        {% else %}
+            {% set status_class = 'pending' %}
+        {% endif %}
+        <div class="progress-step {{ status_class }} cursor-help" title="{{ _(status + '_status_description') }}">
+            <div class="progress-circle">
+                {{ status_index + 1 }}
+            </div>
+            <div class="progress-label">{{ _(status|capitalize) }}</div>
         </div>
-    </li>
-    {% endif %}
-</ul>
+        {% if not loop.last %}
+            <div class="progress-line {{ 'complete' if status_index < current_index else 'pending' }}"></div>
+        {% endif %}
+    {% endfor %}
+</div>
 
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/edit" type="link" button-role="primary" class="mt-300">
+{% if assessment.aws_account_id %}
+    <gcds-heading tag="h2">{{ 'AWS resources' }}</gcds-heading>
+    <gcds-text>
+        {{ assessment.product_name | markdown_no_tags }} {{ _('runs in AWS account ') }}<code>{{ assessment.aws_account_id }}</code>
+        {% if assessment.aws_resources %}
+            {{ _('using the following services:') }}
+        {% endif %}
+    </gcds-text>
+
+    {% if assessment.aws_resources %}
+    <div class="aws-resource-badges">
+            {% for resource in assessment.aws_resources %}
+        <span class="aws-resource-badge">
+            {{ _(resource) }}
+        </span>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endif %}
+
+
+<gcds-button href="/assessments/{{ assessment.assessment_id }}/edit" type="link" button-role="primary" class="mt-600">
     {{ _("Edit") }}
 </gcds-button>
 <gcds-button href="/assessments/{{ assessment.assessment_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">

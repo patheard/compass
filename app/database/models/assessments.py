@@ -10,6 +10,7 @@ from pynamodb.attributes import (
 
 from app.database.base import BaseModel
 from app.database.config import db_config
+from app.constants import ASSESSMENT_STATUSES
 
 
 class SecurityAssessment(BaseModel):
@@ -41,7 +42,7 @@ class SecurityAssessment(BaseModel):
         owner_id: str = "",
         product_name: str = "",
         product_description: str = "",
-        status: str = "draft",
+        status: str = ASSESSMENT_STATUSES[0],
         aws_account_id: Optional[str] = None,
         github_repo_controls: Optional[str] = None,
         aws_resources: Optional[List[str]] = None,
@@ -69,10 +70,9 @@ class SecurityAssessment(BaseModel):
 
     def update_status(self, status: str) -> None:
         """Update the assessment status."""
-        valid_statuses = {"draft", "in_progress", "completed"}
-        if status not in valid_statuses:
+        if status not in ASSESSMENT_STATUSES:
             raise ValueError(
-                f"Invalid status: {status}. Must be one of {valid_statuses}"
+                f"Invalid status: {status}. Must be one of {ASSESSMENT_STATUSES}"
             )
         self.status = status
         self.save()
