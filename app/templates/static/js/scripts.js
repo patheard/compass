@@ -632,7 +632,7 @@ class ChatClient {
                 this.ws.send(JSON.stringify({ 
                     type: 'message', 
                     content: message,
-                    current_page: document.querySelector('#main-content').innerText,
+                    current_page: document.querySelector('#main-content').innerHTML,
                     current_url: window.location.pathname,
                     session_id: this.sessionId
                 }));
@@ -667,7 +667,7 @@ class ChatClient {
                 body: JSON.stringify({
                     message: message,
                     session_id: this.sessionId,
-                    current_page: document.querySelector('#main-content') ? document.querySelector('#main-content').innerText : '',
+                    current_page: document.querySelector('#main-content') ? document.querySelector('#main-content').innerHTML : '',
                     current_url: window.location.pathname
                 })
             });

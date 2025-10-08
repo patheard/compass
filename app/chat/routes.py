@@ -17,9 +17,12 @@ from app.auth.middleware import get_user_from_session
 from app.auth.websocket import get_websocket_auth
 from app.database.models.users import User
 from app.chat.services import ChatStreamingService
+from app.chat.aws_resource_scanner import AWSResourceScanner
 from app.evidence.services import EvidenceService
 from app.evidence.validation import EvidenceRequest
+from app.assessments.services import AssessmentService
 from app.assessments.base import CSRFTokenManager
+from app.assessments.validation import AssessmentRequest
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 logger = logging.getLogger(__name__)
@@ -141,6 +144,14 @@ async def execute_chat_action(
             return JSONResponse(
                 content={"success": True, "message": result["message"], "data": result}
             )
+        elif action.action_type == "identify_aws_resources":
+            # Execute identify_aws_resources action
+            result = await _execute_identify_aws_resources_action(
+                action.params, current_user.user_id
+            )
+            return JSONResponse(
+                content={"success": True, "message": result["message"], "data": result}
+            )
         else:
             raise HTTPException(
                 status_code=400, detail=f"Unknown action type: {action.action_type}"
@@ -191,4 +202,45 @@ async def _execute_add_evidence_action(
         "message": f"Successfully added evidence **{title}** to the control",
         "evidence_id": evidence.evidence_id,
         "control_id": control_id,
+    }
+
+
+async def _execute_identify_aws_resources_action(
+    params: Dict[str, Any], user_id: str
+) -> Dict[str, Any]:
+    """Execute the identify_aws_resources action."""
+    # Validate required parameters
+    if "assessment_id" not in params:
+        raise HTTPException(
+            status_code=400, detail="Missing required parameter: assessment_id"
+        )
+
+    assessment_id = params["assessment_id"]
+
+    # Use AWS resource scanner to identify resources
+    scanner = AWSResourceScanner()
+    aws_resources = await scanner.identify_aws_resources()
+
+    # Update assessment with identified resources
+    assessment_service = AssessmentService()
+    assessment = assessment_service.get_assessment(assessment_id, user_id)
+
+    if not assessment:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+
+    update_data = AssessmentRequest(
+        product_name=assessment.product_name,
+        product_description=assessment.product_description,
+        status=assessment.status,
+        aws_account_id=assessment.aws_account_id,
+        github_repo_controls=assessment.github_repo_controls,
+        aws_resources=aws_resources,
+    )
+
+    assessment_service.update_assessment(assessment_id, user_id, update_data)
+
+    return {
+        "message": f"Identified {len(aws_resources)} AWS services",
+        "assessment_id": assessment_id,
+        "aws_resources": aws_resources,
     }

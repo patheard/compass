@@ -74,28 +74,30 @@ class ActionContext:
     ) -> Tuple[str, List[Dict[str, Any]]]:
         """Get context for assessment page.
 
-        No actions available on assessment pages.
+        Actions: Identify AWS services from Terraform files.
         """
         try:
-            assessment_response = self.assessment_service.get_assessment(
-                assessment_id, user_id
-            )
-            if not assessment_response:
+            assessment = self.assessment_service.get_assessment(assessment_id, user_id)
+            if not assessment:
                 return "", []
 
-            context = (
-                f"User is viewing assessment: {assessment_response.product_name}\n"
-                f"Description: {assessment_response.product_description}\n"
-                f"Status: {assessment_response.status}\n"
-            )
-            if assessment_response.aws_account_id:
-                context += f"AWS Account: {assessment_response.aws_account_id}\n"
-            if assessment_response.github_repo_controls:
-                context += (
-                    f"GitHub Repository: {assessment_response.github_repo_controls}\n"
+            context = f"User is viewing assessment: {assessment.product_name}\n"
+
+            # Build action for identifying AWS resources
+            actions = []
+            if assessment.aws_account_id:
+                actions.append(
+                    {
+                        "action_type": "identify_aws_resources",
+                        "label": "Identify AWS services",
+                        "description": "Scan Terraform files to identify AWS services used in this project",
+                        "params": {
+                            "assessment_id": assessment_id,
+                        },
+                    }
                 )
 
-            return context, []
+            return context, actions
         except Exception as e:
             logger.exception(f"Error getting assessment context: {e}")
             return "", []
@@ -120,12 +122,7 @@ class ActionContext:
             if not assessment_response:
                 return "", []
 
-            context = (
-                f"User is viewing control: {control_response.nist_control_id} - {control_response.control_title}\n"
-                f"Control Description: {control_response.control_description}\n"
-                f"Implementation Status: {control_response.implementation_status}\n"
-                f"Assessment: {assessment_response.product_name}\n"
-            )
+            context = f"User is viewing control: {control_response.nist_control_id} - {control_response.control_title}\n"
 
             # Add infrastructure context
             if assessment_response.aws_account_id:
@@ -167,10 +164,7 @@ class ActionContext:
             if not control_response:
                 return "", []
 
-            context = (
-                f"User is viewing evidence for control: {control_response.nist_control_id}\n"
-                f"Control Title: {control_response.control_title}\n"
-            )
+            context = f"User is viewing evidence for control: {control_response.nist_control_id}: {control_response.control_title}\n"
 
             return context, []
         except Exception as e:
