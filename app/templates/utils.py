@@ -24,6 +24,7 @@ class LocalizedTemplates:
         # Register a `markdown` filter on the Jinja2 environment
         self.templates.env.filters["markdown"] = self._markdown_to_html
         self.templates.env.filters["markdown_no_tags"] = self._markdown_no_tags
+        self.templates.env.filters["sort_by_locale"] = self._sort_by_locale
 
     def _markdown_no_tags(self, text: str) -> str:
         """Convert Markdown to plain text by stripping all HTML tags."""
@@ -36,6 +37,17 @@ class LocalizedTemplates:
         # Strip all HTML tags to get plain text
         cleaned = bleach.clean(html, tags=[], strip=True)
         return Markup(cleaned)  # nosec: B704 Bandit flags use on untrusted input
+
+    def _sort_by_locale(self, items: list[str]) -> list[str]:
+        """Sort a list of strings by their localized values."""
+        if not items:
+            return items
+
+        # Get the translation function from the Jinja2 environment
+        translate = self.templates.env.globals.get("_", lambda x: x)
+
+        # Sort by the translated value
+        return sorted(items, key=lambda item: translate(item).lower())
 
     def _markdown_to_html(self, text: str) -> Markup:
         """Convert Markdown to sanitized HTML and mark it safe for Jinja2"""

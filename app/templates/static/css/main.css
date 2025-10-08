@@ -452,9 +452,9 @@ ol {
 }
 
 .progress-step.active .progress-circle {
-    background: var(--gcds-color-blue-500);
+    background: var(--gcds-color-blue-650);
     color: #fff;
-    border: 3px solid var(--gcds-color-blue-500);
+    border: 3px solid var(--gcds-color-blue-650);
     box-shadow: 0 0 0 4px rgba(38, 109, 211, 0.2);
 }
 
