@@ -3,7 +3,9 @@
 import json
 import logging
 import os
+import re
 from typing import List, Optional
+from pathlib import Path
 from fastapi import HTTPException
 
 import boto3
@@ -77,7 +79,7 @@ class EvidenceService(BaseService[Evidence]):
 
     def create_evidence(
         self, control_id: str, user_id: str, data: EvidenceRequest
-    ) -> EvidenceResponse:
+    ) -> Evidence:
         """Create new evidence."""
         # Validate control access
         self.validate_control_access(control_id, user_id)
@@ -103,7 +105,7 @@ class EvidenceService(BaseService[Evidence]):
                     evidence_id=evidence.evidence_id,
                 )
 
-            return self._to_response(evidence)
+            return evidence
         except Exception as e:
             raise HTTPException(
                 status_code=500, detail=f"Failed to create evidence: {str(e)}"
@@ -131,7 +133,7 @@ class EvidenceService(BaseService[Evidence]):
 
     def update_evidence(
         self, evidence_id: str, user_id: str, data: EvidenceRequest
-    ) -> EvidenceResponse:
+    ) -> Evidence:
         """Update existing evidence."""
         evidence = self.get_entity_or_404(evidence_id, user_id)
 
@@ -162,7 +164,7 @@ class EvidenceService(BaseService[Evidence]):
                     evidence_id=evidence.evidence_id,
                 )
 
-            return self._to_response(evidence)
+            return evidence
         except Exception as e:
             raise HTTPException(
                 status_code=500, detail=f"Failed to update evidence: {str(e)}"
@@ -173,7 +175,15 @@ class EvidenceService(BaseService[Evidence]):
         evidence = self.get_entity_or_404(evidence_id, user_id)
 
         try:
-            # TODO: If evidence has a file, delete it from S3 storage
+            # Delete files from S3 if they exist
+            if evidence.file_keys:
+                s3_service = S3Service()
+                for file_key in evidence.get_file_keys():
+                    try:
+                        s3_service.delete_file(file_key)
+                    except Exception as e:
+                        logger.error(f"Failed to delete file {file_key}: {str(e)}")
+
             JobExecutionService.delete_executions_by_evidence(evidence_id, user_id)
             evidence.delete()
         except Exception as e:
@@ -218,8 +228,8 @@ class EvidenceService(BaseService[Evidence]):
             description=evidence.description,
             evidence_type=evidence.evidence_type,
             aws_account_id=evidence.aws_account_id if evidence.aws_account_id else "",
-            file_url=evidence.file_url,
             has_file=evidence.has_file(),
+            file_keys=evidence.get_file_keys(),
             job_template_id=evidence.job_template_id
             if evidence.job_template_id
             else "",
@@ -295,3 +305,275 @@ class SQSService:
                 f"Unexpected error sending evidence processing message for evidence {evidence_id}: {e}"
             )
             return None
+
+
+class S3Service:
+    """Service for uploading and downloading evidence files from S3."""
+
+    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".md", ".pdf"}
+    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB in bytes
+
+    def __init__(self) -> None:
+        """Initialize S3 service."""
+        self.region = os.getenv("AWS_REGION", "ca-central-1")
+        self.bucket_name = os.getenv("S3_EVIDENCE_BUCKET_NAME")
+        self.endpoint_url = os.getenv("S3_ENDPOINT_URL")
+
+        if not self.bucket_name:
+            raise ValueError("S3_EVIDENCE_BUCKET_NAME environment variable not set")
+
+        # Create S3 client
+        session = boto3.Session()
+        if self.endpoint_url:
+            self.s3_client = session.client(
+                "s3", region_name=self.region, endpoint_url=self.endpoint_url
+            )
+        else:
+            self.s3_client = session.client("s3", region_name=self.region)
+
+    def sanitize_filename(self, filename: str) -> str:
+        """
+        Sanitize filename to only include alphanumeric characters, underscores, hyphens and dots.
+
+        Args:
+            filename: Original filename
+
+        Returns:
+            Sanitized filename with spaces replaced by underscores
+        """
+        # Get file extension
+        file_path = Path(filename)
+        name = file_path.stem
+        ext = file_path.suffix.lower()
+
+        # Replace spaces with underscores and remove non-alphanumeric characters (except - and _)
+        sanitized_name = re.sub(r"[^\w\-]", "_", name)
+        # Remove multiple consecutive underscores
+        sanitized_name = re.sub(r"_+", "_", sanitized_name)
+        # Remove leading/trailing underscores
+        sanitized_name = sanitized_name.strip("_")
+
+        return f"{sanitized_name}{ext}"
+
+    def validate_file(self, filename: str, file_size: int) -> None:
+        """
+        Validate file extension and size.
+
+        Args:
+            filename: Name of the file
+            file_size: Size of the file in bytes
+
+        Raises:
+            HTTPException: If file is invalid
+        """
+        ext = Path(filename).suffix.lower()
+
+        if ext not in self.ALLOWED_EXTENSIONS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File type {ext} not allowed. Allowed types: {', '.join(self.ALLOWED_EXTENSIONS)}",
+            )
+
+        if file_size > self.MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File size {file_size} bytes exceeds maximum allowed size of {self.MAX_FILE_SIZE} bytes (10MB)",
+            )
+
+    def upload_file(
+        self,
+        file_content: bytes,
+        filename: str,
+        assessment_id: str,
+        control_id: str,
+        evidence_id: str,
+    ) -> str:
+        """
+        Upload file to S3.
+
+        Args:
+            file_content: File content as bytes
+            filename: Original filename
+            assessment_id: Assessment ID
+            control_id: Control ID
+            evidence_id: Evidence ID
+
+        Returns:
+            S3 key of uploaded file
+
+        Raises:
+            HTTPException: If upload fails
+        """
+        # Validate file
+        self.validate_file(filename, len(file_content))
+
+        # Sanitize filename
+        sanitized_filename = self.sanitize_filename(filename)
+
+        # Construct S3 key with path structure
+        s3_key = f"{assessment_id}/{control_id}/{evidence_id}/{sanitized_filename}"
+
+        try:
+            # Determine content type
+            ext = Path(filename).suffix.lower()
+            content_type_map = {
+                ".jpg": "image/jpeg",
+                ".jpeg": "image/jpeg",
+                ".png": "image/png",
+                ".pdf": "application/pdf",
+                ".md": "text/markdown",
+            }
+            content_type = content_type_map.get(ext, "application/octet-stream")
+
+            # Upload to S3
+            self.s3_client.put_object(
+                Bucket=self.bucket_name,
+                Key=s3_key,
+                Body=file_content,
+                ContentType=content_type,
+            )
+
+            logger.info(f"Successfully uploaded file to S3: {s3_key}")
+            return s3_key
+
+        except (BotoCoreError, ClientError) as e:
+            logger.error(f"Failed to upload file to S3: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to upload file: {str(e)}"
+            )
+
+    def delete_file(self, s3_key: str) -> None:
+        """
+        Delete file from S3.
+
+        Args:
+            s3_key: S3 key of file to delete
+
+        Raises:
+            HTTPException: If deletion fails
+        """
+        try:
+            self.s3_client.delete_object(Bucket=self.bucket_name, Key=s3_key)
+            logger.info(f"Successfully deleted file from S3: {s3_key}")
+        except (BotoCoreError, ClientError) as e:
+            logger.error(f"Failed to delete file from S3: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to delete file: {str(e)}"
+            )
+
+    def get_presigned_url(self, s3_key: str, expiration: int = 3600) -> str:
+        """
+        Generate presigned URL for file download.
+
+        Args:
+            s3_key: S3 key of file
+            expiration: URL expiration time in seconds (default 1 hour)
+
+        Returns:
+            Presigned URL
+
+        Raises:
+            HTTPException: If URL generation fails
+        """
+        try:
+            url = self.s3_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": self.bucket_name, "Key": s3_key},
+                ExpiresIn=expiration,
+            )
+            return url
+        except (BotoCoreError, ClientError) as e:
+            logger.error(f"Failed to generate presigned URL: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to generate download URL: {str(e)}"
+            )
+
+    def get_file_content(self, s3_key: str) -> tuple[bytes, str]:
+        """
+        Get file content from S3.
+
+        Args:
+            s3_key: S3 key of file
+
+        Returns:
+            Tuple of (file_content, content_type)
+
+        Raises:
+            HTTPException: If file retrieval fails
+        """
+        try:
+            response = self.s3_client.get_object(Bucket=self.bucket_name, Key=s3_key)
+            content = response["Body"].read()
+            content_type = response.get("ContentType", "application/octet-stream")
+            return content, content_type
+        except self.s3_client.exceptions.NoSuchKey:
+            raise HTTPException(status_code=404, detail="File not found")
+        except (BotoCoreError, ClientError) as e:
+            logger.error(f"Failed to retrieve file from S3: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to retrieve file: {str(e)}"
+            )
+
+    def get_file_metadata(self, s3_key: str) -> dict[str, any]:
+        """
+        Get metadata for a file in S3.
+
+        Args:
+            s3_key: S3 key of file
+
+        Returns:
+            Dictionary with file metadata including size and content_type
+
+        Raises:
+            HTTPException: If metadata retrieval fails
+        """
+        try:
+            response = self.s3_client.head_object(Bucket=self.bucket_name, Key=s3_key)
+            filename = s3_key.split("/")[-1]
+            return {
+                "key": s3_key,
+                "filename": filename,
+                "size": response.get("ContentLength", 0),
+                "content_type": response.get("ContentType", "application/octet-stream"),
+            }
+        except self.s3_client.exceptions.NoSuchKey:
+            raise HTTPException(status_code=404, detail="File not found")
+        except (BotoCoreError, ClientError) as e:
+            logger.error(f"Failed to get file metadata from S3: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to get file metadata: {str(e)}"
+            )
+
+    def list_files(
+        self, assessment_id: str, control_id: str, evidence_id: str
+    ) -> list[str]:
+        """
+        List all files for a specific evidence.
+
+        Args:
+            assessment_id: Assessment ID
+            control_id: Control ID
+            evidence_id: Evidence ID
+
+        Returns:
+            List of S3 keys
+
+        Raises:
+            HTTPException: If listing fails
+        """
+        prefix = f"{assessment_id}/{control_id}/{evidence_id}/"
+
+        try:
+            response = self.s3_client.list_objects_v2(
+                Bucket=self.bucket_name, Prefix=prefix
+            )
+
+            if "Contents" not in response:
+                return []
+
+            return [obj["Key"] for obj in response["Contents"]]
+        except (BotoCoreError, ClientError) as e:
+            logger.error(f"Failed to list files from S3: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to list files: {str(e)}"
+            )

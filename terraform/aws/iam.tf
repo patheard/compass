@@ -48,6 +48,23 @@ data "aws_iam_policy_document" "dynamodb" {
   }
 }
 
+data "aws_iam_policy_document" "s3" {
+  statement {
+    sid    = "S3ReadWrite"
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject"
+    ]
+    resources = [
+      module.evidence_bucket.s3_bucket_arn,
+      "${module.evidence_bucket.s3_bucket_arn}/*"
+    ]
+  }
+}
+
 data "aws_iam_policy_document" "sqs" {
   statement {
     sid    = "SQSReadWrite"

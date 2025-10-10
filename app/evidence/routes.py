@@ -1,16 +1,20 @@
 """Evidence routes for web interface and API endpoints."""
 
+import logging
 from typing import Optional
-from fastapi import APIRouter, Request, Depends, Form, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Request, Depends, Form, HTTPException, UploadFile, File
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from app.auth.middleware import require_authenticated_user
 from app.database.models.users import User
 from app.templates.utils import LocalizedTemplates
 from app.evidence.services import EvidenceService
+from app.evidence.services import S3Service
 from app.evidence.validation import EvidenceRequest
 from app.job_templates.services import JobTemplateService
 from app.job_executions.services import JobExecutionService
 from app.assessments.base import CSRFTokenManager, format_validation_error
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(
@@ -19,6 +23,7 @@ router = APIRouter(
 )
 templates = LocalizedTemplates(directory="./app/templates")
 evidence_service = EvidenceService()
+s3_service = S3Service()
 csrf_manager = CSRFTokenManager()
 
 
@@ -91,6 +96,7 @@ async def create_evidence(
     aws_account_id: Optional[str] = Form(None),
     csrf_token: str = Form(...),
     job_template_id: Optional[str] = Form(None),
+    files: list[UploadFile] = File(default=[]),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
     """Handle evidence creation form submission."""
@@ -110,14 +116,30 @@ async def create_evidence(
         )
 
         # Create evidence
-        evidence_service.create_evidence(control_id, current_user.user_id, create_data)
+        evidence = evidence_service.create_evidence(
+            control_id, current_user.user_id, create_data
+        )
+
+        # Upload files if provided
+        if files:
+            for file in files:
+                if file.filename:
+                    content = await file.read()
+                    s3_key = s3_service.upload_file(
+                        content,
+                        file.filename,
+                        assessment_id,
+                        control_id,
+                        evidence.evidence_id,
+                    )
+                    evidence.add_file_key(s3_key)
 
         # Clear CSRF token
         request.session.pop("csrf_token", None)
 
         # Redirect to evidence detail page
         return RedirectResponse(
-            url=f"/assessments/{assessment_id}/controls/{control_id}",
+            url=f"/assessments/{assessment_id}/controls/{control_id}/evidence/{evidence.evidence_id}",
             status_code=303,
         )
 
@@ -321,6 +343,8 @@ async def update_evidence(
     aws_account_id: Optional[str] = Form(None),
     csrf_token: str = Form(...),
     job_template_id: Optional[str] = Form(None),
+    files: list[UploadFile] = File(default=[]),
+    files_to_delete: list[str] = Form(default=[]),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
     """Handle evidence update form submission."""
@@ -343,6 +367,30 @@ async def update_evidence(
         evidence = evidence_service.update_evidence(
             evidence_id, current_user.user_id, update_data
         )
+
+        # Delete files marked for deletion
+        if files_to_delete:
+            for file_key in files_to_delete:
+                if file_key in evidence.file_keys:
+                    try:
+                        s3_service.delete_file(file_key)
+                        evidence.remove_file_key(file_key)
+                    except Exception as e:
+                        logger.error(f"Failed to delete file {file_key}: {str(e)}")
+
+        # Upload files if provided
+        if files:
+            for file in files:
+                if file.filename:
+                    content = await file.read()
+                    s3_key = s3_service.upload_file(
+                        content,
+                        file.filename,
+                        assessment_id,
+                        control_id,
+                        evidence.evidence_id,
+                    )
+                    evidence.add_file_key(s3_key)
 
         # Clear CSRF token
         request.session.pop("csrf_token", None)
@@ -431,3 +479,105 @@ async def delete_evidence(
         if e.status_code == 404:
             raise HTTPException(status_code=404, detail="Evidence not found")
         raise
+
+
+@router.get("/{evidence_id}/files/metadata")
+async def get_evidence_files_metadata(
+    assessment_id: str,
+    control_id: str,
+    evidence_id: str,
+    request: Request,
+    current_user: User = Depends(require_authenticated_user),
+) -> list[dict]:
+    """Get metadata for all files associated with evidence."""
+    try:
+        # Verify user has access to this evidence
+        evidence = evidence_service.get_entity_or_404(evidence_id, current_user.user_id)
+
+        # Verify evidence belongs to the correct control and assessment
+        control, assessment = evidence_service.get_control_and_assessment_info(
+            control_id, current_user.user_id
+        )
+
+        if evidence.control_id != control_id:
+            raise HTTPException(
+                status_code=403, detail="Evidence does not belong to this control"
+            )
+        if assessment.assessment_id != assessment_id:
+            raise HTTPException(
+                status_code=403, detail="Control does not belong to this assessment"
+            )
+
+        # Get metadata for all files
+        files_metadata = []
+        for file_key in evidence.get_file_keys():
+            try:
+                metadata = s3_service.get_file_metadata(file_key)
+                files_metadata.append(metadata)
+            except HTTPException:
+                # Skip files that no longer exist in S3
+                continue
+
+        return files_metadata
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get evidence files metadata: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get files metadata: {str(e)}"
+        )
+
+
+@router.get("/{evidence_id}/files/{file_key:path}")
+async def download_evidence_file(
+    assessment_id: str,
+    control_id: str,
+    evidence_id: str,
+    file_key: str,
+    request: Request,
+    current_user: User = Depends(require_authenticated_user),
+) -> Response:
+    """Download evidence file with authorization check."""
+    try:
+        # Verify user has access to this evidence
+        evidence = evidence_service.get_entity_or_404(evidence_id, current_user.user_id)
+
+        # Verify evidence belongs to the correct control and assessment
+        control, assessment = evidence_service.get_control_and_assessment_info(
+            control_id, current_user.user_id
+        )
+
+        if evidence.control_id != control_id:
+            raise HTTPException(
+                status_code=403, detail="Evidence does not belong to this control"
+            )
+        if assessment.assessment_id != assessment_id:
+            raise HTTPException(
+                status_code=403, detail="Control does not belong to this assessment"
+            )
+
+        # Verify the file_key belongs to this evidence
+        if file_key not in evidence.get_file_keys():
+            raise HTTPException(status_code=404, detail="File not found in evidence")
+
+        # Get file from S3
+        content, content_type = s3_service.get_file_content(file_key)
+
+        # Extract filename from S3 key
+        filename = file_key.split("/")[-1]
+
+        # Return file as response
+        return Response(
+            content=content,
+            media_type=content_type,
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to download evidence file: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to download file: {str(e)}"
+        )

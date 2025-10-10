@@ -3,7 +3,11 @@
 import uuid
 from typing import List, Optional
 
-from pynamodb.attributes import UnicodeAttribute, UTCDateTimeAttribute
+from pynamodb.attributes import (
+    UnicodeAttribute,
+    UTCDateTimeAttribute,
+    ListAttribute,
+)
 from pynamodb.indexes import GlobalSecondaryIndex, AllProjection
 
 from app.database.base import BaseModel
@@ -50,7 +54,9 @@ class Evidence(BaseModel):
         UnicodeAttribute()
     )  # document/screenshot/policy/automated_collection/etc
     aws_account_id = UnicodeAttribute(null=True)
-    file_url = UnicodeAttribute(null=True)  # S3 URL if file upload
+    file_keys = ListAttribute(
+        default=list, null=True
+    )  # List of S3 keys for uploaded files
     job_template_id = UnicodeAttribute(
         null=True
     )  # Reference to scan job template (for automated_collection)
@@ -69,7 +75,7 @@ class Evidence(BaseModel):
         description: str = "",
         evidence_type: str = "document",
         aws_account_id: Optional[str] = None,
-        file_url: Optional[str] = None,
+        file_keys: Optional[List[str]] = None,
         job_template_id: Optional[str] = None,
         scan_execution_id: Optional[str] = None,
         **kwargs,
@@ -78,6 +84,9 @@ class Evidence(BaseModel):
         if evidence_id is None:
             evidence_id = str(uuid.uuid4())
 
+        if file_keys is None:
+            file_keys = []
+
         super().__init__(
             evidence_id=evidence_id,
             control_id=control_id,
@@ -85,16 +94,11 @@ class Evidence(BaseModel):
             description=description,
             evidence_type=evidence_type,
             aws_account_id=aws_account_id,
-            file_url=file_url,
+            file_keys=file_keys,
             job_template_id=job_template_id,
             scan_execution_id=scan_execution_id,
             **kwargs,
         )
-
-    def update_file_url(self, file_url: str) -> None:
-        """Update the file URL for this evidence."""
-        self.file_url = file_url
-        self.save()
 
     @classmethod
     def get_by_control(cls, control_id: str) -> List["Evidence"]:
@@ -121,7 +125,6 @@ class Evidence(BaseModel):
         description: str,
         evidence_type: str = "document",
         aws_account_id: Optional[str] = None,
-        file_url: Optional[str] = None,
         job_template_id: Optional[str] = None,
         scan_execution_id: Optional[str] = None,
     ) -> "Evidence":
@@ -132,7 +135,6 @@ class Evidence(BaseModel):
             description=description,
             evidence_type=evidence_type,
             aws_account_id=aws_account_id,
-            file_url=file_url,
             job_template_id=job_template_id,
             scan_execution_id=scan_execution_id,
         )
@@ -148,7 +150,27 @@ class Evidence(BaseModel):
 
     def has_file(self) -> bool:
         """Check if this evidence has an associated file."""
-        return self.file_url is not None and self.file_url.strip() != ""
+        return self.file_keys is not None and len(self.file_keys) > 0
+
+    def get_file_keys(self) -> List[str]:
+        """Get list of S3 keys for uploaded files."""
+        if self.file_keys is None:
+            return []
+        return list(self.file_keys)
+
+    def add_file_key(self, s3_key: str) -> None:
+        """Add a file S3 key to the evidence."""
+        if self.file_keys is None:
+            self.file_keys = []
+        if s3_key not in self.file_keys:
+            self.file_keys.append(s3_key)
+            self.save()
+
+    def remove_file_key(self, s3_key: str) -> None:
+        """Remove a file S3 key from the evidence."""
+        if self.file_keys is not None and s3_key in self.file_keys:
+            self.file_keys.remove(s3_key)
+            self.save()
 
     def is_automated_collection(self) -> bool:
         """Check if this evidence uses automated collection."""

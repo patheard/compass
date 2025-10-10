@@ -164,7 +164,6 @@ class DatabaseOperations:
                     title=evidence_item.get("title", ""),
                     description=evidence_item.get("description", ""),
                     evidence_type=evidence_item.get("evidence_type", "document"),
-                    file_url=evidence_item.get("file_url"),
                 )
                 evidence_objects.append(evidence)
 

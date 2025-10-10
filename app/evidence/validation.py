@@ -84,8 +84,8 @@ class EvidenceResponse(BaseModel):
     title: str
     description: str
     evidence_type: str
-    file_url: Optional[str] = None
     has_file: bool = False
+    file_keys: Optional[list[str]] = None
     aws_account_id: Optional[str] = None
     job_template_id: Optional[str] = None
     scan_execution_id: Optional[str] = None
