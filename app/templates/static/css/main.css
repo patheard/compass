@@ -22,8 +22,16 @@
     width: 10%;
 }
 
+.w-15 {
+    width: 15%;
+}
+
 .w-20 {
     width: 20%;
+}
+
+.align-right {
+    text-align: right !important;
 }
 
 /* Confirmation Modal */

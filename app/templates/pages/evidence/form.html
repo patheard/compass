@@ -99,19 +99,19 @@
          data-csrf-token="{{ csrf_token }}">
 
         <div class="file-upload-widget">
-            <div class="file-list d-none table-container" id="existingFileList">
+            <div class="file-list d-none table-container" id="fileList">
                 <table>
                     <thead>
                         <tr>
-                            <th>{{ _('Name') }}</th>
-                            <th class="w-20">{{ _('Size') }}</th>
+                            <th>{{ _('File name') }}</th>
+                            <th class="w-15">{{ _('Status') }}</th>
+                            <th class="w-15 align-right">{{ _('Size') }}</th>
                             <th class="w-10">{{ _('Actions') }}</th>
                         </tr>
                     </thead>
-                    <tbody id="existingFileListItems"></tbody>
+                    <tbody id="fileListItems"></tbody>
                 </table>
             </div>
-
             <div class="drop-zone" id="dropZone">
                 <div class="drop-zone-content">
                     <span class="drop-zone-text">
@@ -128,22 +128,6 @@
                 </div>
             </div>
             <div class="upload-errors d-none" id="uploadErrors"></div>
-            <div class="file-list d-none table-container" id="fileList">
-                <gcds-heading tag="h3">{{ _('Files to upload') }}</gcds-heading>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>{{ _('File name') }}</th>
-                            <th class="w-20">{{ _('Size') }}</th>
-                            <th class="w-10">{{ _('Actions') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody id="fileListItems"></tbody>
-                </table>
-                <div class="file-size-info">
-                    <span id="totalSize">{{ _('Total: 0 MB / 5 MB') }}</span>
-                </div>
-            </div>
         </div>
     </div>
 

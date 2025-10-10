@@ -193,77 +193,64 @@ class FileUploadWidget {
     }
 
     updateFileList() {
-        const existingFileList = document.getElementById('existingFileList');
-        const existingFileListItems = document.getElementById('existingFileListItems');
         const fileList = document.getElementById('fileList');
         const fileListItems = document.getElementById('fileListItems');
-        const totalSizeElement = document.getElementById('totalSize');
 
-        // Update existing files list
-        if (this.existingFiles.size === 0) {
-            existingFileList.classList.add('d-none');
-        } else {
-            existingFileList.classList.remove('d-none');
-            existingFileListItems.innerHTML = '';
-
-            for (const [fileKey, metadata] of this.existingFiles) {
-                const isMarkedForDeletion = this.filesToDelete.has(fileKey);
-                const tr = document.createElement('tr');
-                tr.className = 'file-list-item' + (isMarkedForDeletion ? ' marked-for-deletion' : '');
-                tr.innerHTML = `
-                    <td class="${isMarkedForDeletion ? 'strikethrough' : ''}">${this.escapeHtml(metadata.filename)}</td>
-                    <td>${this.formatFileSize(metadata.size)}</td>
-                    <td>
-                        <button type="button" class="remove-file-btn" data-file-key="${this.escapeHtml(fileKey)}" aria-label="${isMarkedForDeletion ? 'Undo deletion of' : 'Remove'} ${this.escapeHtml(metadata.filename)}">
-                            ${isMarkedForDeletion ? '<img src="/static/img/undo.svg" alt="Undo">' : '<img src="/static/img/delete.svg" alt="Remove">'}
-                        </button>
-                    </td>
-                `;
-                existingFileListItems.appendChild(tr);
-
-                // Attach remove button listener
-                const removeBtn = tr.querySelector('.remove-file-btn');
-                removeBtn.addEventListener('click', () => {
-                    this.removeExistingFile(fileKey);
-                });
-            }
-        }
-
-        // Update new files list
-        if (this.files.size === 0) {
+        // Show file list if there are any files (existing or new)
+        if (this.existingFiles.size === 0 && this.files.size === 0) {
             fileList.classList.add('d-none');
-            if (this.existingFiles.size === 0) {
-                return;
-            }
-        } else {
-            fileList.classList.remove('d-none');
-            fileListItems.innerHTML = '';
-
-            for (const [fileId, file] of this.files) {
-                const tr = document.createElement('tr');
-                tr.className = 'file-list-item';
-                tr.innerHTML = `
-                    <td>${this.escapeHtml(file.name)}</td>
-                    <td>${this.formatFileSize(file.size)}</td>
-                    <td>
-                        <button type="button" class="remove-file-btn" data-file-id="${fileId}" aria-label="Remove ${this.escapeHtml(file.name)}">
-                            <img src="/static/img/delete.svg" alt="Remove">
-                        </button>
-                    </td>
-                `;
-                fileListItems.appendChild(tr);
-
-                // Attach remove button listener
-                const removeBtn = tr.querySelector('.remove-file-btn');
-                removeBtn.addEventListener('click', () => {
-                    this.removeFile(fileId);
-                });
-            }
+            return;
         }
 
-        // Update total size calculation (exclude files marked for deletion)
-        const totalSize = this.getTotalSize();
-        totalSizeElement.innerHTML = `<strong>Total:</strong> ${this.formatFileSize(totalSize)} / 5 MB`;
+        fileList.classList.remove('d-none');
+        fileListItems.innerHTML = '';
+
+        // Add existing files first
+        for (const [fileKey, metadata] of this.existingFiles) {
+            const isMarkedForDeletion = this.filesToDelete.has(fileKey);
+            const tr = document.createElement('tr');
+            tr.className = 'file-list-item' + (isMarkedForDeletion ? ' marked-for-deletion' : '');
+            tr.innerHTML = `
+                <td class="${isMarkedForDeletion ? 'strikethrough' : ''}">${this.escapeHtml(metadata.filename)}</td>
+                <td>${isMarkedForDeletion ? 'To delete' : 'Uploaded'}</td>
+                <td class="align-right">${this.formatFileSize(metadata.size)}</td>
+                <td>
+                    <button type="button" class="remove-file-btn" data-file-key="${this.escapeHtml(fileKey)}" aria-label="${isMarkedForDeletion ? 'Undo deletion of' : 'Remove'} ${this.escapeHtml(metadata.filename)}">
+                        ${isMarkedForDeletion ? '<img src="/static/img/undo.svg" alt="Undo">' : '<img src="/static/img/delete.svg" alt="Remove">'}
+                    </button>
+                </td>
+            `;
+            fileListItems.appendChild(tr);
+
+            // Attach remove button listener
+            const removeBtn = tr.querySelector('.remove-file-btn');
+            removeBtn.addEventListener('click', () => {
+                this.removeExistingFile(fileKey);
+            });
+        }
+
+        // Add new files
+        for (const [fileId, file] of this.files) {
+            const tr = document.createElement('tr');
+            tr.className = 'file-list-item';
+            tr.innerHTML = `
+                <td>${this.escapeHtml(file.name)}</td>
+                <td>To upload</td>
+                <td class="align-right">${this.formatFileSize(file.size)}</td>
+                <td>
+                    <button type="button" class="remove-file-btn" data-file-id="${fileId}" aria-label="Remove ${this.escapeHtml(file.name)}">
+                        <img src="/static/img/delete.svg" alt="Remove">
+                    </button>
+                </td>
+            `;
+            fileListItems.appendChild(tr);
+
+            // Attach remove button listener
+            const removeBtn = tr.querySelector('.remove-file-btn');
+            removeBtn.addEventListener('click', () => {
+                this.removeFile(fileId);
+            });
+        }
     }
 
     attachFilesToForm(form) {
@@ -316,11 +303,8 @@ class FileUploadWidget {
     }
 
     formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+        const mb = bytes / (1024 * 1024);
+        return mb.toFixed(2) + ' MB';
     }
 
     getFileExtension(filename) {
