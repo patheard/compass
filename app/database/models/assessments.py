@@ -31,7 +31,7 @@ class SecurityAssessment(BaseModel):
     owner_id = UnicodeAttribute()  # User ID of the assessment creator
     product_name = UnicodeAttribute()
     product_description = UnicodeAttribute()
-    status = UnicodeAttribute()  # draft/in_progress/completed
+    status = UnicodeAttribute() 
     aws_account_id = UnicodeAttribute(null=True)  # Optional AWS account ID
     github_repo_controls = UnicodeAttribute(null=True)  # Optional GitHub repo controls
     aws_resources = ListAttribute(null=True)  # Optional list of AWS resource names
@@ -100,7 +100,7 @@ class SecurityAssessment(BaseModel):
             owner_id=creator_id,
             product_name=product_name,
             product_description=product_description,
-            status="draft",
+            status=ASSESSMENT_STATUSES[0],
             aws_account_id=aws_account_id,
             github_repo_controls=github_repo_controls,
             aws_resources=aws_resources,
