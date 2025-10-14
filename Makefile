@@ -1,4 +1,8 @@
-.PHONY: deploy-lambda docker dynamodb-admin dynamodb-admin-install fmt i18n-compile i18n-extract i18n-update install lint local run security deploy-lambda
+.PHONY: localstack-s3-bucket deploy-lambda docker dynamodb-admin dynamodb-admin-install fmt i18n-compile i18n-extract i18n-update install lint local run security deploy-lambda
+
+localstack-s3-bucket:
+	AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy \
+	aws s3 mb s3://compass-cds-evidence --endpoint-url http://localhost:4566 --region ca-central-1
 
 dynamodb-admin:
 	AWS_REGION=ca-central-1 \
