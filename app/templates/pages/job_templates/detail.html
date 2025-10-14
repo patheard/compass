@@ -6,33 +6,32 @@
     {{ template.description | markdown }}
 </gcds-text>
 
-<gcds-heading tag="h2">{{ _('Configuration') }}</gcds-heading>
-<section class="p-300 bg-light b-default b-sm overflow-scroll">
-    <code><pre>{{ template.config }}</pre></code>
-</section>
-
 <ul class="list-disc mt-300 mb-300" class="sm">
     <li>
         <strong>{{ _('Scan Type:') }}</strong>
-        {{ template.scan_type }}
+        {{ _(template.scan_type) }}
     </li>
     <li>
         <strong>{{ _('Active:') }}</strong>
         {{ _(template.is_active) }}
     </li>
-    {% if template.aws_resources %}
-    <li>
-        <strong>{{ _('AWS Resources:') }}</strong>
-        <div class="aws-resource-badges">
-             {% for resource in template.aws_resources %}
-            <span class="aws-resource-badge">
-                {{ _(resource) }}
-            </span>
-            {% endfor %}
-        </div>
-    </li>
-    {% endif %}
 </ul>
+
+<gcds-heading tag="h2">{{ _('Configuration') }}</gcds-heading>
+<section class="p-300 bg-light b-default b-sm overflow-scroll">
+    <code><pre>{{ template.config }}</pre></code>
+</section>
+
+{% if template.aws_resources %}
+    <gcds-heading tag="h2" class="mt-800">{{ _('AWS resources') }}</gcds-heading>
+    <div class="aws-resource-badges">
+        {% for resource in template.aws_resources %}
+        <span class="aws-resource-badge">
+            {{ _(resource) }}
+        </span>
+        {% endfor %}
+    </div>
+{% endif %}
 
 <gcds-button href="/job-templates/{{ template.template_id }}/edit" type="link" button-role="primary" class="mt-300">
     {{ _("Edit") }}
