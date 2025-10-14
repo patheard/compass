@@ -28,18 +28,27 @@
 </ul>
 
 {% if evidence.file_keys %}
-<hr class="mt-800">
 <gcds-heading tag="h2">{{ _('Files') }}</gcds-heading>
-<ul class="list-disc mb-300">
+<gcds-grid columns-desktop="1fr 1fr 1fr" columns-tablet="1fr 1fr" columns="1fr" class="mb-600">
     {% for file_key in evidence.file_keys %}
-    <li>
-        {% set filename = file_key.split('/')[-1] %}
-        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/files/{{ file_key }}" target="_blank">
-            {{ filename }}
-        </gcds-link>
-    </li>
+    {% set filename = file_key.split('/')[-1] %}
+    {% set file_ext = filename.split('.')[-1].lower() %}
+    {% set is_image = file_ext in ['jpg', 'jpeg', 'png', 'webp'] %}
+        <gcds-card
+            card-title="{{ filename }}"
+            href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/files/{{ file_key }}"
+            img-src="{% if is_image %}/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/files/{{ file_key }}{% endif %}"
+            class="{% if is_image %}image-thumbnail{% endif %}">
+        </gcds-card>
     {% endfor %}
-</ul>
+</gcds-grid>
+
+
+<div id="imageOverlay" class="image-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="image-overlay-content">
+        <img id="overlayImage" src="" alt="">
+    </div>
+</div>
 {% endif %}
 
 

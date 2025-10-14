@@ -1,4 +1,57 @@
 /**
+ * File management utilities
+ */
+
+/**
+ * Image Overlay - Display images in a full-screen overlay
+ */
+class ImageOverlay {
+    constructor() {
+        this.overlay = document.getElementById('imageOverlay');
+        this.overlayImage = document.getElementById('overlayImage');
+        if (this.overlay && this.overlayImage) {
+            this.init();
+        }
+    }
+
+    init() {
+        // Close on overlay background click
+        this.overlay.addEventListener('click', (e) => {
+            if (e.target === this.overlay) {
+                this.close();
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.overlay.getAttribute('aria-hidden') === 'false') {
+                this.close();
+            }
+        });
+
+        // Attach to all image thumbnails
+        document.querySelectorAll('.image-thumbnail').forEach(thumbnail => {
+            thumbnail.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.open(thumbnail.href);
+            });
+        });
+    }
+
+    open(imgSrc) {
+        this.overlayImage.src = imgSrc;
+        this.overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    close() {
+        this.overlay.setAttribute('aria-hidden', 'true');
+        this.overlayImage.src = '';
+        document.body.style.overflow = '';
+    }
+}
+
+/**
  * Drag and drop file upload component for evidence forms
  */
 class FileUploadWidget {
@@ -23,7 +76,7 @@ class FileUploadWidget {
         this.evidenceId = options.evidenceId || '';
         this.csrfToken = options.csrfToken || '';
 
-        if (!this.evidenceId || !this.assessmentId || !this.controlId || !this.csrfToken) {
+        if (!this.assessmentId || !this.controlId || !this.csrfToken) {
             console.error('Missing required options for FileUploadWidget');
             return;
         }
@@ -338,6 +391,10 @@ class FileUploadWidget {
 
 // Initialize the widget
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize image overlay
+    new ImageOverlay();
+
+    // Initialize file upload widget
     const uploadContainer = document.getElementById('fileUploadContainer');
     if (uploadContainer) {
         // Get options from data attributes

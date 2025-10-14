@@ -630,3 +630,76 @@ ol {
 .upload-errors li {
     margin-bottom: 0.5rem;
 }
+
+/*
+ * Image Overlay
+ */
+.image-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 10;
+    overflow: auto;
+}
+
+.image-overlay[aria-hidden="false"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-overlay-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+.image-overlay #overlayImage {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+.image-overlay-caption {
+    color: #fff;
+    text-align: center;
+    padding: 1rem;
+    font-size: 1rem;
+    max-width: 90vw;
+    word-break: break-word;
+}
+
+@media (max-width: 768px) {
+    .file-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .image-thumbnail img {
+        height: 100px;
+    }
+
+    .file-icon img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .image-overlay-content {
+        padding: 1rem;
+    }
+
+    .image-overlay-close {
+        top: 0.5rem;
+        right: 0.5rem;
+        font-size: 2.5rem;
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}
