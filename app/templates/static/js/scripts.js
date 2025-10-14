@@ -15,9 +15,15 @@ async function deleteItem(deleteUrl, csrfToken) {
             })
         });
 
-        // Handle both successful deletion (200) and redirect (3xx)
         if (response.ok || response.redirected) {
-            await reloadPageContent();
+            const redirectUrl = response.url;
+            const currentUrl = window.location.href;
+            
+            if (redirectUrl === currentUrl) {
+                await reloadPageContent();
+            } else {
+                window.location.href = redirectUrl;
+            }
         } else {
             console.error('Failed to delete item:', response.status);
         }
