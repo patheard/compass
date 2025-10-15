@@ -66,7 +66,7 @@ class EvidenceRequest(BaseInputValidator):
     @validator("aws_account_id")
     def validate_aws_account_id(cls, value: Optional[str]) -> Optional[str]:
         """Validate AWS account ID format if provided (12 numeric digits)."""
-        if value is None:
+        if value is None or value == "None":
             return None
         acct = value.strip()
         if acct == "":
