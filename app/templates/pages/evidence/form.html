@@ -84,7 +84,7 @@
         textarea-id="description"
         label="{{ _('Evidence description') }}"
         required="true"
-        maxlength="2000"
+        maxlength="10000"
         value="{% if is_edit %}{{ evidence.description | markdown_no_tags }}{% else %}{{ description | markdown_no_tags or '' }}{% endif %}">
     </gcds-textarea>
 
@@ -104,7 +104,7 @@
                     <thead>
                         <tr>
                             <th>{{ _('File name') }}</th>
-                            <th class="w-15">{{ _('Status') }}</th>
+                            <th class="w-15 status">{{ _('Status') }}</th>
                             <th class="w-15 align-right">{{ _('Size') }}</th>
                             <th class="w-10">{{ _('Actions') }}</th>
                         </tr>
@@ -143,5 +143,7 @@
     </gcds-button>
 
 </form>
+
+<script src="/static/js/evidence.js"></script>
 
 {% endblock %}

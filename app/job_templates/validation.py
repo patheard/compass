@@ -23,7 +23,7 @@ class JobTemplateRequest(BaseInputValidator):
     description: Optional[str] = Field(
         None,
         min_length=1,
-        max_length=2000,
+        max_length=10000,
         description="Description of the job template",
     )
     scan_type: Optional[str] = Field(

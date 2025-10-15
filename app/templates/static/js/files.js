@@ -52,7 +52,7 @@ class ImageOverlay {
 }
 
 /**
- * Drag and drop file upload component for evidence forms
+ * Drag and drop file upload component
  */
 class FileUploadWidget {
     constructor(uploadContainer, options = {}) {
@@ -62,9 +62,14 @@ class FileUploadWidget {
             return;
         }
 
-        this.maxFileSize = 5 * 1024 * 1024; // 5MB
-        this.maxTotalSize = 5 * 1024 * 1024; // 5MB total
-        this.allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.md', '.pdf'];
+        // Configurable options with defaults
+        this.maxFileSize = options.maxFileSize || (5 * 1024 * 1024); // Default 5MB
+        this.maxTotalSize = options.maxTotalSize || (5 * 1024 * 1024); // Default 5MB total
+        this.allowedExtensions = options.allowedExtensions || ['.jpg', '.jpeg', '.png', '.webp', '.md', '.pdf'];
+        this.maxFiles = options.maxFiles || null; // null = unlimited
+        this.singleFile = options.singleFile || false; // true = only one file allowed
+        this.onFileLoaded = options.onFileLoaded || null; // Callback when file is loaded
+        
         this.files = new Map();
         this.existingFiles = new Map();
         this.filesToDelete = new Set();
@@ -76,16 +81,11 @@ class FileUploadWidget {
         this.evidenceId = options.evidenceId || '';
         this.csrfToken = options.csrfToken || '';
 
-        if (!this.assessmentId || !this.controlId || !this.csrfToken) {
-            console.error('Missing required options for FileUploadWidget');
-            return;
-        }
-
         this.init();
     }
 
-    async init() {       
-        if (this.isEditMode && this.evidenceId) {
+    async init() {
+        if (this.isEditMode && this.assessmentId && this.controlId && this.evidenceId) {
             await this.loadExistingFiles();
         }
         this.attachEventListeners();
@@ -169,6 +169,46 @@ class FileUploadWidget {
     handleFiles(newFiles) {
         const errors = [];
 
+        // Check max files limit
+        if (this.maxFiles && (this.files.size + newFiles.length) > this.maxFiles) {
+            errors.push(`Maximum ${this.maxFiles} file(s) allowed`);
+            this.showErrors(errors);
+            return;
+        }
+
+        // Single file mode - replace existing file
+        if (this.singleFile && newFiles.length > 0) {
+            this.files.clear();
+            const file = newFiles[0];
+            
+            // Validate file extension
+            const ext = this.getFileExtension(file.name);
+            if (!this.allowedExtensions.includes(ext)) {
+                errors.push(`${file.name}: Invalid file type. Allowed types: ${this.allowedExtensions.join(', ')}`);
+                this.showErrors(errors);
+                return;
+            }
+
+            // Validate individual file size
+            if (file.size > this.maxFileSize) {
+                errors.push(`${file.name}: File size (${this.formatFileSize(file.size)}) exceeds maximum allowed`);
+                this.showErrors(errors);
+                return;
+            }
+
+            const fileId = this.fileIdCounter++;
+            this.files.set(fileId, file);
+            
+            // Call callback if provided
+            if (this.onFileLoaded) {
+                this.readFileContent(file);
+            }
+            
+            this.hideErrors();
+            this.updateFileList();
+            return;
+        }
+
         for (const file of newFiles) {
             // Validate file extension
             const ext = this.getFileExtension(file.name);
@@ -179,7 +219,7 @@ class FileUploadWidget {
 
             // Validate individual file size
             if (file.size > this.maxFileSize) {
-                errors.push(`${file.name}: File size (${this.formatFileSize(file.size)}) exceeds maximum of 5 MB`);
+                errors.push(`${file.name}: File size (${this.formatFileSize(file.size)}) exceeds maximum allowed`);
                 continue;
             }
 
@@ -214,7 +254,7 @@ class FileUploadWidget {
                     }
                 }
             }
-            errors.push(`Total file size would exceed 5MB limit. Current total: ${this.formatFileSize(totalSize)}`);
+            errors.push(`Total file size would exceed limit. Current total: ${this.formatFileSize(totalSize)}`);
         }
 
         if (errors.length > 0) {
@@ -226,8 +266,26 @@ class FileUploadWidget {
         this.updateFileList();
     }
 
+    async readFileContent(file) {
+        try {
+            const text = await file.text();
+            if (this.onFileLoaded) {
+                this.onFileLoaded(text, file);
+            }
+        } catch (error) {
+            console.error('Error reading file:', error);
+            this.showErrors(['Error reading file content']);
+        }
+    }
+
     removeFile(fileId) {
         this.files.delete(fileId);
+        this.updateFileList();
+        this.hideErrors();
+    }
+
+    clearAllFiles() {
+        this.files.clear();
         this.updateFileList();
         this.hideErrors();
     }
@@ -248,6 +306,7 @@ class FileUploadWidget {
     updateFileList() {
         const fileList = document.getElementById('fileList');
         const fileListItems = document.getElementById('fileListItems');
+        const isColumnStatus = fileList.querySelectorAll('th.status').length;
 
         // Show file list if there are any files (existing or new)
         if (this.existingFiles.size === 0 && this.files.size === 0) {
@@ -265,7 +324,7 @@ class FileUploadWidget {
             tr.className = 'file-list-item' + (isMarkedForDeletion ? ' marked-for-deletion' : '');
             tr.innerHTML = `
                 <td class="${isMarkedForDeletion ? 'strikethrough' : ''}">${this.escapeHtml(metadata.filename)}</td>
-                <td>${isMarkedForDeletion ? 'To delete' : 'Uploaded'}</td>
+                ${isColumnStatus ? `<td>${isMarkedForDeletion ? 'To delete' : 'Uploaded'}</td>` : ''}
                 <td class="align-right">${this.formatFileSize(metadata.size)}</td>
                 <td>
                     <button type="button" class="remove-file-btn" data-file-key="${this.escapeHtml(fileKey)}" aria-label="${isMarkedForDeletion ? 'Undo deletion of' : 'Remove'} ${this.escapeHtml(metadata.filename)}">
@@ -288,7 +347,7 @@ class FileUploadWidget {
             tr.className = 'file-list-item';
             tr.innerHTML = `
                 <td>${this.escapeHtml(file.name)}</td>
-                <td>To upload</td>
+                ${isColumnStatus ? `<td>To upload</td>` : ''}
                 <td class="align-right">${this.formatFileSize(file.size)}</td>
                 <td>
                     <button type="button" class="remove-file-btn" data-file-id="${fileId}" aria-label="Remove ${this.escapeHtml(file.name)}">
@@ -366,20 +425,26 @@ class FileUploadWidget {
 
     showErrors(errors) {
         const errorsContainer = document.getElementById('uploadErrors');
-        errorsContainer.classList.remove('d-none');
-        errorsContainer.innerHTML = `
-            <gcds-notice type="danger" notice-title-tag="h3" notice-title="Errors">
-                <ul>
-                    ${errors.map(error => `<li>${this.escapeHtml(error)}</li>`).join('')}
-                </ul>
-            </gcds-notice>
-        `;
+        
+        if (errorsContainer) {
+            errorsContainer.classList.remove('d-none');
+            errorsContainer.innerHTML = `
+                <gcds-notice type="danger" notice-title-tag="h3" notice-title="Errors">
+                    <ul>
+                        ${errors.map(error => `<li>${this.escapeHtml(error)}</li>`).join('')}
+                    </ul>
+                </gcds-notice>
+            `;
+        }
     }
 
     hideErrors() {
         const errorsContainer = document.getElementById('uploadErrors');
-        errorsContainer.classList.add('d-none');
-        errorsContainer.innerHTML = '';
+        
+        if (errorsContainer) {
+            errorsContainer.classList.add('d-none');
+            errorsContainer.innerHTML = '';
+        }
     }
 
     escapeHtml(text) {
@@ -388,28 +453,3 @@ class FileUploadWidget {
         return div.innerHTML;
     }
 }
-
-// Initialize the widget
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize image overlay
-    new ImageOverlay();
-
-    // Initialize file upload widget
-    const uploadContainer = document.getElementById('fileUploadContainer');
-    if (uploadContainer) {
-        // Get options from data attributes
-        const isEditMode = uploadContainer.dataset.editMode === 'true';
-        const assessmentId = uploadContainer.dataset.assessmentId || '';
-        const controlId = uploadContainer.dataset.controlId || '';
-        const evidenceId = uploadContainer.dataset.evidenceId || '';
-        const csrfToken = uploadContainer.dataset.csrfToken || '';
-
-        new FileUploadWidget(uploadContainer, {
-            isEditMode,
-            assessmentId,
-            controlId,
-            evidenceId,
-            csrfToken
-        });
-    }
-});

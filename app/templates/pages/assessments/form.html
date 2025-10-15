@@ -12,7 +12,7 @@
     {% if is_edit %}
         {{ _("Update the details of your security assessment.") }}
     {% else %}
-        {{ _("Fill out the form below to create a new security assessment.") }}
+        {{ _("If you have a [Navigator](https://valentine.cds-snc.ca/) workspace export, select it below to fill out the form.") | markdown }}
     {% endif %}
 </gcds-text>
 
@@ -22,27 +22,43 @@
 </gcds-notice>
 {% endif %}
 
+{% if not is_edit %}
+<div class="mb-400">
+    <div id="fileUploadContainer">
+        <div class="file-upload-widget">
+            <div class="file-list d-none table-container" id="fileList">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>{{ _('File name') }}</th>
+                            <th class="w-15 align-right">{{ _('Size') }}</th>
+                            <th class="w-10">{{ _('Actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fileListItems"></tbody>
+                </table>
+            </div>
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-zone-content">
+                    <span class="drop-zone-text">
+                        <strong>{{ _('Drag and drop') }}</strong> {{ _('or') }} 
+                        <strong><a href="#" class="file-select-button">{{ _('select your export') }}</a></strong>
+                    </span>
+                    <input 
+                        type="file" 
+                        id="fileInput" 
+                        accept=".json" 
+                        class="d-none">
+                </div>
+            </div>
+            <div class="upload-errors d-none" id="uploadErrors"></div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <form method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-
-    <gcds-input
-        name="product_name"
-        input-id="product_name"
-        label="{{ _('Product name') }}"
-        required="true"
-        maxlength="200"
-        value="{% if is_edit %}{{ assessment.product_name | markdown_no_tags }}{% else %}{{ product_name or '' }}{% endif %}">
-    </gcds-input>
-
-    <gcds-textarea
-        name="product_description"
-        textarea-id="product_description"
-        label="{{ _('Product description') }}"
-        required="true"
-        maxlength="2000"
-        value="{% if is_edit %}{{ assessment.product_description | markdown_no_tags }}{% else %}{{ product_description or '' }}{% endif %}">
-    </gcds-textarea>
 
     {% if is_edit %}
         <gcds-select
@@ -56,6 +72,23 @@
             {% endfor %}
         </gcds-select>
     {% endif %}
+
+    {# Set to required once GCDS required bug is fixed #}
+    <gcds-input
+        name="product_name"
+        input-id="product_name"
+        label="{{ _('Product name') }}"
+        maxlength="200"
+        value="{% if is_edit %}{{ assessment.product_name | markdown_no_tags }}{% else %}{{ product_name or '' }}{% endif %}">
+    </gcds-input>
+
+    <gcds-textarea
+        name="product_description"
+        textarea-id="product_description"
+        label="{{ _('Product description') }}"
+        maxlength="10000"
+        value="{% if is_edit %}{{ assessment.product_description }}{% else %}{{ product_description or '' }}{% endif %}">
+    </gcds-textarea>
 
     <gcds-input
         name="aws_account_id"
@@ -86,5 +119,7 @@
     </gcds-button>
 
 </form>
+
+<script src="/static/js/assessment.js"></script>
 
 {% endblock %}

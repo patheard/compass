@@ -31,7 +31,7 @@ class SecurityAssessment(BaseModel):
     owner_id = UnicodeAttribute()  # User ID of the assessment creator
     product_name = UnicodeAttribute()
     product_description = UnicodeAttribute()
-    status = UnicodeAttribute() 
+    status = UnicodeAttribute()
     aws_account_id = UnicodeAttribute(null=True)  # Optional AWS account ID
     github_repo_controls = UnicodeAttribute(null=True)  # Optional GitHub repo controls
     aws_resources = ListAttribute(null=True)  # Optional list of AWS resource names

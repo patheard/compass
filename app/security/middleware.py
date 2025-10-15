@@ -33,11 +33,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Content Security Policy - Prevent XSS
         csp_policy = (
             "default-src 'self'; "
-            "script-src 'self' https://cdn.design-system.alpha.canada.ca https://cdn.jsdelivr.net/npm/chart.js@4.5.0/ https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/ https://cdn.jsdelivr.net/npm/dompurify@3.2.7/; "
+            "script-src 'self' https://cdn.design-system.alpha.canada.ca https://cdn.jsdelivr.net/npm/chart.js@4.5.0/ https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/ https://cdn.jsdelivr.net/npm/dompurify@3.2.7/ https://cdn.jsdelivr.net/npm/turndown@7.2.1/; "
             "style-src 'self' https://cdn.design-system.alpha.canada.ca https://fonts.googleapis.com/; "
             "img-src 'self' data:; "
             "font-src 'self' https://cdn.design-system.alpha.canada.ca https://fonts.gstatic.com; "
-            "connect-src 'self' https://cdn.design-system.alpha.canada.ca https://cdn.jsdelivr.net/npm/chart.js@4.5.0/ https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/ https://cdn.jsdelivr.net/npm/dompurify@3.2.7/; "
+            "connect-src 'self' https://cdn.design-system.alpha.canada.ca https://cdn.jsdelivr.net/npm/chart.js@4.5.0/ https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/ https://cdn.jsdelivr.net/npm/dompurify@3.2.7/ https://cdn.jsdelivr.net/sm/3745a8f2633162ff6df1ad2298fea6c4ffe169e77dd5242c7b918ef90f8b44d6.map; "
             "frame-src 'self'; "
             "object-src 'none'; "
             "base-uri 'self'; "

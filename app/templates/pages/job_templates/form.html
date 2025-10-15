@@ -39,7 +39,7 @@
         textarea-id="description"
         label="{{ _('Template description') }}"
         required="true"
-        maxlength="2000"
+        maxlength="10000"
         value="{% if template %}{{ template.description | markdown_no_tags }}{% else %}{{ description or '' }}{% endif %}">
     </gcds-textarea>
 

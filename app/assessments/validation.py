@@ -19,7 +19,7 @@ class AssessmentRequest(BaseInputValidator):
     product_description: Optional[str] = Field(
         None,
         min_length=1,
-        max_length=2000,
+        max_length=10000,
         description="Description of the product being assessed",
     )
     status: Optional[str] = Field(None, description="Assessment status")
