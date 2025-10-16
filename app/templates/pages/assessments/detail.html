@@ -3,6 +3,7 @@
 {% block content %}
 <gcds-heading tag="h1">{{ assessment.product_name | markdown_no_tags }}</gcds-heading>
 
+
 <div class="assessment-progress-bar">
     {% for status in assessment_statuses %}
         {% set current_index = assessment_statuses.index(assessment.status) %}
@@ -31,16 +32,18 @@
         {% endif %}
     {% endfor %}
 </div>
-<gcds-text class="mb-600">
-    {{ _('This assessment is on the') }} <code>{{ _(assessment.status|capitalize) }}</code> {{ _('step of the') }} <gcds-link href="https://docs.google.com/document/d/1IEOR7mDjfkkVN-mJIdLOZBoALR6slXQFSErxI43EYSg" target="_blank">{{ _('Agile SA&A process') }}</gcds-link>.
+<gcds-text>
+    {{ _('Assessment is on the') }} <code>{{ _(assessment.status|capitalize) }}</code> {{ _('step of the') }} <gcds-link href="https://docs.google.com/document/d/1IEOR7mDjfkkVN-mJIdLOZBoALR6slXQFSErxI43EYSg" target="_blank">{{ _('Agile SA&A process') }}</gcds-link>.
 </gcds-text>
+
+<hr class="mt-700 mb-600">
 
 <gcds-text>
     {{ assessment.product_description | markdown }}
 </gcds-text>
 
 {% if assessment.aws_account_id %}
-    <gcds-heading tag="h2">{{ 'AWS' }}</gcds-heading>
+    <gcds-heading tag="h2">{{ _('Infrastructure') }}</gcds-heading>
     <gcds-text>
         {{ assessment.product_name | markdown_no_tags }} {{ _('runs in AWS account ID') }} <code>{{ assessment.aws_account_id }}</code>
         {% if assessment.aws_resources %}
@@ -67,7 +70,7 @@
     {{ _("Delete") }}
 </gcds-button>
 
-<hr class="mt-800 mb-600">
+<hr class="mt-700 mb-600">
 
 <gcds-heading tag="h2">
     {{ 'Controls' }}{% if controls %}: {{ controls|length }}{% endif %}
