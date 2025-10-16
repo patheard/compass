@@ -599,10 +599,8 @@ class ChatClient {
             return;
         }
 
-        // Show feedback message
-        this.addMessage('Applying...', 'user');
-
         try {
+            this.elemLoading.classList.add('show');
             const response = await fetch('/chat/action', {
                 method: 'POST',
                 headers: {
@@ -627,6 +625,8 @@ class ChatClient {
         } catch (error) {
             console.error('Failed to execute action:', error);
             this.addMessage(`Error: ${error.message}`, 'llm');
+        } finally {
+            this.elemLoading.classList.remove('show');
         }
     }
 

@@ -217,7 +217,7 @@ async def _execute_add_evidence_action(
     evidence = evidence_service.create_evidence(control_id, user_id, evidence_data)
 
     return {
-        "message": f"Successfully added evidence **{title}** to the control",
+        "message": f"Added **{title}** evidence to the control",
         "evidence_id": evidence.evidence_id,
         "control_id": control_id,
     }
