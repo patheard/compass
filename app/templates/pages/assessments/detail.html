@@ -52,9 +52,9 @@
     </gcds-text>
 
     {% if assessment.aws_resources %}
-    <div class="aws-resource-badges">
+    <div class="autocomplete-badges">
         {% for resource in assessment.aws_resources | sort_by_locale %}
-        <span class="aws-resource-badge">
+        <span class="autocomplete-badge">
             {{ _(resource) }}
         </span>
         {% endfor %}

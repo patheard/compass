@@ -103,7 +103,8 @@
         input-id="aws_resources_input"
         label="{{ _('AWS Resources') }}"
         hint="{{ _('Type to search for resources') }}"
-        data-resources='[{% for resource in aws_resources %}{"value": "{{ resource }}", "label": "{{ _(resource) }}"}{% if not loop.last %}, {% endif %}{% endfor %}]'
+        data-autocomplete
+        data-items='[{% for resource in aws_resources %}{"value": "{{ resource }}", "label": "{{ _(resource) }}"}{% if not loop.last %}, {% endif %}{% endfor %}]'
         data-selected='{% if is_edit and assessment.aws_resources %}[{% for resource in assessment.aws_resources %}{"value": "{{ resource }}", "label": "{{ _(resource) }}"}{% if not loop.last %}, {% endif %}{% endfor %}]{% elif selected_aws_resources %}[{% for resource in selected_aws_resources %}{"value": "{{ resource }}", "label": "{{ _(resource) }}"}{% if not loop.last %}, {% endif %}{% endfor %}]{% else %}[]{% endif %}'>
     </gcds-input>
 

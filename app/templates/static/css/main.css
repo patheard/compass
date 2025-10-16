@@ -353,9 +353,9 @@ ol {
 }
 
 /*
- * AWS Resources Autocomplete
+ * Autocomplete Component
  */
-.aws-autocomplete-dropdown {
+.autocomplete-dropdown {
     position: absolute;
     margin-top: -0.5rem;
     background: #fff;
@@ -369,29 +369,29 @@ ol {
     max-width: 75ch;
 }
 
-.aws-autocomplete-option {
+.autocomplete-option {
     padding: 0.75rem 1rem;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
-.aws-autocomplete-option:hover {
+.autocomplete-option:hover {
     background-color: var(--gcds-color-grayscale-50);
 }
 
-.aws-autocomplete-option:focus {
+.autocomplete-option:focus {
     outline: 2px solid var(--gcds-link-default);
     outline-offset: -2px;
 }
 
-.aws-resource-badges {
+.autocomplete-badges {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 2rem;
 }
 
-.aws-resource-badge {
+.autocomplete-badge {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;

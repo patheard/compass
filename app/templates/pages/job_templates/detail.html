@@ -24,9 +24,9 @@
 
 {% if template.aws_resources %}
     <gcds-heading tag="h2" class="mt-800">{{ _('AWS resources') }}</gcds-heading>
-    <div class="aws-resource-badges">
+    <div class="autocomplete-badges">
         {% for resource in template.aws_resources %}
-        <span class="aws-resource-badge">
+        <span class="autocomplete-badge">
             {{ _(resource) }}
         </span>
         {% endfor %}
