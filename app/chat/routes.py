@@ -239,23 +239,23 @@ async def _execute_identify_aws_resources_action(
     scanner = AWSResourceScanner()
     aws_resources = await scanner.identify_aws_resources()
 
-    # Update assessment with identified resources
-    assessment_service = AssessmentService()
-    assessment = assessment_service.get_assessment(assessment_id, user_id)
+    if aws_resources:
+        assessment_service = AssessmentService()
+        assessment = assessment_service.get_assessment(assessment_id, user_id)
 
-    if not assessment:
-        raise HTTPException(status_code=404, detail="Assessment not found")
+        if not assessment:
+            raise HTTPException(status_code=404, detail="Assessment not found")
 
-    update_data = AssessmentRequest(
-        product_name=assessment.product_name,
-        product_description=assessment.product_description,
-        status=assessment.status,
-        aws_account_id=assessment.aws_account_id,
-        github_repo_controls=assessment.github_repo_controls,
-        aws_resources=aws_resources,
-    )
+        update_data = AssessmentRequest(
+            product_name=assessment.product_name,
+            product_description=assessment.product_description,
+            status=assessment.status,
+            aws_account_id=assessment.aws_account_id,
+            github_repo_controls=assessment.github_repo_controls,
+            aws_resources=aws_resources,
+        )
 
-    assessment_service.update_assessment(assessment_id, user_id, update_data)
+        assessment_service.update_assessment(assessment_id, user_id, update_data)
 
     return {
         "message": f"Identified {len(aws_resources)} AWS services",
