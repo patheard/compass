@@ -18,6 +18,7 @@ from app.auth.websocket import get_websocket_auth
 from app.database.models.users import User
 from app.chat.services import ChatStreamingService
 from app.chat.aws_resource_scanner import AWSResourceScanner
+from app.chat.action_context import ActionContext
 from app.evidence.services import EvidenceService
 from app.evidence.validation import EvidenceRequest
 from app.assessments.services import AssessmentService
@@ -28,6 +29,7 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 logger = logging.getLogger(__name__)
 chat_service = ChatStreamingService()
 csrf_manager = CSRFTokenManager()
+action_context = ActionContext()
 
 
 class ChatMessage(BaseModel):
@@ -67,6 +69,22 @@ async def get_chat_response(
     )
 
     return JSONResponse(content=result)
+
+
+@router.get("/actions")
+async def get_context_actions(
+    current_url: str,
+    current_user: Optional[User] = Depends(get_user_from_session),
+) -> JSONResponse:
+    """Get available actions based on the current page context."""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+
+    context_text, actions = await action_context.get_context_and_actions(
+        current_url, current_user.user_id
+    )
+
+    return JSONResponse(content={"context": context_text, "actions": actions})
 
 
 @router.websocket("/ws")

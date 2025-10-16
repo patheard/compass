@@ -226,6 +226,10 @@ ol {
     margin-right: 1rem;
 }
 
+.chat-message.mb-0 .bubble :last-child {
+    margin-bottom: 0 !important;
+}
+
 .chat-message.user {
     display: flex;
     justify-content: flex-end;
@@ -327,23 +331,25 @@ ol {
 }
 
 .chat-action-button {
-    background: var(--gcds-link-default);
-    color: #fff;
-    border: none;
+    background-color: var(--gcds-button-secondary-default-background);
+    border: var(--gcds-button-border-width) solid;
+    color: var(--gcds-button-secondary-default-text);
     border-radius: 4px;
     padding: 0.5rem 1rem;
-    font: var(	--gcds-font-text);
+    font: var(--gcds-font-text);
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 .chat-action-button:hover {
-    background: var(--gcds-color-blue-800);
+    background-color: var(--gcds-button-secondary-hover-background);
 }
 
 .chat-action-button:focus {
-    outline: 2px solid var(--gcds-link-default);
-    outline-offset: 2px;
+    background-color: var(--gcds-button-shared-focus-background);
+    border-color: var(--gcds-button-shared-focus-background);
+    box-shadow: var(--gcds-button-shared-focus-box-shadow);
+    color: var(--gcds-button-shared-focus-text);
 }
 
 /*

@@ -64,11 +64,11 @@ class ChatStreamingService:
         session_id: Optional[str] = None,
         current_page: Optional[str] = None,
         current_url: Optional[str] = None,
-    ) -> Tuple[str, AsyncGenerator[str, None], List[Dict[str, Any]]]:
+    ) -> Tuple[str, AsyncGenerator[str, None]]:
         """Stream a chat response based on user input.
 
         Returns:
-            Tuple of (session_id, response_generator, actions)
+            Tuple of (session_id, response_generator)
         """
 
         session_id, messages, actions = await self._prepare_session_messages(
@@ -109,20 +109,20 @@ class ChatStreamingService:
                 assistant_text = "".join(assistant_chunks).strip()
                 if assistant_text:
                     try:
-                        # Persist the message with actions from context
+                        # Persist the message
                         await self.repository.append_message(
                             user_id=user.user_id,
                             session_id=session_id,
                             role="assistant",
                             content=assistant_text,
-                            actions=actions if actions else None,
+                            actions=None,
                         )
                     except Exception as exc:
                         logger.exception(
                             "Failed to persist assistant response: %s", exc
                         )
 
-        return session_id, _generator(), actions
+        return session_id, _generator()
 
     async def stream_to_websocket(
         self,
@@ -134,7 +134,7 @@ class ChatStreamingService:
         current_url: Optional[str] = None,
     ) -> None:
         """Stream response directly to WebSocket connection."""
-        stream_session_id, response_stream, actions = await self.stream_response(
+        stream_session_id, response_stream = await self.stream_response(
             user,
             user_message,
             session_id,
@@ -162,14 +162,13 @@ class ChatStreamingService:
                     )
                 )
 
-            # Send `end` message with actions from context
+            # Send `end` message
             await websocket.send_text(
                 json.dumps(
                     {
                         "type": "end",
                         "content": "",
                         "session_id": stream_session_id,
-                        "actions": actions if actions else [],
                     }
                 )
             )
@@ -204,7 +203,7 @@ class ChatStreamingService:
     ) -> Dict[str, Any]:
         """Get complete response for REST API (non-streaming)."""
 
-        resolved_session_id, response_stream, actions = await self.stream_response(
+        resolved_session_id, response_stream = await self.stream_response(
             user,
             message,
             session_id,
@@ -225,7 +224,6 @@ class ChatStreamingService:
         return {
             "session_id": resolved_session_id,
             "message": full_response,
-            "actions": actions if actions else [],
         }
 
     # ------------------------------------------------------------------

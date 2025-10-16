@@ -81,11 +81,11 @@ class ActionContext:
             if not assessment:
                 return "", []
 
-            context = f"User is viewing assessment: {assessment.product_name}\n"
-
             # Build action for identifying AWS resources
             actions = []
+            context = ""
             if assessment.aws_account_id:
+                context += "The following actions are available:"
                 actions.append(
                     {
                         "action_type": "identify_aws_resources",
@@ -122,15 +122,7 @@ class ActionContext:
             if not assessment_response:
                 return "", []
 
-            context = f"User is viewing control: {control_response.nist_control_id} - {control_response.control_title}\n"
-
-            # Add infrastructure context
-            if assessment_response.aws_account_id:
-                context += f"AWS Account ID: {assessment_response.aws_account_id}\n"
-            if assessment_response.github_repo_controls:
-                context += (
-                    f"GitHub Repository: {assessment_response.github_repo_controls}\n"
-                )
+            context = ""
 
             # Get available job templates and build action suggestions
             actions = await self._build_evidence_actions(
@@ -141,11 +133,11 @@ class ActionContext:
 
             # Add available actions to context
             if actions:
-                context += "\nAvailable automated evidence collection options:\n"
+                context += "\nAutomated evidence that can be added:\n"
                 for action in actions:
                     template_name = action["params"]["template_name"]
                     template_desc = action["params"]["template_description"]
-                    context += f"- {template_name}: {template_desc}\n"
+                    context += f"- **{template_name}**: {template_desc}\n"
 
             return context, actions
         except Exception as e:

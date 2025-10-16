@@ -392,6 +392,11 @@ class ChatClient {
         this.elemPrompt.addEventListener('keydown', this.sendHandler.bind(this));
         this.elemSend.addEventListener('click', this.sendHandler.bind(this));
         
+        // Load context actions if chat is empty
+        const chatContainer = document.getElementById('llm-chat');
+        if (chatContainer && chatContainer.children.length === 0) {
+            this.loadContextActions();
+        }
 
         if (!this.useWebSocket) {
             console.log('WebSocket not supported, using REST API');
@@ -547,6 +552,35 @@ class ChatClient {
         });
 
         messageElement.appendChild(actionsContainer);
+    }
+
+    /**
+     * Load context actions based on the current page URL.
+     * Displays actions as buttons if any are available for the current context.
+     *
+     * @returns {Promise<void>}
+     */
+    async loadContextActions() {
+        try {
+            const currentUrl = window.location.pathname;
+            const response = await fetch(`/chat/actions?current_url=${encodeURIComponent(currentUrl)}`);
+            
+            if (!response.ok) {
+                console.error('Failed to load context actions:', response.status);
+                return;
+            }
+
+            const data = await response.json();
+            
+            if (data.actions && data.actions.length > 0) {
+                const messageDiv = this.addMessage(data.context || 'Available actions:', 'llm mb-0');
+                if (messageDiv) {
+                    this.addActionButtons(messageDiv, data.actions);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading context actions:', error);
+        }
     }
 
     /**
