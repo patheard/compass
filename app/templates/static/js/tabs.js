@@ -67,10 +67,7 @@
         }
     }
 
-    // Use event delegation on document to handle dynamically loaded tabs
     document.addEventListener('click', handleTabClick);
-    
-    // Handle hash changes (including back/forward navigation)
     window.addEventListener('hashchange', handleHashChange);
     
     // Handle initial hash on page load

@@ -17,8 +17,8 @@ async function deleteItem(deleteUrl, csrfToken) {
 
         if (response.ok || response.redirected) {
             const redirectUrl = response.url;
-            const currentUrl = window.location.href;
-            
+            const currentUrl = window.location.origin + window.location.pathname + window.location.search;
+
             if (redirectUrl === currentUrl) {
                 await reloadPageContent();
             } else {
@@ -244,9 +244,8 @@ function initComplianceChart() {
  */
 async function reloadPageContent() {
     try {
-        // Store currently selected tab before reload
-        const currentTab = document.querySelector('[data-tabs] [data-tab-link][aria-current="page"]');
-        const activeTabHref = currentTab ? currentTab.getAttribute('href') : null;
+        // Store current hash to restore tab selection
+        const activeHash = window.location.hash;
 
         const pageResponse = await fetch(window.location.pathname);
         if (pageResponse.ok) {
@@ -268,12 +267,13 @@ async function reloadPageContent() {
                     });
                 }
 
-                // Restore selected tab if present
-                if (activeTabHref) {
-                    const targetTab = document.querySelector('[data-tabs] [data-tab-link][href="' + activeTabHref + '"]');
-                    if (targetTab) {
-                        targetTab.click();
-                    }
+                // Restore tab selection via hash if present
+                if (activeHash) {
+                    const event = new HashChangeEvent('hashchange', {
+                        newURL: window.location.href,
+                        oldURL: window.location.href
+                    });
+                    window.dispatchEvent(event);
                 }
             }
         }
