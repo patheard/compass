@@ -461,21 +461,21 @@ ol {
 .progress-step.complete .progress-circle {
     background: var(--gcds-color-green-500);
     color: #fff;
-    border: 3px solid var(--gcds-color-green-500);
+    border: var(--gcds-border-width-md) solid var(--gcds-color-green-500);
     box-shadow: 0 0 0 4px rgba(47, 147, 72, 0.2);
 }
 
 .progress-step.active .progress-circle {
     background: var(--gcds-color-blue-650);
     color: #fff;
-    border: 3px solid var(--gcds-color-blue-650);
+    border: var(--gcds-border-width-md) solid var(--gcds-color-blue-650);
     box-shadow: 0 0 0 4px rgba(38, 109, 211, 0.2);
 }
 
 .progress-step.pending .progress-circle {
     background: #fff;
     color: var(--gcds-color-grayscale-400);
-    border: 3px solid var(--gcds-color-grayscale-100);
+    border: var(--gcds-border-width-md) solid var(--gcds-color-grayscale-100);
 }
 
 .check-icon {
@@ -504,7 +504,7 @@ ol {
 
 .progress-line {
     flex: 1;
-    height: 3px;
+    height: var(--gcds-border-width-md);
     margin: 0 0.5rem;
     margin-bottom: 2.5rem;
     transition: background-color 0.3s ease;
@@ -708,4 +708,56 @@ ol {
         width: 2.5rem;
         height: 2.5rem;
     }
+}
+
+/* 
+ * Tab navigation 
+ */
+nav.tabs ul {
+  list-style: none;
+  margin-inline-start: 0;
+  margin-block-end: var(--gcds-spacing-600);
+  width: var(--gcds-container-full);
+  display: flex;
+  background-color: var(--gcds-color-grayscale-0);
+  gap: var(--gcds-spacing-75);
+  flex-wrap: wrap;
+  border-block-end: var(--gcds-border-width-md) solid var(--gcds-color-grayscale-100);
+}
+
+nav.tabs a {
+  display: block;
+  border-radius: var(--gcds-button-border-radius) var(--gcds-button-border-radius) 0 0;
+  padding: var(--gcds-spacing-225) var(--gcds-spacing-150) var(--gcds-spacing-175) var(--gcds-spacing-150);
+  color: var(--gcds-text-default);
+  margin-block-start: 0;
+  margin-block-end: 0;
+  border: var(--gcds-border-width-md) solid transparent;
+  border-block-end: 0;
+}
+
+nav.tabs a[aria-current=page] {
+  background-color: var(--gcds-color-grayscale-0);
+  border-color: var(--gcds-color-grayscale-100);
+  box-shadow: 0 var(--gcds-border-width-xl) 0 calc(var(--gcds-border-width-md) * -1) var(--gcds-color-grayscale-0);
+  text-decoration: none;
+  pointer-events: none;
+}
+
+nav.tabs a:hover {
+  background-color: var(--gcds-color-grayscale-50);
+}
+
+nav.tabs a:active {
+  color: var(--gcds-focus-text) !important;
+}
+
+nav.tabs a:focus {
+  background-color: var(--gcds-focus-background);
+  color: var(--gcds-focus-text);
+  text-decoration: none;
+}
+
+nav.tabs a[aria-current=page]:focus {
+  border-color: var(--gcds-focus-background);
 }

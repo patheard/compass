@@ -33,17 +33,85 @@
     {% endfor %}
 </div>
 <gcds-text>
-    {{ _('Assessment is on the') }} <code>{{ _(assessment.status|capitalize) }}</code> {{ _('step of the') }} <gcds-link href="https://docs.google.com/document/d/1IEOR7mDjfkkVN-mJIdLOZBoALR6slXQFSErxI43EYSg" target="_blank">{{ _('Agile SA&A process') }}</gcds-link>.
+    {{ _('The assessment is on the') }} <code>{{ _(assessment.status|capitalize) }}</code> {{ _('step of the') }} <gcds-link href="https://docs.google.com/document/d/1IEOR7mDjfkkVN-mJIdLOZBoALR6slXQFSErxI43EYSg" target="_blank">{{ _('Agile SA&A process') }}</gcds-link>.
 </gcds-text>
 
-<hr class="mt-700 mb-600">
 
-<gcds-text>
-    {{ assessment.product_description | markdown }}
-</gcds-text>
+<nav class="tabs mt-700" aria-label="Guidance tabs" data-tabs>
+    <ul>
+        <li class="tab"><a href="#overview" data-tab-link aria-current="page">{{ _('Overview') }}</a></li>
+        <li class="tab"><a href="#controls" data-tab-link>{{ _('Controls') }}</a></li>
+        {% if assessment.aws_account_id %}
+        <li class="tab"><a href="#aws-resources" data-tab-link>{{ _('AWS resources') }}</a></li>
+        {% endif %}
+    </ul>
+</nav>
+
+<div id="overview" data-tab-panel>
+    <gcds-heading tag="h2">{{ _('Overview') }}</gcds-heading>
+    <gcds-text>
+        {{ assessment.product_description | markdown }}
+    </gcds-text>
+
+    <gcds-button href="/assessments/{{ assessment.assessment_id }}/edit" type="link" button-role="primary" class="mt-600">
+        {{ _("Edit") }}
+    </gcds-button>
+    <gcds-button href="/assessments/{{ assessment.assessment_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
+        {{ _("Delete") }}
+    </gcds-button>
+</div>
+
+<div id="controls" data-tab-panel hidden>
+    <hr class="mt-700 mb-600">
+
+    <gcds-heading tag="h2">
+        {{ 'Controls' }}{% if controls %}: {{ controls|length }}{% endif %}
+    </gcds-heading>
+
+    {% if controls %}
+    <section class="table-container mb-600">
+        <table>
+            <thead>
+                <tr>
+                    <th class="w-10">{{ _('ID') }}</th>
+                    <th>{{ _('Title') }}</th>
+                    <th class="w-20">{{ _('Status') }}</th>
+                    <th class="w-10">{{ _('Actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for control in controls %}
+                    <tr>
+                        <td class="nowrap">
+                            <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}">{{ control.nist_control_id }}</gcds-link>
+                        </td>
+                        <td>{{ control.control_title | markdown_no_tags | truncate(100) }}</td>
+                        <td>{{ _(control.implementation_status) }}</td>
+                        <td class="nowrap actions">
+                            <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit"><img src="/static/img/edit.svg" title="{{ _('Edit') }}" alt="{{ _('Edit') }}"></gcds-link>
+                            <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/delete" data-csrf-token="{{ csrf_token }}" class="delete-item"><img src="/static/img/delete.svg" title="{{ _('Delete') }}" alt="{{ _('Delete') }}"></gcds-link>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/new" type="link">
+        {{ _('Add') }}
+    </gcds-button>
+    {% else %}
+    <gcds-notice type="info" notice-title-tag="h2" notice-title="Nothing found">
+      <gcds-text>
+        {{ _('Get started by') }} <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/new">{{ _('creating a control') }}</gcds-link> {{ _('or') }} <gcds-link href="/assessments/{{ assessment.assessment_id }}/import">{{ _('importing from GitHub') }}</gcds-link>.
+      </gcds-text>
+    </gcds-notice>
+    {% endif %}
+</div>
 
 {% if assessment.aws_account_id %}
-    <gcds-heading tag="h2">{{ _('Infrastructure') }}</gcds-heading>
+<div id="aws-resources" data-tab-panel hidden>
+    <gcds-heading tag="h2">{{ _('AWS resources') }}</gcds-heading>
     <gcds-text>
         {{ assessment.product_name | markdown_no_tags }} {{ _('runs in AWS account ID') }} <code>{{ assessment.aws_account_id }}</code>
         {% if assessment.aws_resources %}
@@ -60,62 +128,9 @@
         {% endfor %}
     </div>
     {% endif %}
+</div>
 {% endif %}
 
-
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/edit" type="link" button-role="primary" class="mt-600">
-    {{ _("Edit") }}
-</gcds-button>
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
-    {{ _("Delete") }}
-</gcds-button>
-
-<hr class="mt-700 mb-600">
-
-<gcds-heading tag="h2">
-    {{ 'Controls' }}{% if controls %}: {{ controls|length }}{% endif %}
-</gcds-heading>
-
-{% if controls %}
-<section class="table-container mb-600">
-    <table>
-        <thead>
-            <tr>
-                <th class="w-10">{{ _('ID') }}</th>
-                <th>{{ _('Title') }}</th>
-                <th class="w-20">{{ _('Status') }}</th>
-                <th class="w-10">{{ _('Actions') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for control in controls %}
-                <tr>
-                    <td class="nowrap">
-                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}">{{ control.nist_control_id }}</gcds-link>
-                    </td>
-                    <td>{{ control.control_title | markdown_no_tags | truncate(100) }}</td>
-                    <td>{{ _(control.implementation_status) }}</td>
-                    <td class="nowrap actions">
-                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit"><img src="/static/img/edit.svg" title="{{ _('Edit') }}" alt="{{ _('Edit') }}"></gcds-link>
-                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/delete" data-csrf-token="{{ csrf_token }}" class="delete-item"><img src="/static/img/delete.svg" title="{{ _('Delete') }}" alt="{{ _('Delete') }}"></gcds-link>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</section>
-
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/new" type="link">
-    {{ _('Add') }}
-</gcds-button>
-{% else %}
-<gcds-notice type="info" notice-title-tag="h2" notice-title="Nothing found">
-  <gcds-text>
-    {{ _('Get started by') }} <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/new">{{ _('creating a control') }}</gcds-link> {{ _('or') }} <gcds-link href="/assessments/{{ assessment.assessment_id }}/import">{{ _('importing from GitHub') }}</gcds-link>.
-  </gcds-text>
-</gcds-notice>
-{% endif %}
-
-
+<script src="/static/js/tabs.js"></script>
 
 {% endblock %}
