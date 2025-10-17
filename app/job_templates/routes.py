@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import UUID4
 
 from app.auth.middleware import require_authenticated_user
-from app.constants import AWS_RESOURCES
+from app.constants import AWS_RESOURCES, NIST_CONTROL_IDS
 from app.database.models.users import User
 from app.job_templates.services import JobTemplateService
 from app.templates.utils import LocalizedTemplates
@@ -85,6 +85,7 @@ async def create_template_form(
             "user": current_user,
             "csrf_token": csrf_token,
             "aws_resources": AWS_RESOURCES,
+            "nist_control_ids": NIST_CONTROL_IDS,
             "breadcrumbs": [
                 {"label": "Compass", "link": "/"},
                 {"label": "Job templates", "link": "/job-templates"},
@@ -101,6 +102,7 @@ async def create_template(
     scan_type: str = Form(...),
     config: str = Form(...),
     aws_resources: str = Form("[]"),
+    nist_control_ids: str = Form("[]"),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -117,12 +119,21 @@ async def create_template(
         except json.JSONDecodeError:
             aws_resources_list = []
 
+        # Parse nist_control_ids from JSON string
+        try:
+            nist_control_ids_list = (
+                json.loads(nist_control_ids) if nist_control_ids else []
+            )
+        except json.JSONDecodeError:
+            nist_control_ids_list = []
+
         data = JobTemplateRequest(
             name=name,
             description=description,
             scan_type=scan_type,
             config=config,
             aws_resources=aws_resources_list if aws_resources_list else None,
+            nist_control_ids=nist_control_ids_list if nist_control_ids_list else None,
         )
 
         template = JobTemplateService.create_template(data)
@@ -143,6 +154,14 @@ async def create_template(
         except json.JSONDecodeError:
             aws_resources_list = []
 
+        # Parse nist_control_ids for error display
+        try:
+            nist_control_ids_list = (
+                json.loads(nist_control_ids) if nist_control_ids else []
+            )
+        except json.JSONDecodeError:
+            nist_control_ids_list = []
+
         scan_types = ["aws_config"]
         return templates.TemplateResponse(
             request,
@@ -160,6 +179,8 @@ async def create_template(
                 "config": config,
                 "selected_aws_resources": aws_resources_list,
                 "aws_resources": AWS_RESOURCES,
+                "selected_nist_control_ids": nist_control_ids_list,
+                "nist_control_ids": NIST_CONTROL_IDS,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                 ],
@@ -196,6 +217,7 @@ async def get_template(
             "config": json.dumps(template.config.as_dict(), indent=2),
             "is_active": template.is_active,
             "aws_resources": template.aws_resources,
+            "nist_control_ids": template.nist_control_ids,
             "created_at": getattr(template, "created_at", None),
             "updated_at": getattr(template, "updated_at", None),
         }
@@ -251,6 +273,7 @@ async def edit_template_form(
             "config": template.config.as_dict(),
             "is_active": template.is_active,
             "aws_resources": template.aws_resources,
+            "nist_control_ids": template.nist_control_ids,
         }
 
         return templates.TemplateResponse(
@@ -264,6 +287,7 @@ async def edit_template_form(
                 "user": current_user,
                 "csrf_token": csrf_token,
                 "aws_resources": AWS_RESOURCES,
+                "nist_control_ids": NIST_CONTROL_IDS,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {
@@ -292,6 +316,7 @@ async def update_template(
     scan_type: str = Form(...),
     config: str = Form(...),
     aws_resources: str = Form("[]"),
+    nist_control_ids: str = Form("[]"),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -308,12 +333,21 @@ async def update_template(
         except json.JSONDecodeError:
             aws_resources_list = []
 
+        # Parse nist_control_ids from JSON string
+        try:
+            nist_control_ids_list = (
+                json.loads(nist_control_ids) if nist_control_ids else []
+            )
+        except json.JSONDecodeError:
+            nist_control_ids_list = []
+
         data = JobTemplateRequest(
             name=name,
             description=description,
             scan_type=scan_type,
             config=config,
             aws_resources=aws_resources_list if aws_resources_list else None,
+            nist_control_ids=nist_control_ids_list if nist_control_ids_list else None,
         )
 
         template = JobTemplateService.update_template(
@@ -339,6 +373,14 @@ async def update_template(
         except json.JSONDecodeError:
             aws_resources_list = []
 
+        # Parse nist_control_ids for error display
+        try:
+            nist_control_ids_list = (
+                json.loads(nist_control_ids) if nist_control_ids else []
+            )
+        except json.JSONDecodeError:
+            nist_control_ids_list = []
+
         scan_types = ["aws_config"]
         # Re-display the form with previously-entered values and the error
         return templates.TemplateResponse(
@@ -355,12 +397,14 @@ async def update_template(
                     "config": config,
                     "is_active": True,
                     "aws_resources": aws_resources_list,
+                    "nist_control_ids": nist_control_ids_list,
                 },
                 "scan_types": scan_types,
                 "user": current_user,
                 "csrf_token": csrf_token,
                 "error": format_validation_error(e),
                 "aws_resources": AWS_RESOURCES,
+                "nist_control_ids": NIST_CONTROL_IDS,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {

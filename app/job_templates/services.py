@@ -20,6 +20,7 @@ class JobTemplateService:
             scan_type=data.scan_type,
             config=data.config,
             aws_resources=data.aws_resources,
+            nist_control_ids=data.nist_control_ids,
         )
 
     @staticmethod
@@ -56,6 +57,7 @@ class JobTemplateService:
         template.description = data.description
         template.scan_type = data.scan_type
         template.aws_resources = data.aws_resources
+        template.nist_control_ids = data.nist_control_ids
         template.update_config(data.config)
         return template
 

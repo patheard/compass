@@ -30,6 +30,7 @@ class JobTemplate(BaseModel):
     config = MapAttribute()  # Scan-specific configuration parameters
     is_active = UnicodeAttribute(default="true")  # "true"/"false" for soft delete
     aws_resources = ListAttribute(null=True)  # Optional list of AWS resource names
+    nist_control_ids = ListAttribute(null=True)  # Optional list of NIST control IDs
 
     def __init__(
         self,
@@ -40,6 +41,7 @@ class JobTemplate(BaseModel):
         config: Optional[Dict[str, Any]] = None,
         is_active: str = "true",
         aws_resources: Optional[List[str]] = None,
+        nist_control_ids: Optional[List[str]] = None,
         **kwargs,
     ) -> None:
         """Initialize JobTemplate model."""
@@ -57,6 +59,7 @@ class JobTemplate(BaseModel):
             config=config,
             is_active=is_active,
             aws_resources=aws_resources,
+            nist_control_ids=nist_control_ids,
             **kwargs,
         )
 
@@ -93,6 +96,7 @@ class JobTemplate(BaseModel):
         scan_type: str,
         config: Dict[str, Any],
         aws_resources: Optional[List[str]] = None,
+        nist_control_ids: Optional[List[str]] = None,
     ) -> "JobTemplate":
         """Create new scan job template."""
         template = cls(
@@ -101,6 +105,7 @@ class JobTemplate(BaseModel):
             scan_type=scan_type,
             config=config,
             aws_resources=aws_resources,
+            nist_control_ids=nist_control_ids,
         )
         template.save()
         return template

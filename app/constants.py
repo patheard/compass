@@ -40,3 +40,6 @@ AWS_RESOURCES = [
     "vpc",
     "waf",
 ]
+
+# NIST 800-53 Revision 5 Control IDs
+NIST_CONTROL_IDS = ["CP-10(2)", "SC-8", "SC-8(1)", "SC-23"]

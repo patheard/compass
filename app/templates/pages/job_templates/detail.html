@@ -33,6 +33,17 @@
     </div>
 {% endif %}
 
+{% if template.nist_control_ids %}
+    <gcds-heading tag="h2" class="mt-800">{{ _('NIST Control IDs') }}</gcds-heading>
+    <div class="autocomplete-badges">
+        {% for control in template.nist_control_ids %}
+        <span class="autocomplete-badge">
+            {{ _(control) }}
+        </span>
+        {% endfor %}
+    </div>
+{% endif %}
+
 <gcds-button href="/job-templates/{{ template.template_id }}/edit" type="link" button-role="primary" class="mt-300">
     {{ _("Edit") }}
 </gcds-button>

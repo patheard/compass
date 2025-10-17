@@ -8,7 +8,7 @@ import json
 from pydantic import Field, validator
 
 from app.assessments.base import BaseInputValidator
-from app.constants import AWS_RESOURCES
+from app.constants import AWS_RESOURCES, NIST_CONTROL_IDS
 
 
 class JobTemplateRequest(BaseInputValidator):
@@ -37,6 +37,10 @@ class JobTemplateRequest(BaseInputValidator):
     aws_resources: Optional[List[str]] = Field(
         None,
         description="List of AWS resource names associated with this job template",
+    )
+    nist_control_ids: Optional[List[str]] = Field(
+        None,
+        description="List of NIST control IDs associated with this job template",
     )
 
     @validator("name")
@@ -106,5 +110,17 @@ class JobTemplateRequest(BaseInputValidator):
             valid_resources = {resource for resource in AWS_RESOURCES}
             if not set(value).issubset(valid_resources):
                 raise ValueError("AWS resources contains invalid entries.")
+
+        return value
+
+    @validator("nist_control_ids")
+    def validate_nist_control_ids(
+        cls, value: Optional[List[str]]
+    ) -> Optional[List[str]]:
+        """Ensure NIST control IDs contains only valid entries when provided."""
+        if value is not None:
+            valid_controls = {control for control in NIST_CONTROL_IDS}
+            if not set(value).issubset(valid_controls):
+                raise ValueError("NIST control IDs contains invalid entries.")
 
         return value
