@@ -12,20 +12,16 @@
     'use strict';
 
     /**
-     * Handle tab click event
+     * Switch to a specific tab
      */
-    function handleTabClick(event) {
-        const tabLink = event.target.closest('[data-tab-link]');
-        if (!tabLink) {
+    function switchToTab(targetId) {
+        const targetPanel = document.getElementById(targetId);
+        if (!targetPanel) {
             return;
         }
-
-        event.preventDefault();
         
-        const targetId = tabLink.getAttribute('href').substring(1);
-        const targetPanel = document.getElementById(targetId);
-        
-        if (!targetPanel) {
+        const tabLink = document.querySelector('[data-tab-link][href="#' + targetId + '"]');
+        if (!tabLink) {
             return;
         }
         
@@ -50,6 +46,35 @@
         targetPanel.removeAttribute('hidden');
     }
 
+    /**
+     * Handle tab click event
+     */
+    function handleTabClick(event) {
+        const tabLink = event.target.closest('[data-tab-link]');
+        if (!tabLink) {
+            return;
+        }
+    }
+
+    /**
+     * Handle hash changes (from clicks or back/forward navigation)
+     */
+    function handleHashChange() {
+        const hash = window.location.hash;
+        if (hash) {
+            const targetId = hash.substring(1);
+            switchToTab(targetId);
+        }
+    }
+
     // Use event delegation on document to handle dynamically loaded tabs
     document.addEventListener('click', handleTabClick);
+    
+    // Handle hash changes (including back/forward navigation)
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Handle initial hash on page load
+    if (window.location.hash) {
+        handleHashChange();
+    }
 })();
