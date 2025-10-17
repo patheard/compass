@@ -39,10 +39,10 @@
 
 <nav class="tabs mt-700" aria-label="Guidance tabs" data-tabs>
     <ul>
-        <li class="tab"><a href="#overview" data-tab-link aria-current="page">{{ _('Overview') }}</a></li>
-        <li class="tab"><a href="#controls" data-tab-link>{{ _('Controls') }} <span class="count">{{ controls|length }}</span></a></li>
+        <li class="tab"><a href="#overview" data-tab-link aria-current="page"><span class="text">{{ _('Overview') }}</span></a></li>
+        <li class="tab"><a href="#controls" data-tab-link><span class="text">{{ _('Controls') }}</span> <span class="count">{{ controls|length }}</span></a></li>
         {% if assessment.aws_account_id %}
-        <li class="tab"><a href="#aws-resources" data-tab-link>{{ _('AWS resources') }}</a></li>
+        <li class="tab"><a href="#aws-resources" data-tab-link><span class="text">{{ _('AWS resources') }}</span></a></li>
         {% endif %}
     </ul>
 </nav>

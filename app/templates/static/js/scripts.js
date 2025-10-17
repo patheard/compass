@@ -244,6 +244,10 @@ function initComplianceChart() {
  */
 async function reloadPageContent() {
     try {
+        // Store currently selected tab before reload
+        const currentTab = document.querySelector('[data-tabs] [data-tab-link][aria-current="page"]');
+        const activeTabHref = currentTab ? currentTab.getAttribute('href') : null;
+
         const pageResponse = await fetch(window.location.pathname);
         if (pageResponse.ok) {
             const html = await pageResponse.text();
@@ -262,6 +266,14 @@ async function reloadPageContent() {
                     document.querySelectorAll('[data-csrf-token]').forEach((element) => {
                         element.setAttribute('data-csrf-token', csrfToken);
                     });
+                }
+
+                // Restore selected tab if present
+                if (activeTabHref) {
+                    const targetTab = document.querySelector('[data-tabs] [data-tab-link][href="' + activeTabHref + '"]');
+                    if (targetTab) {
+                        targetTab.click();
+                    }
                 }
             }
         }

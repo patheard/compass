@@ -12,46 +12,44 @@
     'use strict';
 
     /**
-     * Initialize tabs functionality
+     * Handle tab click event
      */
-    function initTabs() {
-        const tabContainers = document.querySelectorAll('[data-tabs]');
+    function handleTabClick(event) {
+        const tabLink = event.target.closest('[data-tab-link]');
+        if (!tabLink) {
+            return;
+        }
+
+        event.preventDefault();
         
-        tabContainers.forEach(function(container) {
-            const tabLinks = container.querySelectorAll('[data-tab-link]');
-            
-            tabLinks.forEach(function(link) {
-                link.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    
-                    const targetId = this.getAttribute('href').substring(1);
-                    const targetPanel = document.getElementById(targetId);
-                    
-                    if (!targetPanel) {
-                        return;
-                    }
-                    
-                    // Update tab link states
-                    tabLinks.forEach(function(tab) {
-                        tab.removeAttribute('aria-current');
-                    });
-                    this.setAttribute('aria-current', 'page');
-                    
-                    // Update panel visibility
-                    const allPanels = document.querySelectorAll('[data-tab-panel]');
-                    allPanels.forEach(function(panel) {
-                        panel.setAttribute('hidden', '');
-                    });
-                    targetPanel.removeAttribute('hidden');
-                });
-            });
+        const targetId = tabLink.getAttribute('href').substring(1);
+        const targetPanel = document.getElementById(targetId);
+        
+        if (!targetPanel) {
+            return;
+        }
+        
+        // Find the tab container
+        const container = tabLink.closest('[data-tabs]');
+        if (!container) {
+            return;
+        }
+        
+        // Update tab link states within this container
+        const tabLinks = container.querySelectorAll('[data-tab-link]');
+        tabLinks.forEach(function(tab) {
+            tab.removeAttribute('aria-current');
         });
+        tabLink.setAttribute('aria-current', 'page');
+        
+        // Update panel visibility
+        const allPanels = document.querySelectorAll('[data-tab-panel]');
+        allPanels.forEach(function(panel) {
+            panel.setAttribute('hidden', '');
+        });
+        targetPanel.removeAttribute('hidden');
     }
 
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initTabs);
-    } else {
-        initTabs();
-    }
+    // Use event delegation on document to handle dynamically loaded tabs
+    document.addEventListener('click', handleTabClick);
 })();
