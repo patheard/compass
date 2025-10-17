@@ -181,20 +181,25 @@ class ActionContext:
         actions = []
 
         try:
+            # Get control to access its NIST control ID
+            control = self.control_service.get_control(control_id, user_id)
+            if not control:
+                return []
+
             # Get all active job templates
             templates = self.job_template_service.get_active_templates()
 
-            # Filter templates based on assessment infrastructure
+            # Filter templates based on assessment infrastructure and control
             relevant_templates = []
             assessment_aws_resources = set(assessment.aws_resources or [])
             for template in templates:
-                # For AWS Config templates, require AWS account and filter on resources
+                # Check if template matches AWS resources and control's NIST ID
                 if template.scan_type == "aws_config":
                     if assessment.aws_account_id:
                         template_aws_resource = set(template.aws_resources or [])
                         if (
-                            not assessment_aws_resources
-                            or assessment_aws_resources.intersection(
+                            control.nist_control_id in template.nist_control_ids
+                            and assessment_aws_resources.intersection(
                                 template_aws_resource
                             )
                         ):
