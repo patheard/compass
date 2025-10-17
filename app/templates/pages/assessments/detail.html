@@ -33,14 +33,14 @@
     {% endfor %}
 </div>
 <gcds-text>
-    {{ _('The assessment is on the') }} <code>{{ _(assessment.status|capitalize) }}</code> {{ _('step of the') }} <gcds-link href="https://docs.google.com/document/d/1IEOR7mDjfkkVN-mJIdLOZBoALR6slXQFSErxI43EYSg" target="_blank">{{ _('Agile SA&A process') }}</gcds-link>.
+    {{ _('Assessment is on the') }} <code>{{ _(assessment.status|capitalize) }}</code> {{ _('step of the') }} <gcds-link href="https://docs.google.com/document/d/1IEOR7mDjfkkVN-mJIdLOZBoALR6slXQFSErxI43EYSg" target="_blank">{{ _('Agile SA&A process') }}</gcds-link>.
 </gcds-text>
 
 
 <nav class="tabs mt-700" aria-label="Guidance tabs" data-tabs>
     <ul>
         <li class="tab"><a href="#overview" data-tab-link aria-current="page">{{ _('Overview') }}</a></li>
-        <li class="tab"><a href="#controls" data-tab-link>{{ _('Controls') }}</a></li>
+        <li class="tab"><a href="#controls" data-tab-link>{{ _('Controls') }} <span class="count">{{ controls|length }}</span></a></li>
         {% if assessment.aws_account_id %}
         <li class="tab"><a href="#aws-resources" data-tab-link>{{ _('AWS resources') }}</a></li>
         {% endif %}
@@ -62,8 +62,6 @@
 </div>
 
 <div id="controls" data-tab-panel hidden>
-    <hr class="mt-700 mb-600">
-
     <gcds-heading tag="h2">
         {{ 'Controls' }}{% if controls %}: {{ controls|length }}{% endif %}
     </gcds-heading>

@@ -3,72 +3,83 @@
 {% block content %}
 <gcds-heading tag="h1">{{ control.nist_control_id }}</gcds-heading>
 <gcds-heading tag="h2">{{ control.control_title | markdown_no_tags }}</gcds-heading>
-<gcds-text>
-    {{ control.control_description | markdown }}
-</gcds-text>
 
-<ul class="list-disc mt-600" class="sm">
-    <li>
-        <strong>{{ _('Status:') }}</strong>
-        {{ _(control.implementation_status) }}
-    </li>
-    <li>
-        <strong>{{ _('Assessment:') }}</strong>
-        <gcds-link href="/assessments/{{ assessment.assessment_id }}">{{ assessment.product_name }}</gcds-link>
-    </li>
-</ul>
+<nav class="tabs mt-700" aria-label="Control tabs" data-tabs>
+    <ul>
+        <li class="tab"><a href="#overview" data-tab-link aria-current="page">{{ _('Overview') }}</a></li>
+        <li class="tab"><a href="#evidence" data-tab-link>{{ _('Evidence') }} <span class="count">{{ evidences|length }}</span></a></li>
+    </ul>
+</nav>
 
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit" type="link" button-role="primary" class="mt-800">
-    {{ _("Edit") }}
-</gcds-button>
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
-    {{ _("Delete") }}
-</gcds-button>
+<div id="overview" data-tab-panel>
+    <gcds-heading tag="h2">{{ _('Overview') }}</gcds-heading>
+    <gcds-text>
+        {{ control.control_description | markdown }}
+    </gcds-text>
 
-<hr class="mt-1000 mb-600">
+    <ul class="list-disc mt-600" class="sm">
+        <li>
+            <strong>{{ _('Status:') }}</strong>
+            {{ _(control.implementation_status) }}
+        </li>
+        <li>
+            <strong>{{ _('Assessment:') }}</strong>
+            <gcds-link href="/assessments/{{ assessment.assessment_id }}">{{ assessment.product_name }}</gcds-link>
+        </li>
+    </ul>
 
-<gcds-heading tag="h2">{{ _("Evidence") }}{% if evidences %}: {{ evidences|length }}{% endif %}</gcds-heading>
+    <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit" type="link" button-role="primary" class="mt-800">
+        {{ _("Edit") }}
+    </gcds-button>
+    <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/delete" type="link" button-role="secondary" data-csrf-token="{{ csrf_token }}" class="delete-item">
+        {{ _("Delete") }}
+    </gcds-button>
+</div>
 
-{% if evidences %}
-<section class="table-container mb-300">
-    <table>
-        <thead>
-            <tr>
-                <th>{{ _('Title') }}</th>
-                <th>{{ _('Description') }}</th>
-                <th>{{ _('Type') }}</th>
-                <th class="w-10 actions">{{ _('Actions') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for evidence in evidences %}
+<div id="evidence" data-tab-panel hidden>
+    <gcds-heading tag="h2">{{ _("Evidence") }}{% if evidences %}: {{ evidences|length }}{% endif %}</gcds-heading>
+
+    {% if evidences %}
+    <section class="table-container mb-300">
+        <table>
+            <thead>
                 <tr>
-                    <td>
-                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}">{{ evidence.title | markdown_no_tags | truncate(100) }}</gcds-link>
-                    </td>
-                    <td>{{ evidence.description | markdown_no_tags | truncate(100) }}</td>
-                    <td>{{ _(evidence.evidence_type) }}</td>
-                    <td class="nowrap actions">
-                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit"><img src="/static/img/edit.svg" title="{{ _('Edit') }}" alt="{{ _('Edit') }}"></gcds-link>
-                        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/delete" data-csrf-token="{{ csrf_token }}" class="delete-item"><img src="/static/img/delete.svg" title="{{ _('Delete') }}" alt="{{ _('Delete') }}"></gcds-link>
-                    </td>
+                    <th>{{ _('Title') }}</th>
+                    <th>{{ _('Description') }}</th>
+                    <th>{{ _('Type') }}</th>
+                    <th class="w-10 actions">{{ _('Actions') }}</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</section>
+            </thead>
+            <tbody>
+                {% for evidence in evidences %}
+                    <tr>
+                        <td>
+                            <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}">{{ evidence.title | markdown_no_tags | truncate(100) }}</gcds-link>
+                        </td>
+                        <td>{{ evidence.description | markdown_no_tags | truncate(100) }}</td>
+                        <td>{{ _(evidence.evidence_type) }}</td>
+                        <td class="nowrap actions">
+                            <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/edit"><img src="/static/img/edit.svg" title="{{ _('Edit') }}" alt="{{ _('Edit') }}"></gcds-link>
+                            <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/{{ evidence.evidence_id }}/delete" data-csrf-token="{{ csrf_token }}" class="delete-item"><img src="/static/img/delete.svg" title="{{ _('Delete') }}" alt="{{ _('Delete') }}"></gcds-link>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
 
-<gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/new" type="link" class="mt-300">
-    {{ _("Add") }}
-</gcds-button>
-{% else %}
-<gcds-notice type="info" notice-title-tag="h2" notice-title="Nothing found">
-  <gcds-text>
-    <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/new">{{ _('Add evidence') }}</gcds-link>
-  </gcds-text>
-</gcds-notice>
-{% endif %}
+    <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/new" type="link" class="mt-300">
+        {{ _("Add") }}
+    </gcds-button>
+    {% else %}
+    <gcds-notice type="info" notice-title-tag="h2" notice-title="Nothing found">
+    <gcds-text>
+        <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/evidence/new">{{ _('Add evidence') }}</gcds-link>
+    </gcds-text>
+    </gcds-notice>
+    {% endif %}
+</div>
 
-
+<script src="/static/js/tabs.js"></script>
 
 {% endblock %}

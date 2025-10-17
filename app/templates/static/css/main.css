@@ -726,7 +726,8 @@ nav.tabs ul {
 }
 
 nav.tabs a {
-  display: block;
+  display: flex;
+  align-items: center;
   border-radius: var(--gcds-button-border-radius) var(--gcds-button-border-radius) 0 0;
   padding: var(--gcds-spacing-225) var(--gcds-spacing-150) var(--gcds-spacing-175) var(--gcds-spacing-150);
   color: var(--gcds-text-default);
@@ -734,13 +735,13 @@ nav.tabs a {
   margin-block-end: 0;
   border: var(--gcds-border-width-md) solid transparent;
   border-block-end: 0;
+  text-decoration: none;
 }
 
 nav.tabs a[aria-current=page] {
   background-color: var(--gcds-color-grayscale-0);
   border-color: var(--gcds-color-grayscale-100);
   box-shadow: 0 var(--gcds-border-width-xl) 0 calc(var(--gcds-border-width-md) * -1) var(--gcds-color-grayscale-0);
-  text-decoration: none;
   pointer-events: none;
 }
 
@@ -760,4 +761,26 @@ nav.tabs a:focus {
 
 nav.tabs a[aria-current=page]:focus {
   border-color: var(--gcds-focus-background);
+}
+
+nav.tabs a .count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 6px;
+    font-size: 80%;
+    padding: 0 8px;
+    min-height: 24px;
+    border-radius: 16px;
+    background: var(--gcds-color-grayscale-50);
+    transition: background-color 0.3s ease;
+}
+
+nav.tabs a:hover .count {
+    background: var(--gcds-color-grayscale-100);
+}
+
+nav.tabs a:focus .count {
+    background: #fff;
+    color: var(--gcds-text-primary);
 }
