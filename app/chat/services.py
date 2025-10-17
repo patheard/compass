@@ -12,6 +12,7 @@ from fastapi import WebSocket
 from openai import AsyncAzureOpenAI
 
 from app.chat.action_context import ActionContext
+from app.chat.mcp_clients import BaseMCPClient, URLContentMCPClient
 from app.chat.repository import ChatHistoryRepository
 from app.database.models.chat_sessions import ChatSessionMessage
 from app.database.models.users import User
@@ -32,7 +33,11 @@ class ChatStreamingService:
 
     VECTOR_CONTEXT_PROMPT = "Use the following context from embeddings search to assist with the user's query:\n"
 
-    def __init__(self, repository: Optional[ChatHistoryRepository] = None) -> None:
+    def __init__(
+        self,
+        repository: Optional[ChatHistoryRepository] = None,
+        mcp_clients: Optional[List[BaseMCPClient]] = None,
+    ) -> None:
         """Initialize the chat streaming service."""
         self.azure_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
         self.azure_api_version = os.environ.get("AZURE_OPENAI_API_VERSION")
@@ -51,11 +56,13 @@ class ChatStreamingService:
         self.action_context = ActionContext()
         self.max_history_tokens = int(os.environ.get("CHAT_HISTORY_MAX_TOKENS", "2500"))
         self.max_history_messages = int(
-            os.environ.get("CHAT_HISTORY_MAX_MESSAGES", "40")
+            os.environ.get("CHAT_HISTORY_MAX_MESSAGES", "20")
         )
         self.s3_vectors_client = boto3.client(
             "s3vectors", region_name=self.s3_vector_region
         )
+        # Initialize MCP clients with default URLContentMCPClient
+        self.mcp_clients = mcp_clients or [URLContentMCPClient()]
 
     async def stream_response(
         self,
@@ -316,6 +323,44 @@ class ChatStreamingService:
             api_version=self.azure_api_version,
         )
 
+    async def _process_mcp_clients(
+        self,
+        user_message: str,
+        user_id: str,
+        session_id: Optional[str] = None,
+        current_url: Optional[str] = None,
+    ) -> List[Any]:
+        """Process all MCP clients and collect their contexts.
+
+        Args:
+            user_message: The user's message
+            user_id: The user ID
+            session_id: The session ID
+            current_url: The current URL
+
+        Returns:
+            List of MCPContext objects from clients that provided context
+        """
+        contexts = []
+        for client in self.mcp_clients:
+            try:
+                context = await client(
+                    user_message=user_message,
+                    user_id=user_id,
+                    session_id=session_id,
+                    current_url=current_url,
+                )
+                if context:
+                    contexts.append(context)
+                    logger.info(
+                        f"MCP client '{client.name}' added context: {context.metadata}"
+                    )
+            except Exception as exc:
+                logger.exception(f"Error processing MCP client '{client.name}': {exc}")
+                continue
+
+        return contexts
+
     async def _prepare_session_messages(
         self,
         *,
@@ -372,6 +417,14 @@ class ChatStreamingService:
                     v.get("metadata", {}).get("chunk_text", "") for v in vectors
                 )
 
+        # Process MCP clients for additional context
+        mcp_contexts = await self._process_mcp_clients(
+            user_message=user_message,
+            user_id=user.user_id,
+            session_id=session_id,
+            current_url=current_url,
+        )
+
         messages: List[Dict[str, Any]] = [
             {
                 "role": "system",
@@ -384,6 +437,18 @@ class ChatStreamingService:
                 {
                     "role": "system",
                     "content": self.VECTOR_CONTEXT_PROMPT + vector_context,
+                }
+            )
+
+        # Add MCP client contexts as system messages
+        for mcp_context in mcp_contexts:
+            messages.append(
+                {
+                    "role": "system",
+                    "content": (
+                        f"Additional context from {mcp_context.client_name}:\n"
+                        f"{mcp_context.content}"
+                    ),
                 }
             )
 

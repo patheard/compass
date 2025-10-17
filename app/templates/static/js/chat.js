@@ -270,8 +270,10 @@ class ChatClient {
             return;
         }
 
-        try {
+        const loadingTimeout = setTimeout(() => {
             this.elemLoading.classList.add('show');
+        }, 500);
+        try {
             const response = await fetch('/chat/action', {
                 method: 'POST',
                 headers: {
@@ -297,6 +299,7 @@ class ChatClient {
             console.error('Failed to execute action:', error);
             this.addMessage(`Error: ${error.message}`, 'llm');
         } finally {
+            clearTimeout(loadingTimeout);
             this.elemLoading.classList.remove('show');
         }
     }
