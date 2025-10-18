@@ -176,7 +176,9 @@ ol {
 
 .actions img {
     width: 1.75rem;
-    height: auto;
+    top: 6px;
+    margin-top: -6px;
+    position: relative;
 }
 
 .actions a:focus {
