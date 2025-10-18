@@ -21,9 +21,7 @@ class URLContentMCPClient(BaseMCPClient):
     the content and provides it as context for the LLM.
     """
 
-    URL_PATTERN = re.compile(
-        r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
-    )
+    URL_PATTERN = re.compile(r"https://[^\s]+")
 
     def __init__(
         self,
@@ -83,6 +81,8 @@ class URLContentMCPClient(BaseMCPClient):
         if not contents:
             return None
 
+        print(contents)
+
         # Combine all fetched content
         combined_content = "\n\n---\n\n".join(contents)
 
@@ -117,8 +117,11 @@ class URLContentMCPClient(BaseMCPClient):
             Extracted text content or None on failure
         """
         try:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+            }
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(url, follow_redirects=True)
+                response = await client.get(url, headers=headers, follow_redirects=True)
                 response.raise_for_status()
 
                 # Parse HTML and extract text
