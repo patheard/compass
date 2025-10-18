@@ -17,7 +17,7 @@ from app.auth.middleware import get_user_from_session
 from app.auth.websocket import get_websocket_auth
 from app.database.models.users import User
 from app.chat.services import ChatStreamingService
-from app.chat.aws_resource_scanner import AWSResourceScanner
+from app.chat.mcp_clients.aws_resource_scanner import AWSResourceScannerClient
 from app.chat.action_context import ActionContext
 from app.evidence.services import EvidenceService
 from app.evidence.validation import EvidenceRequest
@@ -236,8 +236,14 @@ async def _execute_identify_aws_resources_action(
     assessment_id = params["assessment_id"]
 
     # Use AWS resource scanner to identify resources
-    scanner = AWSResourceScanner()
-    aws_resources = await scanner.identify_aws_resources()
+    scanner = AWSResourceScannerClient()
+    mcp_context = await scanner.process(
+        user_message="", user_id=user_id, action="identify_aws_resources"
+    )
+
+    aws_resources = []
+    if mcp_context:
+        aws_resources = mcp_context.metadata.get("resources", [])
 
     if aws_resources:
         assessment_service = AssessmentService()

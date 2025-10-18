@@ -1,26 +1,28 @@
-"""AWS resource scanner for identifying resources in Terraform files."""
+"""AWS resource scanner MCP client for identifying resources in Terraform files."""
 
 from __future__ import annotations
 
 import logging
 import os
 import re
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Optional, Set
 
 import boto3
 
+from app.chat.mcp_clients.base import BaseMCPClient, MCPContext
 from app.constants import AWS_RESOURCES
 
 logger = logging.getLogger(__name__)
 
 
-class AWSResourceScanner:
-    """Scanner for identifying AWS resources from Terraform files in S3 vectors."""
+class AWSResourceScannerClient(BaseMCPClient):
+    """MCP client for scanning AWS resources from Terraform files in S3 vectors."""
 
     RESOURCE_PATTERN = re.compile(r'resource\s+"(aws_[^"]+)"')
 
-    def __init__(self) -> None:
-        """Initialize AWS resource scanner."""
+    def __init__(self, enabled: bool = True) -> None:
+        """Initialize AWS resource scanner client."""
+        super().__init__(enabled)
         self.s3_vector_bucket = os.environ.get("S3_VECTOR_BUCKET_NAME")
         self.s3_vector_index = os.environ.get("S3_VECTOR_INDEX_NAME")
         self.s3_vector_region = os.environ.get("S3_VECTOR_REGION")
@@ -28,34 +30,77 @@ class AWSResourceScanner:
             "s3vectors", region_name=self.s3_vector_region
         )
 
-    async def identify_aws_resources(self) -> List[str]:
+    @property
+    def name(self) -> str:
+        """Return the name of this MCP client."""
+        return "aws_resource_scanner"
+
+    async def process(
+        self, user_message: str, user_id: str, **kwargs: Any
+    ) -> Optional[MCPContext]:
+        """Process user message and return AWS resource context if requested.
+
+        Only returns context if the user explicitly requests resource identification.
+        This is determined by checking if 'identify_aws_resources' action is set.
+
+        Args:
+            user_message: The user's message text
+            user_id: The user ID
+            **kwargs: Additional context, including 'action' to check for explicit request
+
+        Returns:
+            MCPContext with identified AWS resources if requested, None otherwise
+        """
+        action = kwargs.get("action")
+
+        # Only process if explicitly requested via action
+        if action != "identify_aws_resources":
+            return None
+
+        try:
+            resources = await self._identify_aws_resources()
+
+            if not resources:
+                return MCPContext(
+                    content="No AWS resources found in Terraform files.",
+                    metadata={"resource_count": 0, "resources": []},
+                    client_name=self.name,
+                )
+
+            content = self._format_resource_list(resources)
+
+            return MCPContext(
+                content=content,
+                metadata={
+                    "resource_count": len(resources),
+                    "resources": resources,
+                },
+                client_name=self.name,
+            )
+
+        except Exception as e:
+            logger.exception(f"Error in AWS resource scanner: {e}")
+            return None
+
+    async def _identify_aws_resources(self) -> List[str]:
         """Identify AWS services from Terraform files in S3 vectors.
 
         Returns:
             List of AWS service names from the AWS_RESOURCES constant that match
             the resources found in Terraform files.
         """
-        try:
-            # Query S3 vectors for all Terraform files
-            terraform_chunks = self._query_terraform_files()
-            if not terraform_chunks:
-                logger.info("No Terraform files found in S3 vectors")
-                return []
-
-            # Extract resource names from Terraform content
-            terraform_resources = self._extract_terraform_resources(terraform_chunks)
-
-            # Match against AWS_RESOURCES constant
-            matched_resources = self._match_aws_resources(terraform_resources)
-
-            logger.info(
-                f"Identified {len(matched_resources)} AWS resources from {len(terraform_chunks)} Terraform chunks"
-            )
-            return sorted(matched_resources)
-
-        except Exception as e:
-            logger.exception(f"Error identifying AWS resources: {e}")
+        terraform_chunks = self._query_terraform_files()
+        if not terraform_chunks:
+            logger.info("No Terraform files found in S3 vectors")
             return []
+
+        terraform_resources = self._extract_terraform_resources(terraform_chunks)
+        matched_resources = self._match_aws_resources(terraform_resources)
+
+        logger.info(
+            f"Identified {len(matched_resources)} AWS resources from {len(terraform_chunks)} Terraform chunks"
+        )
+        return sorted(matched_resources)
 
     def _query_terraform_files(self) -> List[Dict[str, Any]]:
         """Query S3 vectors for all vectors with .tf file extension.
@@ -136,3 +181,15 @@ class AWSResourceScanner:
 
         logger.info(f"Matched {len(matched)} resources against AWS_RESOURCES constant")
         return list(matched)
+
+    def _format_resource_list(self, resources: List[str]) -> str:
+        """Format the resource list for display.
+
+        Args:
+            resources: List of AWS resource names
+
+        Returns:
+            Formatted string of resources
+        """
+        resource_list = "\n".join(f"- {resource}" for resource in resources)
+        return f"Identified {len(resources)} AWS resources:\n\n{resource_list}"
