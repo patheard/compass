@@ -65,6 +65,21 @@ data "aws_iam_policy_document" "s3" {
   }
 }
 
+data "aws_iam_policy_document" "s3_vectors" {
+  statement {
+    sid    = "S3QueryVectors"
+    effect = "Allow"
+    actions = [
+      "s3vectors:GetVectors",
+      "s3vectors:ListVectors",
+      "s3vectors:QueryVectors"
+    ]
+    resources = [
+      "arn:aws:s3vectors:us-east-1:${var.account_id}:bucket/compass-cds-products/*"
+    ]
+  }
+}
+
 data "aws_iam_policy_document" "sqs" {
   statement {
     sid    = "SQSReadWrite"

@@ -42,4 +42,13 @@ AWS_RESOURCES = [
 ]
 
 # NIST 800-53 Revision 5 Control IDs
-NIST_CONTROL_IDS = ["CP-10(2)", "SC-8", "SC-8(1)", "SC-23"]
+NIST_CONTROL_IDS = [
+    "AC-6",
+    "AC-17",
+    "CM-7",
+    "CP-10(2)",
+    "SC-8",
+    "SC-8(1)",
+    "SC-23",
+    "SC-28",
+]
