@@ -17,7 +17,7 @@ module "compass" {
     AZURE_OPENAI_EMBEDDINGS_MODEL_NAME  = var.azure_openai_embeddings_model
     GOOGLE_CLIENT_ID                    = var.google_oauth_client_id
     GOOGLE_CLIENT_SECRET                = var.google_oauth_client_secret
-    S3_EVIDENCE_BUCKET_NAME             = module.evidence_bucket.bucket_id
+    S3_EVIDENCE_BUCKET_NAME             = module.evidence_bucket.s3_bucket_id
     S3_VECTOR_BUCKET_NAME               = var.s3_vector_bucket
     S3_VECTOR_INDEX_NAME                = var.s3_vector_index
     S3_VECTOR_REGION                    = var.s3_vector_region
