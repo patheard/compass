@@ -586,3 +586,27 @@ msgstr "VPC"
 
 msgid "waf"
 msgstr "WAF"
+
+msgid "not_started"
+msgstr "Not started"
+
+msgid "compliant"
+msgstr "Compliant"
+
+msgid "partially_compliant"
+msgstr "Partially compliant"
+
+msgid "non_compliant"
+msgstr "Non compliant"
+
+msgid "unknown"
+msgstr "Unknown"
+
+msgid "document"
+msgstr "Document"
+
+msgid "screenshot"
+msgstr "Screenshot"
+
+msgid "other"
+msgstr "Other"

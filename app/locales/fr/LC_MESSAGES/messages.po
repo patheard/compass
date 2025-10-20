@@ -500,3 +500,26 @@ msgstr "Vous pouvez retourner à la page d'accueil ou essayer de rechercher ce d
 msgid "Go to Home"
 msgstr "Aller à l'accueil"
 
+msgid "not_started"
+msgstr "Non commencé"
+
+msgid "compliant"
+msgstr "Conforme"
+
+msgid "partially_compliant"
+msgstr "Partiellement conforme"
+
+msgid "non_compliant"
+msgstr "Non conforme"
+
+msgid "unknown"
+msgstr "Inconnu"
+
+msgid "document"
+msgstr "Document"
+
+msgid "screenshot"
+msgstr "Capture d'écran"
+
+msgid "other"
+msgstr "Autre"
