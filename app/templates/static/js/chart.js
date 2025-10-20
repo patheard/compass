@@ -11,13 +11,22 @@ function initComplianceChart(canvas) {
     if (!canvas || typeof Chart === 'undefined') return null;
 
     const data = {};
+    const labels = {};
 
     Array.from(canvas.attributes).forEach((attr) => {
         if (!attr.name.startsWith('data-')) return;
-        const label = attr.name.slice(5); // remove 'data-'
+        const key = attr.name.slice(5); // remove 'data-'
+        
+        // Check if this is a label attribute
+        if (key.endsWith('-label')) {
+            const statusKey = key.slice(0, -6); // remove '-label'
+            labels[statusKey] = attr.value;
+            return;
+        }
+        
         const numericVal = parseInt(attr.value, 10);
         if (Number.isNaN(numericVal) || numericVal < 0) return;
-        data[label] = numericVal;
+        data[key] = numericVal;
     });
 
     // Map compliance labels to colors so the chart reflects semantic categories.
@@ -35,9 +44,10 @@ function initComplianceChart(canvas) {
     // Primary order defined by labelColorMap, then any extra labels encountered.
     const orderedPrimary = Object.keys(labelColorMap).filter((key) => Object.prototype.hasOwnProperty.call(data, key));
     const extra = Object.keys(data).filter((l) => !orderedPrimary.includes(l));
-    const sortedLabels = [...orderedPrimary, ...extra];
-    const sortedValues = sortedLabels.map((l) => data[l]);
-    const backgroundColor = sortedLabels.map((l) => labelColorMap[l] || '#eee');
+    const sortedKeys = [...orderedPrimary, ...extra];
+    const sortedValues = sortedKeys.map((l) => data[l]);
+    const sortedLabels = sortedKeys.map((l) => labels[l] || l);
+    const backgroundColor = sortedKeys.map((l) => labelColorMap[l] || '#eee');
 
     return new Chart(canvas, {
         type: 'doughnut',

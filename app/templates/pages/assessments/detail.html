@@ -66,12 +66,13 @@
             <canvas class="compliance-chart"
                 {% for status, count in control_status_counts.items() %}
                 data-{{ status }}="{{ count }}"
+                data-{{ status }}-label="{{ _(status) }}"
                 {% endfor %}
                 aria-label="{{ _('Controls compliance chart') }}"
                 role="img">
             </canvas>
             <gcds-text class="text-center" size="small">
-                {{ control_status_counts.compliant }} {{ _('of') }} {{ controls|length }} {{ _('controls are compliant') }}
+                {{ _('Controls') }}: {{ control_status_counts.compliant }} {{ _('of') }} {{ controls|length }} {{ _('compliant') }}
             </gcds-text>
         </section>
     </gcds-grid>

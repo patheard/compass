@@ -48,12 +48,13 @@
             <canvas class="compliance-chart"
                 {% for status, count in evidence_status_counts.items() %}
                 data-{{ status }}="{{ count }}"
+                data-{{ status }}-label="{{ _(status) }}"
                 {% endfor %}
                 aria-label="{{ _('Evidence compliance chart') }}"
                 role="img">
             </canvas>
             <gcds-text class="text-center" size="small">
-                {{ evidence_status_counts.compliant }} {{ _('of') }} {{ evidences|length }} {{ _('evidence compliant') }}
+                {{ _('Evidence') }}: {{ evidence_status_counts.compliant }} {{ _('of') }} {{ evidences|length }} {{ _('compliant') }}
             </gcds-text>
         </section>
     </gcds-grid>

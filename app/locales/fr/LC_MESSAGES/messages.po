@@ -800,7 +800,6 @@ msgstr ""
 msgid "waf"
 msgstr ""
 
-#, fuzzy
 msgid "compliant"
 msgstr "Conforme"
 

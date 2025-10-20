@@ -750,9 +750,8 @@ msgstr "VPC"
 msgid "waf"
 msgstr "WAF"
 
-#, fuzzy
 msgid "compliant"
-msgstr Compliant"
+msgstr "Compliant"
 
 msgid "partially_compliant"
 msgstr "Partially compliant"
@@ -761,7 +760,7 @@ msgid "non_compliant"
 msgstr "Non compliant"
 
 msgid "error"
-msgstr ""
+msgstr "Error"
 
 msgid "unknown"
 msgstr "Unknown"
