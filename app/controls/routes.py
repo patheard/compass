@@ -10,6 +10,7 @@ from app.controls.services import ControlService
 from app.controls.validation import ControlRequest
 from app.assessments.base import CSRFTokenManager, format_validation_error
 from app.assessments.services import AssessmentService
+from app.constants import CONTROL_STATUSES
 
 router = APIRouter(prefix="/assessments/{assessment_id}/controls", tags=["controls"])
 templates = LocalizedTemplates(directory="./app/templates")
@@ -221,6 +222,7 @@ async def edit_control_page(
                 "csrf_token": csrf_token,
                 "is_edit": True,
                 "control": control,
+                "control_statuses": CONTROL_STATUSES,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {
@@ -248,7 +250,7 @@ async def update_control(
     nist_control_id: str = Form(...),
     control_title: str = Form(...),
     control_description: str = Form(...),
-    implementation_status: str = Form(...),
+    status: str = Form(...),
     csrf_token: str = Form(...),
     current_user: User = Depends(require_authenticated_user),
 ) -> RedirectResponse:
@@ -264,7 +266,7 @@ async def update_control(
             nist_control_id=nist_control_id,
             control_title=control_title,
             control_description=control_description,
-            implementation_status=implementation_status,
+            status=status,
         )
 
         # Update control

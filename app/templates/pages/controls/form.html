@@ -58,14 +58,13 @@
 
     {% if is_edit %}
         <gcds-select
-            name="implementation_status"
-            select-id="implementation_status"
-            label="{{ _('Implementation status') }}"
-            default-value="Select option."
-            hint="{{ _('Current implementation status of this security control') }}">
-            <option value="not_started" {% if control.implementation_status == 'not_started' %}selected{% endif %}>{{ _("Not Started") }}</option>
-            <option value="partial" {% if control.implementation_status == 'partial' %}selected{% endif %}>{{ _("Partially Implemented") }}</option>
-            <option value="implemented" {% if control.implementation_status == 'implemented' %}selected{% endif %}>{{ _("Fully Implemented") }}</option>
+            name="status"
+            select-id="status"
+            label="{{ _('Status') }}"
+            default-value="Select option.">
+            {% for status_value in control_statuses %}
+            <option value="{{ status_value }}" {% if control.status == status_value %}selected{% endif %}>{{ _(status_value) }}</option>
+            {% endfor %}
         </gcds-select>
     {% endif %}
 

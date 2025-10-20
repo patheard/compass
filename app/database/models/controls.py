@@ -8,6 +8,7 @@ from pynamodb.indexes import GlobalSecondaryIndex, AllProjection
 
 from app.database.base import BaseModel
 from app.database.config import db_config
+from app.constants import CONTROL_STATUSES
 
 
 class AssessmentIndex(GlobalSecondaryIndex):
@@ -41,10 +42,10 @@ class Control(BaseModel):
 
     # Control attributes
     assessment_id = UnicodeAttribute()
-    nist_control_id = UnicodeAttribute()  # e.g., AC-1, AU-2
+    nist_control_id = UnicodeAttribute()
     control_title = UnicodeAttribute()
     control_description = UnicodeAttribute()
-    implementation_status = UnicodeAttribute()  # not_started/partial/implemented
+    status = UnicodeAttribute()
 
     # Global secondary index
     assessment_index = AssessmentIndex()
@@ -56,7 +57,7 @@ class Control(BaseModel):
         nist_control_id: str = "",
         control_title: str = "",
         control_description: str = "",
-        implementation_status: str = "not_started",
+        status: str = "not_started",
         **kwargs,
     ) -> None:
         """Initialize Control model."""
@@ -69,18 +70,17 @@ class Control(BaseModel):
             nist_control_id=nist_control_id,
             control_title=control_title,
             control_description=control_description,
-            implementation_status=implementation_status,
+            status=status,
             **kwargs,
         )
 
-    def update_implementation_status(self, status: str) -> None:
-        """Update the implementation status."""
-        valid_statuses = {"not_started", "partial", "implemented"}
-        if status not in valid_statuses:
+    def update_status(self, status: str) -> None:
+        """Update the status."""
+        if status not in CONTROL_STATUSES:
             raise ValueError(
-                f"Invalid status: {status}. Must be one of {valid_statuses}"
+                f"Invalid status: {status}. Must be one of {CONTROL_STATUSES}"
             )
-        self.implementation_status = status
+        self.status = status
         self.save()
 
     @classmethod
@@ -146,17 +146,13 @@ class Control(BaseModel):
             nist_control_id=nist_control_id,
             control_title=control_title,
             control_description=control_description,
-            implementation_status="not_started",
+            status="not_started",
         )
         control.save()
         return control
 
     @classmethod
     def get_controls_by_status(cls, assessment_id: str, status: str) -> List["Control"]:
-        """Get controls by implementation status for an assessment."""
+        """Get controls by status for an assessment."""
         all_controls = cls.get_by_assessment(assessment_id)
-        return [
-            control
-            for control in all_controls
-            if control.implementation_status == status
-        ]
+        return [control for control in all_controls if control.status == status]

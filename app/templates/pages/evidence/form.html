@@ -88,6 +88,18 @@
         value="{% if is_edit %}{{ evidence.description | markdown_no_tags }}{% else %}{{ description | markdown_no_tags or '' }}{% endif %}">
     </gcds-textarea>
 
+    {% if is_edit %}
+    <gcds-select
+        name="status"
+        select-id="status"
+        label="{{ _('Status') }}"
+        default-value="Select option.">
+        {% for status_value in evidence_statuses %}
+        <option value="{{ status_value }}" {% if evidence.status == status_value or status == status_value %}selected{% endif %}>{{ _(status_value) }}</option>
+        {% endfor %}
+    </gcds-select>
+    {% endif %}
+
     <gcds-heading tag="h2" class="mt-300">
         {{ _('Files') }}
     </gcds-heading>

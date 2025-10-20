@@ -3,6 +3,7 @@
 from typing import Dict, List, Optional
 
 from app.database.models import Control, Evidence, SecurityAssessment, User
+from app.constants import CONTROL_STATUSES
 
 
 class DatabaseOperations:
@@ -114,10 +115,10 @@ class DatabaseOperations:
                 )
 
             # Calculate status summary
-            status_counts = {"not_started": 0, "partial": 0, "implemented": 0}
+            status_counts = {status: 0 for status in CONTROL_STATUSES}
             for control in controls:
-                if control.implementation_status in status_counts:
-                    status_counts[control.implementation_status] += 1
+                if control.status in status_counts:
+                    status_counts[control.status] += 1
 
             return {
                 "assessment": assessment,
@@ -125,7 +126,7 @@ class DatabaseOperations:
                 "total_controls": len(controls),
                 "status_summary": status_counts,
                 "completion_percentage": (
-                    (status_counts["implemented"] / len(controls) * 100)
+                    (status_counts["compliant"] / len(controls) * 100)
                     if controls
                     else 0
                 ),

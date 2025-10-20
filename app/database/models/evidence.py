@@ -12,6 +12,7 @@ from pynamodb.indexes import GlobalSecondaryIndex, AllProjection
 
 from app.database.base import BaseModel
 from app.database.config import db_config
+from app.constants import EVIDENCE_STATUSES
 
 from app.database.models.job_templates import JobTemplate
 from app.database.models.job_executions import JobExecution
@@ -50,9 +51,8 @@ class Evidence(BaseModel):
     control_id = UnicodeAttribute()
     title = UnicodeAttribute()
     description = UnicodeAttribute()
-    evidence_type = (
-        UnicodeAttribute()
-    )  # document/screenshot/policy/automated_collection/etc
+    evidence_type = UnicodeAttribute()
+    status = UnicodeAttribute(null=True)
     aws_account_id = UnicodeAttribute(null=True)
     file_keys = ListAttribute(
         default=list, null=True
@@ -74,6 +74,7 @@ class Evidence(BaseModel):
         title: str = "",
         description: str = "",
         evidence_type: str = "document",
+        status: Optional[str] = None,
         aws_account_id: Optional[str] = None,
         file_keys: Optional[List[str]] = None,
         job_template_id: Optional[str] = None,
@@ -93,6 +94,7 @@ class Evidence(BaseModel):
             title=title,
             description=description,
             evidence_type=evidence_type,
+            status=status,
             aws_account_id=aws_account_id,
             file_keys=file_keys,
             job_template_id=job_template_id,
@@ -124,6 +126,7 @@ class Evidence(BaseModel):
         title: str,
         description: str,
         evidence_type: str = "document",
+        status: Optional[str] = None,
         aws_account_id: Optional[str] = None,
         job_template_id: Optional[str] = None,
         scan_execution_id: Optional[str] = None,
@@ -134,6 +137,7 @@ class Evidence(BaseModel):
             title=title,
             description=description,
             evidence_type=evidence_type,
+            status=status,
             aws_account_id=aws_account_id,
             job_template_id=job_template_id,
             scan_execution_id=scan_execution_id,
@@ -179,6 +183,15 @@ class Evidence(BaseModel):
     def update_scan_execution_id(self, execution_id: str) -> None:
         """Update the scan execution ID for this evidence."""
         self.scan_execution_id = execution_id
+        self.save()
+
+    def update_status(self, status: str) -> None:
+        """Update the status."""
+        if status not in EVIDENCE_STATUSES:
+            raise ValueError(
+                f"Invalid status: {status}. Must be one of {EVIDENCE_STATUSES}"
+            )
+        self.status = status
         self.save()
 
     def get_job_template(self) -> Optional["JobTemplate"]:

@@ -185,8 +185,8 @@ class ControlService(BaseService[Control]):
             if data.control_description is not None:
                 control.control_description = data.control_description
 
-            if data.implementation_status is not None:
-                control.update_implementation_status(data.implementation_status)
+            if data.status is not None:
+                control.update_status(data.status)
             else:
                 control.save()
 
@@ -225,7 +225,7 @@ class ControlService(BaseService[Control]):
             nist_control_id=control.nist_control_id,
             control_title=control.control_title,
             control_description=control.control_description,
-            implementation_status=control.implementation_status,
+            status=control.status,
             created_at=control.created_at,
             updated_at=control.updated_at,
         )

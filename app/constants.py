@@ -10,6 +10,21 @@ ASSESSMENT_STATUSES = [
     "monitor",
 ]
 
+CONTROL_STATUSES = [
+    "not_started",
+    "compliant",
+    "partially_compliant",
+    "non_compliant",
+    "unknown",
+]
+
+EVIDENCE_STATUSES = [
+    "compliant",
+    "partially_compliant",
+    "non_compliant",
+    "unknown",
+]
+
 # Common AWS resource types for assessment filtering
 AWS_RESOURCES = [
     "acm",

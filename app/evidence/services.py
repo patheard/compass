@@ -94,6 +94,7 @@ class EvidenceService(BaseService[Evidence]):
                 title=data.title,
                 description=data.description,
                 evidence_type=data.evidence_type,
+                status=data.status,
                 job_template_id=data.job_template_id,
                 aws_account_id=data.aws_account_id,
             )
@@ -147,6 +148,9 @@ class EvidenceService(BaseService[Evidence]):
 
             if data.evidence_type is not None:
                 evidence.evidence_type = data.evidence_type
+
+            if data.status is not None:
+                evidence.update_status(data.status)
 
             if data.aws_account_id is not None:
                 evidence.aws_account_id = data.aws_account_id
@@ -227,6 +231,7 @@ class EvidenceService(BaseService[Evidence]):
             title=evidence.title,
             description=evidence.description,
             evidence_type=evidence.evidence_type,
+            status=evidence.status,
             aws_account_id=evidence.aws_account_id if evidence.aws_account_id else "",
             has_file=evidence.has_file(),
             file_keys=evidence.get_file_keys(),

@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Optional, Union
 from pydantic import BaseModel, Field, validator
 from app.assessments.base import BaseInputValidator
+from app.constants import CONTROL_STATUSES
 
 
 class ControlRequest(BaseInputValidator):
@@ -27,9 +28,7 @@ class ControlRequest(BaseInputValidator):
         max_length=5000,
         description="Description of the security control",
     )
-    implementation_status: Optional[str] = Field(
-        None, description="Implementation status of the control"
-    )
+    status: Optional[str] = Field(None, description="Status of the control")
 
     @validator("nist_control_id")
     def validate_nist_control_id(cls, value: Optional[str]) -> Optional[str]:
@@ -74,14 +73,13 @@ class ControlRequest(BaseInputValidator):
 
         return value
 
-    @validator("implementation_status")
-    def validate_implementation_status(cls, value: Optional[str]) -> Optional[str]:
-        """Validate implementation status value if provided."""
+    @validator("status")
+    def validate_status(cls, value: Optional[str]) -> Optional[str]:
+        """Validate status value if provided."""
         if value is not None:
-            valid_statuses = {"not_started", "partial", "implemented"}
-            if value not in valid_statuses:
+            if value not in CONTROL_STATUSES:
                 raise ValueError(
-                    f"Implementation status must be one of: {', '.join(valid_statuses)}"
+                    f"Status must be one of: {', '.join(CONTROL_STATUSES)}"
                 )
 
         return value
@@ -95,7 +93,7 @@ class ControlResponse(BaseModel):
     nist_control_id: str
     control_title: str
     control_description: str
-    implementation_status: str
+    status: str
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 

@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Optional, Union, Dict, Any
 from pydantic import BaseModel, Field, validator
 from app.assessments.base import BaseInputValidator
+from app.constants import EVIDENCE_STATUSES
 
 
 class EvidenceRequest(BaseInputValidator):
@@ -22,6 +23,7 @@ class EvidenceRequest(BaseInputValidator):
         description="Description of the evidence",
     )
     evidence_type: Optional[str] = Field(None, description="Type of evidence")
+    status: Optional[str] = Field(None, description="Status of the evidence")
     aws_account_id: Optional[str] = Field(
         None, description="AWS account ID associated with this evidence (12 digits)"
     )
@@ -63,6 +65,16 @@ class EvidenceRequest(BaseInputValidator):
 
         return value
 
+    @validator("status")
+    def validate_status(cls, value: Optional[str]) -> Optional[str]:
+        """Validate status if provided."""
+        if value is not None and value != "":
+            if value not in EVIDENCE_STATUSES:
+                raise ValueError(
+                    f"Status must be one of: {', '.join(sorted(EVIDENCE_STATUSES))}"
+                )
+        return value if value != "" else None
+
     @validator("aws_account_id")
     def validate_aws_account_id(cls, value: Optional[str]) -> Optional[str]:
         """Validate AWS account ID format if provided (12 numeric digits)."""
@@ -84,6 +96,7 @@ class EvidenceResponse(BaseModel):
     title: str
     description: str
     evidence_type: str
+    status: Optional[str] = None
     has_file: bool = False
     file_keys: Optional[list[str]] = None
     aws_account_id: Optional[str] = None

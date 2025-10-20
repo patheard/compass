@@ -11,6 +11,12 @@
         <strong>{{ _('Type:') }}</strong>
         {{ _(evidence.evidence_type) }} {% if job_template %}({{ _(job_template.scan_type) }}){% endif %}
     </li>
+    {% if evidence.status %}
+    <li>
+        <strong>{{ _('Status:') }}</strong>
+        {{ _(evidence.status) }}
+    </li>
+    {% endif %}
     {% if evidence.is_automated_collection %}
     <li>
         <strong>{{ _('AWS account ID:') }}</strong>

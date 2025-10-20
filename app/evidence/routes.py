@@ -13,6 +13,7 @@ from app.evidence.validation import EvidenceRequest
 from app.job_templates.services import JobTemplateService
 from app.job_executions.services import JobExecutionService
 from app.assessments.base import CSRFTokenManager, format_validation_error
+from app.constants import EVIDENCE_STATUSES
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +67,7 @@ async def create_evidence_page(
                 "csrf_token": csrf_token,
                 "is_edit": False,
                 "job_templates": job_templates,
+                "evidence_statuses": EVIDENCE_STATUSES,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {
@@ -93,6 +95,7 @@ async def create_evidence(
     title: str = Form(...),
     description: str = Form(...),
     evidence_type: str = Form(...),
+    status: Optional[str] = Form(None),
     aws_account_id: Optional[str] = Form(None),
     csrf_token: str = Form(...),
     job_template_id: Optional[str] = Form(None),
@@ -111,6 +114,7 @@ async def create_evidence(
             title=title,
             description=description,
             evidence_type=evidence_type,
+            status=status,
             job_template_id=job_template_id,
             aws_account_id=aws_account_id,
         )
@@ -308,6 +312,7 @@ async def edit_evidence_page(
                 "is_edit": True,
                 "evidence": evidence,
                 "job_templates": job_templates,
+                "evidence_statuses": EVIDENCE_STATUSES,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},
                     {
@@ -340,6 +345,7 @@ async def update_evidence(
     title: str = Form(...),
     description: str = Form(...),
     evidence_type: str = Form(...),
+    status: Optional[str] = Form(None),
     aws_account_id: Optional[str] = Form(None),
     csrf_token: str = Form(...),
     job_template_id: Optional[str] = Form(None),
@@ -359,6 +365,7 @@ async def update_evidence(
             title=title,
             description=description,
             evidence_type=evidence_type,
+            status=status,
             aws_account_id=aws_account_id,
             job_template_id=job_template_id,
         )
