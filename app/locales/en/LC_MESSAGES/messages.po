@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: compass 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-20 13:46-0400\n"
+"POT-Creation-Date: 2025-10-20 16:04-0400\n"
 "PO-Revision-Date: 2025-09-16 12:00+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -140,101 +140,102 @@ msgstr ""
 #: app/templates/pages/assessments/detail.html:42
 #: app/templates/pages/assessments/detail.html:51
 #: app/templates/pages/controls/detail.html:9
-#: app/templates/pages/controls/detail.html:15
+#: app/templates/pages/controls/detail.html:17
 msgid "Overview"
 msgstr ""
 
 #: app/templates/pages/assessments/detail.html:43
+#: app/templates/pages/assessments/detail.html:75
 msgid "Controls"
 msgstr ""
 
 #: app/templates/pages/assessments/detail.html:45
-#: app/templates/pages/assessments/detail.html:143
+#: app/templates/pages/assessments/detail.html:147
 #: app/templates/pages/job_templates/detail.html:26
 msgid "AWS resources"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:57
-#: app/templates/pages/assessments/detail.html:120
-#: app/templates/pages/controls/detail.html:39
-#: app/templates/pages/controls/detail.html:102
+#: app/templates/pages/assessments/detail.html:71
+msgid "Controls compliance chart"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:75
+#: app/templates/pages/controls/detail.html:59
+#: app/templates/pages/evidence/detail.html:74
+msgid "of"
+msgstr ""
+
+#: app/templates/pages/assessments/detail.html:75
+#: app/templates/pages/controls/detail.html:59
+msgid "compliant"
+msgstr "Compliant"
+
+#: app/templates/pages/assessments/detail.html:82
+#: app/templates/pages/assessments/detail.html:124
+#: app/templates/pages/controls/detail.html:66
+#: app/templates/pages/controls/detail.html:108
 #: app/templates/pages/evidence/detail.html:152
 #: app/templates/pages/job_templates/detail.html:48
 #: app/templates/pages/job_templates/list.html:33
 msgid "Edit"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:60
-#: app/templates/pages/assessments/detail.html:121
-#: app/templates/pages/controls/detail.html:42
-#: app/templates/pages/controls/detail.html:103
+#: app/templates/pages/assessments/detail.html:85
+#: app/templates/pages/assessments/detail.html:125
+#: app/templates/pages/controls/detail.html:69
+#: app/templates/pages/controls/detail.html:109
 #: app/templates/pages/evidence/detail.html:155
 #: app/templates/pages/job_templates/detail.html:51
 #: app/templates/pages/job_templates/list.html:34
 msgid "Delete"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:79
-#: app/templates/pages/controls/detail.html:59
-#: app/templates/pages/evidence/detail.html:74
-msgid "of"
-msgstr ""
-
-#: app/templates/pages/assessments/detail.html:79
-#, fuzzy
-msgid "controls compliant"
-msgstr "Non compliant"
-
-#: app/templates/pages/assessments/detail.html:86
-msgid "Controls compliance chart"
-msgstr ""
-
-#: app/templates/pages/assessments/detail.html:96
+#: app/templates/pages/assessments/detail.html:100
 msgid "ID"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:97
-#: app/templates/pages/controls/detail.html:76
+#: app/templates/pages/assessments/detail.html:101
+#: app/templates/pages/controls/detail.html:82
 msgid "Title"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:98
+#: app/templates/pages/assessments/detail.html:102
 #: app/templates/pages/assessments/form.html:35
-#: app/templates/pages/controls/detail.html:79
+#: app/templates/pages/controls/detail.html:85
 #: app/templates/pages/evidence/form.html:121
 #: app/templates/pages/job_templates/list.html:21
 msgid "Actions"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:130
-#: app/templates/pages/controls/detail.html:112
+#: app/templates/pages/assessments/detail.html:134
+#: app/templates/pages/controls/detail.html:118
 msgid "Add"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:135
+#: app/templates/pages/assessments/detail.html:139
 #, fuzzy
 msgid "Get started by"
 msgstr "Not started"
 
-#: app/templates/pages/assessments/detail.html:135
+#: app/templates/pages/assessments/detail.html:139
 msgid "creating a control"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:135
+#: app/templates/pages/assessments/detail.html:139
 #: app/templates/pages/assessments/form.html:44
 #: app/templates/pages/evidence/form.html:130
 msgid "or"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:135
+#: app/templates/pages/assessments/detail.html:139
 msgid "importing from GitHub"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:145
+#: app/templates/pages/assessments/detail.html:149
 msgid "runs in AWS account ID"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:147
+#: app/templates/pages/assessments/detail.html:151
 msgid "using the following services:"
 msgstr ""
 
@@ -397,42 +398,38 @@ msgid "Import"
 msgstr ""
 
 #: app/templates/pages/controls/detail.html:10
-#: app/templates/pages/controls/detail.html:47
+#: app/templates/pages/controls/detail.html:59
+#: app/templates/pages/controls/detail.html:74
 #: app/templates/pages/evidence/detail.html:73
 msgid "Evidence"
 msgstr ""
 
-#: app/templates/pages/controls/detail.html:22
+#: app/templates/pages/controls/detail.html:33
 #: app/templates/pages/evidence/detail.html:16
 msgid "Status:"
 msgstr ""
 
-#: app/templates/pages/controls/detail.html:33
+#: app/templates/pages/controls/detail.html:44
 #: app/templates/pages/evidence/detail.html:34
 #, fuzzy
 msgid "Assessment:"
 msgstr "Security Assessment"
 
-#: app/templates/pages/controls/detail.html:59
-#, fuzzy
-msgid "evidence compliant"
-msgstr "Non compliant"
-
-#: app/templates/pages/controls/detail.html:66
+#: app/templates/pages/controls/detail.html:55
 msgid "Evidence compliance chart"
 msgstr ""
 
-#: app/templates/pages/controls/detail.html:77
+#: app/templates/pages/controls/detail.html:83
 #: app/templates/pages/job_templates/list.html:19
 #, fuzzy
 msgid "Description"
 msgstr "This platform provides automated security assessment tools."
 
-#: app/templates/pages/controls/detail.html:78
+#: app/templates/pages/controls/detail.html:84
 msgid "Type"
 msgstr ""
 
-#: app/templates/pages/controls/detail.html:117
+#: app/templates/pages/controls/detail.html:123
 msgid "Add evidence"
 msgstr ""
 
@@ -750,9 +747,6 @@ msgstr "VPC"
 msgid "waf"
 msgstr "WAF"
 
-msgid "compliant"
-msgstr "Compliant"
-
 msgid "partially_compliant"
 msgstr "Partially compliant"
 
@@ -764,6 +758,9 @@ msgstr "Error"
 
 msgid "unknown"
 msgstr "Unknown"
+
+msgid "not_started"
+msgstr "Not started"
 
 msgid "document"
 msgstr "Document"
@@ -1016,4 +1013,10 @@ msgstr "Other"
 
 #~ msgid "other"
 #~ msgstr "Other"
+
+#~ msgid "controls compliant"
+#~ msgstr "Non compliant"
+
+#~ msgid "evidence compliant"
+#~ msgstr "Non compliant"
 

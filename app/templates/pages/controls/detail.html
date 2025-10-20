@@ -13,15 +13,6 @@
 
 <div id="overview" data-tab-panel>
     <gcds-heading tag="h2">{{ _('Overview') }}</gcds-heading>
-
-    {% if evidences %}
-    {% set evidence_status_counts = dict.fromkeys(evidence_statuses, 0) %}
-    {% for evidence in evidences %}
-        {% if evidence.status in evidence_status_counts %}
-            {% set _ = evidence_status_counts.update({evidence.status: evidence_status_counts[evidence.status] + 1}) %}
-        {% endif %}
-    {% endfor %}
-    
     <gcds-grid columns-desktop="2fr 1fr" columns-tablet="1fr 1fr" columns="1fr" class="mb-600 mt-600">
         <section>
             {{ control.control_description | markdown }}
@@ -44,21 +35,28 @@
                 </li>
             </ul>
         </section>
-        <section class="ms-200 ps-600">
-            <canvas class="compliance-chart"
-                {% for status, count in evidence_status_counts.items() %}
-                data-{{ status }}="{{ count }}"
-                data-{{ status }}-label="{{ _(status) }}"
-                {% endfor %}
-                aria-label="{{ _('Evidence compliance chart') }}"
-                role="img">
-            </canvas>
-            <gcds-text class="text-center" size="small">
-                {{ _('Evidence') }}: {{ evidence_status_counts.compliant }} {{ _('of') }} {{ evidences|length }} {{ _('compliant') }}
-            </gcds-text>
+        {% if evidences %}
+            {% set evidence_status_counts = dict.fromkeys(evidence_statuses, 0) %}
+            {% for evidence in evidences %}
+                {% if evidence.status in evidence_status_counts %}
+                    {% set _ = evidence_status_counts.update({evidence.status: evidence_status_counts[evidence.status] + 1}) %}
+                {% endif %}
+            {% endfor %}
+            <section class="ms-200 ps-600">
+                <canvas class="compliance-chart"
+                    {% for status, count in evidence_status_counts.items() %}
+                    data-{{ status }}="{{ count }}"
+                    data-{{ status }}-label="{{ _(status) }}"
+                    {% endfor %}
+                    aria-label="{{ _('Evidence compliance chart') }}"
+                    role="img">
+                </canvas>
+                <gcds-text class="text-center" size="small">
+                    {{ _('Evidence') }}: {{ evidence_status_counts.compliant }} {{ _('of') }} {{ evidences|length }} {{ _('compliant') }}
+                </gcds-text>
         </section>
+        {% endif %}
     </gcds-grid>
-    {% endif %}
 
     <gcds-button href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit" type="link" button-role="primary" class="mt-800">
         {{ _("Edit") }}

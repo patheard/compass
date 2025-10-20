@@ -102,6 +102,9 @@ msgstr ""
 msgid "unknown"
 msgstr ""
 
+msgid "not_started"
+msgstr ""
+
 # Evidence types
 msgid "document"
 msgstr ""
