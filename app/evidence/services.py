@@ -225,13 +225,18 @@ class EvidenceService(BaseService[Evidence]):
 
     def _to_response(self, evidence: Evidence) -> EvidenceResponse:
         """Convert evidence model to response schema."""
+        # Calculate status for automated collection evidence
+        status = evidence.status
+        if evidence.is_automated_collection():
+            status = evidence.calculate_status_from_executions()
+
         return EvidenceResponse(
             evidence_id=evidence.evidence_id,
             control_id=evidence.control_id,
             title=evidence.title,
             description=evidence.description,
             evidence_type=evidence.evidence_type,
-            status=evidence.status,
+            status=status,
             aws_account_id=evidence.aws_account_id if evidence.aws_account_id else "",
             has_file=evidence.has_file(),
             file_keys=evidence.get_file_keys(),

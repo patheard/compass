@@ -214,3 +214,75 @@ class Evidence(BaseModel):
         from app.database.models.job_executions import JobExecution
 
         return JobExecution.get_latest_execution(self.evidence_id)
+
+    def calculate_status_from_executions(self) -> str:
+        """
+        Calculate evidence status based on job execution compliance results.
+
+        For automated_collection evidence:
+        - If no executions: EVIDENCE_STATUSES[3] (unknown)
+        - Based on compliance_summary in result_data:
+          - All COMPLIANT: EVIDENCE_STATUSES[0] (compliant)
+          - Any NON_COMPLIANT: EVIDENCE_STATUSES[2] (non_compliant)
+          - Mix with no NON_COMPLIANT: EVIDENCE_STATUSES[1] (partially_compliant)
+          - All INSUFFICIENT_DATA/NOT_APPLICABLE/ERROR: EVIDENCE_STATUSES[3] (unknown)
+
+        Returns:
+            Status string from EVIDENCE_STATUSES
+        """
+        # EVIDENCE_STATUSES = ["compliant", "partially_compliant", "non_compliant", "unknown"]
+        STATUS_COMPLIANT = EVIDENCE_STATUSES[0]
+        STATUS_PARTIALLY_COMPLIANT = EVIDENCE_STATUSES[1]
+        STATUS_NON_COMPLIANT = EVIDENCE_STATUSES[2]
+        STATUS_UNKNOWN = EVIDENCE_STATUSES[3]
+
+        if not self.is_automated_collection():
+            return self.status if self.status else STATUS_UNKNOWN
+
+        from app.database.models.job_executions import JobExecution
+
+        executions = JobExecution.get_by_evidence(self.evidence_id)
+
+        if not executions:
+            return STATUS_UNKNOWN
+
+        # Get the latest completed execution
+        latest_execution = None
+        for execution in sorted(executions, key=lambda e: e.created_at, reverse=True):
+            if execution.status == "completed":
+                latest_execution = execution
+                break
+
+        if not latest_execution or not latest_execution.result_data:
+            return STATUS_UNKNOWN
+
+        # Get compliance summary from result_data
+        compliance_summary = latest_execution.result_data.as_dict().get(
+            "compliance_summary", {}
+        )
+
+        if not compliance_summary:
+            return STATUS_UNKNOWN
+
+        compliant_count = compliance_summary.get("COMPLIANT", 0)
+        non_compliant_count = compliance_summary.get("NON_COMPLIANT", 0)
+
+        total_rules = sum(compliance_summary.values())
+
+        if total_rules == 0:
+            return STATUS_UNKNOWN
+
+        # If all rules are compliant
+        if compliant_count == total_rules:
+            return STATUS_COMPLIANT
+
+        # If we have some compliant rules
+        elif compliant_count > 0:
+            return STATUS_PARTIALLY_COMPLIANT
+
+        # If any non-compliant rules exist
+        if non_compliant_count > 0:
+            return STATUS_NON_COMPLIANT
+
+        # All rules are INSUFFICIENT_DATA, NOT_APPLICABLE, or ERROR
+        return STATUS_UNKNOWN
