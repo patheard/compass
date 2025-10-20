@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: compass 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-20 11:11-0400\n"
+"POT-Creation-Date: 2025-10-20 13:08-0400\n"
 "PO-Revision-Date: 2025-09-16 12:00+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -17,6 +17,146 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
+
+#: app/localization/database_strings.py:11
+msgid "acm"
+msgstr ""
+
+#: app/localization/database_strings.py:12
+msgid "api_gateway"
+msgstr ""
+
+#: app/localization/database_strings.py:13
+msgid "alb"
+msgstr ""
+
+#: app/localization/database_strings.py:14
+msgid "athena"
+msgstr ""
+
+#: app/localization/database_strings.py:15
+msgid "cloudfront"
+msgstr ""
+
+#: app/localization/database_strings.py:16
+msgid "cloudwatch"
+msgstr ""
+
+#: app/localization/database_strings.py:17
+msgid "db_proxy"
+msgstr ""
+
+#: app/localization/database_strings.py:18
+msgid "dynamodb"
+msgstr ""
+
+#: app/localization/database_strings.py:19
+#, fuzzy
+msgid "ecs"
+msgstr "Oui"
+
+#: app/localization/database_strings.py:20
+#, fuzzy
+msgid "eks"
+msgstr "Oui"
+
+#: app/localization/database_strings.py:21
+msgid "iam"
+msgstr ""
+
+#: app/localization/database_strings.py:22
+msgid "internet_gateway"
+msgstr ""
+
+#: app/localization/database_strings.py:23
+msgid "kms"
+msgstr ""
+
+#: app/localization/database_strings.py:24
+msgid "lambda"
+msgstr ""
+
+#: app/localization/database_strings.py:25
+msgid "nat_gateway"
+msgstr ""
+
+#: app/localization/database_strings.py:26
+msgid "network_acl"
+msgstr ""
+
+#: app/localization/database_strings.py:27
+msgid "rds"
+msgstr ""
+
+#: app/localization/database_strings.py:28
+msgid "route53"
+msgstr ""
+
+#: app/localization/database_strings.py:29
+msgid "s3"
+msgstr ""
+
+#: app/localization/database_strings.py:30
+msgid "secretsmanager"
+msgstr ""
+
+#: app/localization/database_strings.py:31
+msgid "security_group"
+msgstr ""
+
+#: app/localization/database_strings.py:32
+#, fuzzy
+msgid "ses"
+msgstr "Oui"
+
+#: app/localization/database_strings.py:33
+msgid "sns"
+msgstr ""
+
+#: app/localization/database_strings.py:34
+msgid "sqs"
+msgstr ""
+
+#: app/localization/database_strings.py:35
+msgid "ssm_parameter"
+msgstr ""
+
+#: app/localization/database_strings.py:36
+msgid "vpc"
+msgstr ""
+
+#: app/localization/database_strings.py:37
+msgid "waf"
+msgstr ""
+
+#: app/localization/database_strings.py:40
+#, fuzzy
+msgid "partially_compliant"
+msgstr "règles conformes"
+
+#: app/localization/database_strings.py:41
+#, fuzzy
+msgid "non_compliant"
+msgstr "règles conformes"
+
+#: app/localization/database_strings.py:42
+msgid "unknown"
+msgstr ""
+
+#: app/localization/database_strings.py:45
+#, fuzzy
+msgid "document"
+msgstr "Document"
+
+#: app/localization/database_strings.py:46
+#, fuzzy
+msgid "screenshot"
+msgstr "Capture d'écran"
+
+#: app/localization/database_strings.py:47
+#, fuzzy
+msgid "other"
+msgstr "Autre"
 
 #: app/templates/base.html:6 app/templates/base.html:28
 #: app/templates/pages/home.html:5 app/templates/pages/login.html:5
@@ -154,26 +294,26 @@ msgid "Controls"
 msgstr "Contrôle"
 
 #: app/templates/pages/assessments/detail.html:45
-#: app/templates/pages/assessments/detail.html:112
+#: app/templates/pages/assessments/detail.html:121
 #: app/templates/pages/job_templates/detail.html:26
 msgid "AWS resources"
 msgstr "Ressources AWS"
 
 #: app/templates/pages/assessments/detail.html:57
-#: app/templates/pages/assessments/detail.html:89
-#: app/templates/pages/controls/detail.html:32
-#: app/templates/pages/controls/detail.html:62
-#: app/templates/pages/evidence/detail.html:145
+#: app/templates/pages/assessments/detail.html:98
+#: app/templates/pages/controls/detail.html:39
+#: app/templates/pages/controls/detail.html:80
+#: app/templates/pages/evidence/detail.html:152
 #: app/templates/pages/job_templates/detail.html:48
 #: app/templates/pages/job_templates/list.html:33
 msgid "Edit"
 msgstr "Modifier"
 
 #: app/templates/pages/assessments/detail.html:60
-#: app/templates/pages/assessments/detail.html:90
-#: app/templates/pages/controls/detail.html:35
-#: app/templates/pages/controls/detail.html:63
-#: app/templates/pages/evidence/detail.html:148
+#: app/templates/pages/assessments/detail.html:99
+#: app/templates/pages/controls/detail.html:42
+#: app/templates/pages/controls/detail.html:81
+#: app/templates/pages/evidence/detail.html:155
 #: app/templates/pages/job_templates/detail.html:51
 #: app/templates/pages/job_templates/list.html:34
 msgid "Delete"
@@ -184,56 +324,49 @@ msgid "ID"
 msgstr "ID"
 
 #: app/templates/pages/assessments/detail.html:75
-#: app/templates/pages/controls/detail.html:47
+#: app/templates/pages/controls/detail.html:54
 msgid "Title"
 msgstr "Titre"
 
 #: app/templates/pages/assessments/detail.html:76
-#: app/templates/pages/controls/form.html:63
-#: app/templates/pages/evidence/form.html:95
-#: app/templates/pages/evidence/form.html:119
-msgid "Status"
-msgstr "Statut"
-
-#: app/templates/pages/assessments/detail.html:77
 #: app/templates/pages/assessments/form.html:35
-#: app/templates/pages/controls/detail.html:50
+#: app/templates/pages/controls/detail.html:57
 #: app/templates/pages/evidence/form.html:121
 #: app/templates/pages/job_templates/list.html:21
 msgid "Actions"
 msgstr "Actions"
 
-#: app/templates/pages/assessments/detail.html:99
-#: app/templates/pages/controls/detail.html:72
+#: app/templates/pages/assessments/detail.html:108
+#: app/templates/pages/controls/detail.html:90
 msgid "Add"
 msgstr "Ajouter"
 
-#: app/templates/pages/assessments/detail.html:104
+#: app/templates/pages/assessments/detail.html:113
 #, fuzzy
 msgid "Get started by"
 msgstr "Non commencé"
 
-#: app/templates/pages/assessments/detail.html:104
+#: app/templates/pages/assessments/detail.html:113
 #, fuzzy
 msgid "creating a control"
 msgstr "Créer un contrôle"
 
-#: app/templates/pages/assessments/detail.html:104
+#: app/templates/pages/assessments/detail.html:113
 #: app/templates/pages/assessments/form.html:44
 #: app/templates/pages/evidence/form.html:130
 msgid "or"
 msgstr "ou"
 
-#: app/templates/pages/assessments/detail.html:104
+#: app/templates/pages/assessments/detail.html:113
 msgid "importing from GitHub"
 msgstr "importation depuis GitHub"
 
-#: app/templates/pages/assessments/detail.html:114
+#: app/templates/pages/assessments/detail.html:123
 #, fuzzy
 msgid "runs in AWS account ID"
 msgstr "ID de contrôle NIST"
 
-#: app/templates/pages/assessments/detail.html:116
+#: app/templates/pages/assessments/detail.html:125
 msgid "using the following services:"
 msgstr "utilisant les services suivants :"
 
@@ -250,7 +383,10 @@ msgstr "Mettez à jour les détails de votre évaluation de sécurité."
 msgid ""
 "If you have a [Navigator](https://valentine.cds-snc.ca/) workspace "
 "export, select it below to fill out the form."
-msgstr "Si vous avez une exportation d'espace de travail [Navigator](https://valentine.cds-snc.ca/), sélectionnez-la ci-dessous pour remplir le formulaire."
+msgstr ""
+"Si vous avez une exportation d'espace de travail "
+"[Navigator](https://valentine.cds-snc.ca/), sélectionnez-la ci-dessous "
+"pour remplir le formulaire."
 
 #: app/templates/pages/assessments/form.html:20
 #: app/templates/pages/assessments/import_results.html:51
@@ -374,7 +510,9 @@ msgstr "Évaluation de sécurité"
 msgid ""
 "Create your controls from a GitHub repository.  The open issues in the "
 "repo will be treated as controls and imported."
-msgstr "Créez vos contrôles à partir d'un dépôt GitHub. Les problèmes ouverts dans le dépôt seront traités comme des contrôles et importés."
+msgstr ""
+"Créez vos contrôles à partir d'un dépôt GitHub. Les problèmes ouverts "
+"dans le dépôt seront traités comme des contrôles et importés."
 
 #: app/templates/pages/assessments/import_setup.html:10
 msgid "Setup import"
@@ -394,15 +532,17 @@ msgstr "Jeton d'accès personnel GitHub"
 
 #: app/templates/pages/assessments/import_setup.html:37
 msgid "This needs issue read permission for the repository and will not be saved"
-msgstr "Ceci nécessite la permission de lecture des problèmes pour le dépôt et ne sera pas enregistré"
+msgstr ""
+"Ceci nécessite la permission de lecture des problèmes pour le dépôt et ne"
+" sera pas enregistré"
 
 #: app/templates/pages/assessments/import_setup.html:41
 msgid "Import"
 msgstr "Importer"
 
 #: app/templates/pages/controls/detail.html:10
-#: app/templates/pages/controls/detail.html:40
-#: app/templates/pages/evidence/detail.html:66
+#: app/templates/pages/controls/detail.html:47
+#: app/templates/pages/evidence/detail.html:73
 msgid "Evidence"
 msgstr "Preuve"
 
@@ -411,23 +551,23 @@ msgstr "Preuve"
 msgid "Status:"
 msgstr "Statut :"
 
-#: app/templates/pages/controls/detail.html:26
-#: app/templates/pages/evidence/detail.html:27
+#: app/templates/pages/controls/detail.html:33
+#: app/templates/pages/evidence/detail.html:34
 #, fuzzy
 msgid "Assessment:"
 msgstr "Évaluation de sécurité"
 
-#: app/templates/pages/controls/detail.html:48
+#: app/templates/pages/controls/detail.html:55
 #: app/templates/pages/job_templates/list.html:19
 #, fuzzy
 msgid "Description"
 msgstr "Cette plateforme fournit des outils d'évaluation de sécurité automatisés."
 
-#: app/templates/pages/controls/detail.html:49
+#: app/templates/pages/controls/detail.html:56
 msgid "Type"
 msgstr "Type"
 
-#: app/templates/pages/controls/detail.html:77
+#: app/templates/pages/controls/detail.html:95
 #, fuzzy
 msgid "Add evidence"
 msgstr "Preuve"
@@ -468,6 +608,12 @@ msgstr "Titre du contrôle"
 msgid "Control description"
 msgstr "Cette plateforme fournit des outils d'évaluation de sécurité automatisés."
 
+#: app/templates/pages/controls/form.html:63
+#: app/templates/pages/evidence/form.html:95
+#: app/templates/pages/evidence/form.html:119
+msgid "Status"
+msgstr "Statut"
+
 #: app/templates/pages/errors/404.html:5
 #, fuzzy
 msgid "Page not found"
@@ -485,53 +631,53 @@ msgstr "Accueil"
 msgid "Type:"
 msgstr "Type :"
 
-#: app/templates/pages/evidence/detail.html:22
+#: app/templates/pages/evidence/detail.html:29
 #, fuzzy
 msgid "AWS account ID:"
 msgstr "ID de contrôle NIST"
 
-#: app/templates/pages/evidence/detail.html:31
+#: app/templates/pages/evidence/detail.html:38
 #, fuzzy
 msgid "Control:"
 msgstr "Contrôle"
 
-#: app/templates/pages/evidence/detail.html:37
+#: app/templates/pages/evidence/detail.html:44
 #: app/templates/pages/evidence/form.html:104
 #, fuzzy
 msgid "Files"
 msgstr "Titre"
 
-#: app/templates/pages/evidence/detail.html:67
+#: app/templates/pages/evidence/detail.html:74
 msgid "of"
 msgstr "de"
 
-#: app/templates/pages/evidence/detail.html:67
+#: app/templates/pages/evidence/detail.html:74
 msgid "rules compliant"
 msgstr "règles conformes"
 
-#: app/templates/pages/evidence/detail.html:95
+#: app/templates/pages/evidence/detail.html:102
 msgid "Compliance chart"
 msgstr "Graphique de conformité"
 
-#: app/templates/pages/evidence/detail.html:103
+#: app/templates/pages/evidence/detail.html:110
 msgid "History"
 msgstr "Historique"
 
-#: app/templates/pages/evidence/detail.html:108
+#: app/templates/pages/evidence/detail.html:115
 #, fuzzy
 msgid "Scan"
 msgstr "Annuler"
 
-#: app/templates/pages/evidence/detail.html:109
+#: app/templates/pages/evidence/detail.html:116
 #, fuzzy
 msgid "Started"
 msgstr "Non commencé"
 
-#: app/templates/pages/evidence/detail.html:110
+#: app/templates/pages/evidence/detail.html:117
 msgid "Completed"
 msgstr "Terminé"
 
-#: app/templates/pages/evidence/detail.html:111
+#: app/templates/pages/evidence/detail.html:118
 msgid "Result"
 msgstr "Résultat"
 
@@ -665,7 +811,9 @@ msgstr "Tapez pour rechercher les ressources AWS auxquelles ce modèle s'appliqu
 
 #: app/templates/pages/job_templates/form.html:84
 msgid "Type to search for NIST control IDs this template applies to"
-msgstr "Tapez pour rechercher les ID de contrôle NIST auxquels ce modèle s'applique"
+msgstr ""
+"Tapez pour rechercher les ID de contrôle NIST auxquels ce modèle "
+"s'applique"
 
 #: app/templates/pages/job_templates/list.html:6
 msgid "Manage automated scan job templates for evidence collection."

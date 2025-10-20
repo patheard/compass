@@ -22,6 +22,7 @@ i18n-compile:
 
 i18n-extract:
 	uv run pybabel extract -F babel.cfg -k _l -o app/locales/messages.pot app/
+	@cat app/locales/messages_manual.pot >> app/locales/messages.pot
 
 i18n-update:
 	uv run pybabel update -i app/locales/messages.pot -d app/locales

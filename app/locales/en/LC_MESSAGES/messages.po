@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: compass 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-20 11:11-0400\n"
+"POT-Creation-Date: 2025-10-20 13:08-0400\n"
 "PO-Revision-Date: 2025-09-16 12:00+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -17,6 +17,138 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
+
+#: app/localization/database_strings.py:11
+msgid "acm"
+msgstr "ACM"
+
+#: app/localization/database_strings.py:12
+msgid "api_gateway"
+msgstr "API Gateway"
+
+#: app/localization/database_strings.py:13
+msgid "alb"
+msgstr "Load Balancer"
+
+#: app/localization/database_strings.py:14
+msgid "athena"
+msgstr "Athena"
+
+#: app/localization/database_strings.py:15
+msgid "cloudfront"
+msgstr "CloudFront"
+
+#: app/localization/database_strings.py:16
+msgid "cloudwatch"
+msgstr "CloudWatch"
+
+#: app/localization/database_strings.py:17
+msgid "db_proxy"
+msgstr "RDS Proxy"
+
+#: app/localization/database_strings.py:18
+msgid "dynamodb"
+msgstr "DynamoDB"
+
+#: app/localization/database_strings.py:19
+msgid "ecs"
+msgstr "ECS"
+
+#: app/localization/database_strings.py:20
+msgid "eks"
+msgstr "EKS"
+
+#: app/localization/database_strings.py:21
+msgid "iam"
+msgstr "IAM"
+
+#: app/localization/database_strings.py:22
+msgid "internet_gateway"
+msgstr "Internet Gateway"
+
+#: app/localization/database_strings.py:23
+msgid "kms"
+msgstr "KMS"
+
+#: app/localization/database_strings.py:24
+msgid "lambda"
+msgstr "Lambda"
+
+#: app/localization/database_strings.py:25
+msgid "nat_gateway"
+msgstr "NAT Gateway"
+
+#: app/localization/database_strings.py:26
+msgid "network_acl"
+msgstr "Network ACL"
+
+#: app/localization/database_strings.py:27
+msgid "rds"
+msgstr "RDS"
+
+#: app/localization/database_strings.py:28
+msgid "route53"
+msgstr "Route53"
+
+#: app/localization/database_strings.py:29
+msgid "s3"
+msgstr "S3"
+
+#: app/localization/database_strings.py:30
+msgid "secretsmanager"
+msgstr "Secrets Manager"
+
+#: app/localization/database_strings.py:31
+msgid "security_group"
+msgstr "Security Group"
+
+#: app/localization/database_strings.py:32
+msgid "ses"
+msgstr "SES"
+
+#: app/localization/database_strings.py:33
+msgid "sns"
+msgstr "SNS"
+
+#: app/localization/database_strings.py:34
+msgid "sqs"
+msgstr "SQS"
+
+#: app/localization/database_strings.py:35
+msgid "ssm_parameter"
+msgstr "SSM Parameter"
+
+#: app/localization/database_strings.py:36
+msgid "vpc"
+msgstr "VPC"
+
+#: app/localization/database_strings.py:37
+msgid "waf"
+msgstr "WAF"
+
+#: app/localization/database_strings.py:40
+msgid "partially_compliant"
+msgstr "Partially compliant"
+
+#: app/localization/database_strings.py:41
+msgid "non_compliant"
+msgstr "Non compliant"
+
+#: app/localization/database_strings.py:42
+msgid "unknown"
+msgstr "Unknown"
+
+#: app/localization/database_strings.py:45
+msgid "document"
+msgstr "Document"
+
+#: app/localization/database_strings.py:46
+msgid "screenshot"
+msgstr "Screenshot"
+
+#: app/localization/database_strings.py:47
+msgid "other"
+msgstr "Other"
 
 #: app/templates/base.html:6 app/templates/base.html:28
 #: app/templates/pages/home.html:5 app/templates/pages/login.html:5
@@ -149,26 +281,26 @@ msgid "Controls"
 msgstr ""
 
 #: app/templates/pages/assessments/detail.html:45
-#: app/templates/pages/assessments/detail.html:112
+#: app/templates/pages/assessments/detail.html:121
 #: app/templates/pages/job_templates/detail.html:26
 msgid "AWS resources"
 msgstr ""
 
 #: app/templates/pages/assessments/detail.html:57
-#: app/templates/pages/assessments/detail.html:89
-#: app/templates/pages/controls/detail.html:32
-#: app/templates/pages/controls/detail.html:62
-#: app/templates/pages/evidence/detail.html:145
+#: app/templates/pages/assessments/detail.html:98
+#: app/templates/pages/controls/detail.html:39
+#: app/templates/pages/controls/detail.html:80
+#: app/templates/pages/evidence/detail.html:152
 #: app/templates/pages/job_templates/detail.html:48
 #: app/templates/pages/job_templates/list.html:33
 msgid "Edit"
 msgstr ""
 
 #: app/templates/pages/assessments/detail.html:60
-#: app/templates/pages/assessments/detail.html:90
-#: app/templates/pages/controls/detail.html:35
-#: app/templates/pages/controls/detail.html:63
-#: app/templates/pages/evidence/detail.html:148
+#: app/templates/pages/assessments/detail.html:99
+#: app/templates/pages/controls/detail.html:42
+#: app/templates/pages/controls/detail.html:81
+#: app/templates/pages/evidence/detail.html:155
 #: app/templates/pages/job_templates/detail.html:51
 #: app/templates/pages/job_templates/list.html:34
 msgid "Delete"
@@ -179,54 +311,47 @@ msgid "ID"
 msgstr ""
 
 #: app/templates/pages/assessments/detail.html:75
-#: app/templates/pages/controls/detail.html:47
+#: app/templates/pages/controls/detail.html:54
 msgid "Title"
 msgstr ""
 
 #: app/templates/pages/assessments/detail.html:76
-#: app/templates/pages/controls/form.html:63
-#: app/templates/pages/evidence/form.html:95
-#: app/templates/pages/evidence/form.html:119
-msgid "Status"
-msgstr ""
-
-#: app/templates/pages/assessments/detail.html:77
 #: app/templates/pages/assessments/form.html:35
-#: app/templates/pages/controls/detail.html:50
+#: app/templates/pages/controls/detail.html:57
 #: app/templates/pages/evidence/form.html:121
 #: app/templates/pages/job_templates/list.html:21
 msgid "Actions"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:99
-#: app/templates/pages/controls/detail.html:72
+#: app/templates/pages/assessments/detail.html:108
+#: app/templates/pages/controls/detail.html:90
 msgid "Add"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:104
+#: app/templates/pages/assessments/detail.html:113
 #, fuzzy
 msgid "Get started by"
 msgstr "Not started"
 
-#: app/templates/pages/assessments/detail.html:104
+#: app/templates/pages/assessments/detail.html:113
 msgid "creating a control"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:104
+#: app/templates/pages/assessments/detail.html:113
 #: app/templates/pages/assessments/form.html:44
 #: app/templates/pages/evidence/form.html:130
 msgid "or"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:104
+#: app/templates/pages/assessments/detail.html:113
 msgid "importing from GitHub"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:114
+#: app/templates/pages/assessments/detail.html:123
 msgid "runs in AWS account ID"
 msgstr ""
 
-#: app/templates/pages/assessments/detail.html:116
+#: app/templates/pages/assessments/detail.html:125
 msgid "using the following services:"
 msgstr ""
 
@@ -389,8 +514,8 @@ msgid "Import"
 msgstr ""
 
 #: app/templates/pages/controls/detail.html:10
-#: app/templates/pages/controls/detail.html:40
-#: app/templates/pages/evidence/detail.html:66
+#: app/templates/pages/controls/detail.html:47
+#: app/templates/pages/evidence/detail.html:73
 msgid "Evidence"
 msgstr ""
 
@@ -399,23 +524,23 @@ msgstr ""
 msgid "Status:"
 msgstr ""
 
-#: app/templates/pages/controls/detail.html:26
-#: app/templates/pages/evidence/detail.html:27
+#: app/templates/pages/controls/detail.html:33
+#: app/templates/pages/evidence/detail.html:34
 #, fuzzy
 msgid "Assessment:"
 msgstr "Security Assessment"
 
-#: app/templates/pages/controls/detail.html:48
+#: app/templates/pages/controls/detail.html:55
 #: app/templates/pages/job_templates/list.html:19
 #, fuzzy
 msgid "Description"
 msgstr "This platform provides automated security assessment tools."
 
-#: app/templates/pages/controls/detail.html:49
+#: app/templates/pages/controls/detail.html:56
 msgid "Type"
 msgstr ""
 
-#: app/templates/pages/controls/detail.html:77
+#: app/templates/pages/controls/detail.html:95
 msgid "Add evidence"
 msgstr ""
 
@@ -453,6 +578,12 @@ msgstr ""
 msgid "Control description"
 msgstr "This platform provides automated security assessment tools."
 
+#: app/templates/pages/controls/form.html:63
+#: app/templates/pages/evidence/form.html:95
+#: app/templates/pages/evidence/form.html:119
+msgid "Status"
+msgstr ""
+
 #: app/templates/pages/errors/404.html:5
 msgid "Page not found"
 msgstr ""
@@ -469,48 +600,48 @@ msgstr ""
 msgid "Type:"
 msgstr ""
 
-#: app/templates/pages/evidence/detail.html:22
+#: app/templates/pages/evidence/detail.html:29
 msgid "AWS account ID:"
 msgstr ""
 
-#: app/templates/pages/evidence/detail.html:31
+#: app/templates/pages/evidence/detail.html:38
 msgid "Control:"
 msgstr ""
 
-#: app/templates/pages/evidence/detail.html:37
+#: app/templates/pages/evidence/detail.html:44
 #: app/templates/pages/evidence/form.html:104
 msgid "Files"
 msgstr ""
 
-#: app/templates/pages/evidence/detail.html:67
+#: app/templates/pages/evidence/detail.html:74
 msgid "of"
 msgstr ""
 
-#: app/templates/pages/evidence/detail.html:67
+#: app/templates/pages/evidence/detail.html:74
 msgid "rules compliant"
 msgstr ""
 
-#: app/templates/pages/evidence/detail.html:95
+#: app/templates/pages/evidence/detail.html:102
 msgid "Compliance chart"
 msgstr ""
 
-#: app/templates/pages/evidence/detail.html:103
+#: app/templates/pages/evidence/detail.html:110
 msgid "History"
 msgstr ""
 
-#: app/templates/pages/evidence/detail.html:108
+#: app/templates/pages/evidence/detail.html:115
 msgid "Scan"
 msgstr ""
 
-#: app/templates/pages/evidence/detail.html:109
+#: app/templates/pages/evidence/detail.html:116
 msgid "Started"
 msgstr ""
 
-#: app/templates/pages/evidence/detail.html:110
+#: app/templates/pages/evidence/detail.html:117
 msgid "Completed"
 msgstr ""
 
-#: app/templates/pages/evidence/detail.html:111
+#: app/templates/pages/evidence/detail.html:118
 msgid "Result"
 msgstr ""
 

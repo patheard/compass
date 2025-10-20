@@ -1,0 +1,107 @@
+# 
+# These are manually maintained and merged with extracted strings
+#
+msgid ""
+msgstr ""
+
+# AWS Resource types
+msgid "acm"
+msgstr ""
+
+msgid "api_gateway"
+msgstr ""
+
+msgid "alb"
+msgstr ""
+
+msgid "athena"
+msgstr ""
+
+msgid "cloudfront"
+msgstr ""
+
+msgid "cloudwatch"
+msgstr ""
+
+msgid "db_proxy"
+msgstr ""
+
+msgid "dynamodb"
+msgstr ""
+
+msgid "ecs"
+msgstr ""
+
+msgid "eks"
+msgstr ""
+
+msgid "iam"
+msgstr ""
+
+msgid "internet_gateway"
+msgstr ""
+
+msgid "kms"
+msgstr ""
+
+msgid "lambda"
+msgstr ""
+
+msgid "nat_gateway"
+msgstr ""
+
+msgid "network_acl"
+msgstr ""
+
+msgid "rds"
+msgstr ""
+
+msgid "route53"
+msgstr ""
+
+msgid "s3"
+msgstr ""
+
+msgid "secretsmanager"
+msgstr ""
+
+msgid "security_group"
+msgstr ""
+
+msgid "ses"
+msgstr ""
+
+msgid "sns"
+msgstr ""
+
+msgid "sqs"
+msgstr ""
+
+msgid "ssm_parameter"
+msgstr ""
+
+msgid "vpc"
+msgstr ""
+
+msgid "waf"
+msgstr ""
+
+# Compliance statuses
+msgid "partially_compliant"
+msgstr ""
+
+msgid "non_compliant"
+msgstr ""
+
+msgid "unknown"
+msgstr ""
+
+# Evidence types
+msgid "document"
+msgstr ""
+
+msgid "screenshot"
+msgstr ""
+
+msgid "other"
+msgstr ""
