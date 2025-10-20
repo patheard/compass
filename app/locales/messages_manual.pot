@@ -87,10 +87,16 @@ msgid "waf"
 msgstr ""
 
 # Compliance statuses
+msgid "compliant"
+msgstr ""
+
 msgid "partially_compliant"
 msgstr ""
 
 msgid "non_compliant"
+msgstr ""
+
+msgid "error"
 msgstr ""
 
 msgid "unknown"

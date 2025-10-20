@@ -10,7 +10,7 @@ from app.controls.services import ControlService
 from app.controls.validation import ControlRequest
 from app.assessments.base import CSRFTokenManager, format_validation_error
 from app.assessments.services import AssessmentService
-from app.constants import CONTROL_STATUSES
+from app.constants import CONTROL_STATUSES, EVIDENCE_STATUSES
 
 router = APIRouter(prefix="/assessments/{assessment_id}/controls", tags=["controls"])
 templates = LocalizedTemplates(directory="./app/templates")
@@ -171,6 +171,7 @@ async def control_detail_page(
                 "assessment": assessment,
                 "control": control,
                 "evidences": evidences,
+                "evidence_statuses": EVIDENCE_STATUSES,
                 "csrf_token": csrf_token,
                 "breadcrumbs": [
                     {"label": "Compass", "link": "/"},

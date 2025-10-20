@@ -4,7 +4,7 @@ import json
 from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.auth.middleware import require_authenticated_user
-from app.constants import ASSESSMENT_STATUSES, AWS_RESOURCES
+from app.constants import ASSESSMENT_STATUSES, AWS_RESOURCES, CONTROL_STATUSES
 from app.database.models.users import User
 from app.templates.utils import LocalizedTemplates
 from app.assessments.services import AssessmentService, GitHubService
@@ -156,6 +156,7 @@ async def assessment_detail_page(
                 "user": current_user,
                 "assessment": assessment,
                 "controls": controls,
+                "control_statuses": CONTROL_STATUSES,
                 "csrf_token": csrf_token,
                 "assessment_statuses": ASSESSMENT_STATUSES,
                 "breadcrumbs": [
