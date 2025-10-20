@@ -73,7 +73,6 @@
                 <tr>
                     <th class="w-10">{{ _('ID') }}</th>
                     <th>{{ _('Title') }}</th>
-                    <th class="w-20">{{ _('Status') }}</th>
                     <th class="w-10">{{ _('Actions') }}</th>
                 </tr>
             </thead>
@@ -81,10 +80,20 @@
                 {% for control in controls %}
                     <tr>
                         <td class="nowrap">
-                            <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}">{{ control.nist_control_id }}</gcds-link>
+                            <div class="d-flex align-content-start">
+                                <abbr title="{{ _(control.status) }}" class="icon me-150">
+                                    {% if control.status == 'compliant' %}✅
+                                    {% elif control.status == 'partially_compliant' %}⚠️
+                                    {% elif control.status == 'non_compliant' %}❌
+                                    {% else %}➖
+                                    {% endif %}
+                                </abbr>
+                                <span class="content">
+                                    <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}">{{ control.nist_control_id }}</gcds-link>
+                                </span>
+                            </div>
                         </td>
                         <td>{{ control.control_title | markdown_no_tags | truncate(100) }}</td>
-                        <td>{{ _(control.status) }}</td>
                         <td class="nowrap actions">
                             <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/edit"><img src="/static/img/edit.svg" title="{{ _('Edit') }}" alt="{{ _('Edit') }}"></gcds-link>
                             <gcds-link href="/assessments/{{ assessment.assessment_id }}/controls/{{ control.control_id }}/delete" data-csrf-token="{{ csrf_token }}" class="delete-item"><img src="/static/img/delete.svg" title="{{ _('Delete') }}" alt="{{ _('Delete') }}"></gcds-link>
