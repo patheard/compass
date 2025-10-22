@@ -151,7 +151,6 @@ class ChatClient {
                 break;
             case 'end':
                 this.isStreaming = false;
-                // Add action buttons if actions are present
                 if (data.actions && data.actions.length > 0 && this.currentAiMessage) {
                     this.addActionButtons(this.currentAiMessage, data.actions);
                 }
@@ -274,6 +273,7 @@ class ChatClient {
             this.elemLoading.classList.add('show');
         }, 500);
         try {
+            params.session_id = this.sessionId ?? undefined;
             const response = await fetch('/chat/action', {
                 method: 'POST',
                 headers: {
@@ -292,6 +292,8 @@ class ChatClient {
             }
 
             const result = await response.json();
+    
+            this.sessionId = result.data?.session_id;
             this.addMessage(result.message || 'Action completed successfully', 'llm');
 
             await reloadPageContent();

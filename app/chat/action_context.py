@@ -131,13 +131,29 @@ class ActionContext:
                 assessment=assessment_response,
             )
 
+            # Add custom evidence action (always available)
+            actions.append(
+                {
+                    "action_type": "add_custom_evidence",
+                    "label": "Add evidence",
+                    "description": "Describe the evidence you want to attach to this control",
+                    "params": {
+                        "control_id": control_id,
+                    },
+                }
+            )
+
             # Add available actions to context
             if actions:
-                context += "\nAutomated evidence that can be added:\n"
-                for action in actions:
-                    template_name = action["params"]["template_name"]
-                    template_desc = action["params"]["template_description"]
-                    context += f"- **{template_name}**: {template_desc}\n"
+                automated_actions = [
+                    a for a in actions if a["action_type"] == "add_evidence"
+                ]
+                if automated_actions:
+                    context += "\nAutomated evidence that can be added:\n"
+                    for action in automated_actions:
+                        template_name = action["params"]["template_name"]
+                        template_desc = action["params"]["template_description"]
+                        context += f"- **{template_name}**: {template_desc}\n"
 
             return context, actions
         except Exception as e:

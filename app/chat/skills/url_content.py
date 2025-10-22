@@ -1,25 +1,30 @@
-"""MCP client for fetching content from URLs in user messages."""
+"""Skill for fetching and providing URL content as context."""
 
 from __future__ import annotations
 
 import logging
 import re
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
 import httpx
 from bs4 import BeautifulSoup
 
-from app.chat.mcp_clients.base import BaseMCPClient, MCPContext
+from app.chat.skills.base import Action, AgentSkill, SkillContext, SkillResult
 
 logger = logging.getLogger(__name__)
 
 
-class URLContentMCPClient(BaseMCPClient):
-    """MCP client that detects URLs and fetches their content.
+class URLContentSkill(AgentSkill):
+    """Skill that detects URLs in messages and fetches their content.
 
-    When a URL is found in the user's message, this client fetches
-    the content and provides it as context for the LLM.
+    This skill does not provide user-facing actions. Instead, it enriches
+    the conversation context by fetching content from URLs mentioned in
+    user messages.
     """
+
+    name = "url_content"
+    description = "Fetch content from URLs mentioned in messages"
+    action_types: List[str] = []  # No user actions
 
     URL_PATTERN = re.compile(r"https://[^\s]+")
 
@@ -30,37 +35,47 @@ class URLContentMCPClient(BaseMCPClient):
         timeout: int = 3,
         max_urls: int = 5,
     ) -> None:
-        """Initialize the URL content MCP client.
+        """Initialize the URL content skill.
 
         Args:
-            enabled: Whether this client is enabled
+            enabled: Whether this skill is enabled
             max_content_length: Maximum characters to extract from URL
             timeout: HTTP request timeout in seconds
             max_urls: Maximum number of URLs to fetch content from
         """
-        super().__init__(enabled=enabled)
+        self.enabled = enabled
         self.max_content_length = max_content_length
         self.timeout = timeout
         self.max_urls = max_urls
 
-    @property
-    def name(self) -> str:
-        """Return the name of this MCP client."""
-        return "url_content"
+    async def can_execute(
+        self, action_type: str, params: Dict[str, Any], context: SkillContext
+    ) -> bool:
+        """This skill does not handle actions."""
+        return False
 
-    async def process(
-        self, user_message: str, user_id: str, **kwargs: Any
-    ) -> Optional[MCPContext]:
-        """Process user message and fetch URL content if found.
+    async def execute(
+        self, action_type: str, params: Dict[str, Any], context: SkillContext
+    ) -> SkillResult:
+        """This skill does not execute actions."""
+        return SkillResult(success=False, message="No actions available")
+
+    async def get_available_actions(self, context: SkillContext) -> List[Action]:
+        """This skill provides no user actions."""
+        return []
+
+    async def fetch_url_content_from_message(self, user_message: str) -> Optional[str]:
+        """Extract URLs from message and fetch their content.
 
         Args:
             user_message: The user's message text
-            user_id: The user ID
-            **kwargs: Additional context
 
         Returns:
-            MCPContext with URL content if URL found, None otherwise
+            Combined content from all URLs, or None if no URLs found
         """
+        if not self.enabled:
+            return None
+
         urls = self._extract_urls(user_message)
         if not urls:
             return None
@@ -82,19 +97,9 @@ class URLContentMCPClient(BaseMCPClient):
             return None
 
         # Combine all fetched content
-        combined_content = "\n\n---\n\n".join(contents)
+        return "\n\n---\n\n".join(contents)
 
-        return MCPContext(
-            content=combined_content,
-            metadata={
-                "urls_fetched": urls_to_fetch,
-                "urls_found": urls,
-                "fetch_count": len(contents),
-            },
-            client_name=self.name,
-        )
-
-    def _extract_urls(self, text: str) -> list[str]:
+    def _extract_urls(self, text: str) -> List[str]:
         """Extract URLs from text.
 
         Args:

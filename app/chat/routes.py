@@ -15,21 +15,23 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from app.auth.middleware import get_user_from_session
 from app.auth.websocket import get_websocket_auth
+from app.controls.services import ControlService
 from app.database.models.users import User
 from app.chat.services import ChatStreamingService
-from app.chat.mcp_clients.aws_resource_scanner import AWSResourceScannerClient
-from app.chat.action_context import ActionContext
-from app.evidence.services import EvidenceService
-from app.evidence.validation import EvidenceRequest
-from app.assessments.services import AssessmentService
+from app.chat.skills import (
+    create_skill_registry,
+    SkillContextFactory,
+    ConversationState,
+)
 from app.assessments.base import CSRFTokenManager
-from app.assessments.validation import AssessmentRequest
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 logger = logging.getLogger(__name__)
 chat_service = ChatStreamingService()
+control_service = ControlService()
 csrf_manager = CSRFTokenManager()
-action_context = ActionContext()
+skill_registry = create_skill_registry()
+skill_context_factory = SkillContextFactory()
 
 
 class ChatMessage(BaseModel):
@@ -46,6 +48,13 @@ class ChatAction(BaseModel):
 
     action_type: str
     params: Dict[str, Any]
+
+
+class EvidenceDescriptionRequest(BaseModel):
+    """Request model for evidence description parsing."""
+
+    control_id: str
+    description: str
 
 
 @router.post("/response")
@@ -80,11 +89,24 @@ async def get_context_actions(
     if not current_user:
         raise HTTPException(status_code=401, detail="Authentication required")
 
-    context_text, actions = await action_context.get_context_and_actions(
-        current_url, current_user.user_id
+    # Build context for skill discovery
+    context = await skill_context_factory.create(
+        user=current_user,
+        current_url=current_url,
     )
 
-    return JSONResponse(content={"context": context_text, "actions": actions})
+    # Get all available actions from skills
+    actions = await skill_registry.get_all_available_actions(context)
+
+    # Convert actions to dicts for JSON serialization
+    actions_dict = [action.to_dict() for action in actions]
+
+    # Build context text (optional - for backwards compatibility)
+    context_text = ""
+    if actions_dict:
+        context_text = "The following actions are available:"
+
+    return JSONResponse(content={"context": context_text, "actions": actions_dict})
 
 
 @router.websocket("/ws")
@@ -139,7 +161,7 @@ async def execute_chat_action(
     action: ChatAction,
     current_user: Optional[User] = Depends(get_user_from_session),
 ) -> JSONResponse:
-    """Execute a chat action on behalf of the authenticated user."""
+    """Execute a chat action through the skill registry."""
     # Require authentication
     if not current_user:
         raise HTTPException(status_code=401, detail="Authentication required")
@@ -154,117 +176,108 @@ async def execute_chat_action(
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
     try:
-        if action.action_type == "add_evidence":
-            # Execute add_evidence action
-            result = await _execute_add_evidence_action(
-                action.params, current_user.user_id
-            )
-            return JSONResponse(
-                content={"success": True, "message": result["message"], "data": result}
-            )
-        elif action.action_type == "identify_aws_resources":
-            # Execute identify_aws_resources action
-            result = await _execute_identify_aws_resources_action(
-                action.params, current_user.user_id
-            )
-            return JSONResponse(
-                content={"success": True, "message": result["message"], "data": result}
-            )
-        else:
+        # Build context
+        context = await skill_context_factory.create(
+            user=current_user,
+            session_id=action.params.get("session_id"),
+            current_url=action.params.get("current_url"),
+            csrf_token=csrf_token,
+        )
+
+        # Find and execute skill
+        skill = await skill_registry.find_skill(
+            action.action_type,
+            action.params,
+            context,
+        )
+
+        if not skill:
             raise HTTPException(
-                status_code=400, detail=f"Unknown action type: {action.action_type}"
+                status_code=400,
+                detail=f"No skill found for action: {action.action_type}",
             )
+
+        result = await skill.execute(
+            action.action_type,
+            action.params,
+            context,
+        )
+
+        # Handle conversation state
+        if result.conversation_state:
+            state_action = ConversationState.create_state_action(
+                result.conversation_state
+            )
+            await context.repository.append_message(
+                user_id=current_user.user_id,
+                session_id=context.session_id,
+                role="assistant",
+                content=result.message,
+                actions=[state_action.to_dict()],
+            )
+
+        # Convert actions to dicts for JSON serialization
+        actions_dict = None
+        if result.actions:
+            actions_dict = [action.to_dict() for action in result.actions]
+
+        # Ensure data dict exists and includes session_id
+        response_data = result.data or {}
+        response_data["session_id"] = context.session_id
+
+        return JSONResponse(
+            content={
+                "success": result.success,
+                "message": result.message,
+                "data": response_data,
+                "actions": actions_dict,
+            }
+        )
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception(f"Error executing chat action: {e}")
+        logger.exception(f"Error executing action: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/evidence/parse")
+async def parse_evidence_description(
+    evidence_request: EvidenceDescriptionRequest,
+    current_user: Optional[User] = Depends(get_user_from_session),
+) -> JSONResponse:
+    """Parse natural language evidence description into structured data."""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+
+    try:
+        control = control_service.get_control(
+            evidence_request.control_id, current_user.user_id
+        )
+
+        if not control:
+            raise HTTPException(status_code=404, detail="Control not found")
+
+        control_info = (
+            f"{control.nist_control_id}: {control.control_title}\n{control.description}"
+        )
+
+        # Parse the evidence description
+        parsed_evidence = await chat_service.parse_evidence_description(
+            evidence_request.description, control_info
+        )
+
+        return JSONResponse(
+            content={
+                "success": True,
+                "evidence": parsed_evidence,
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error parsing evidence description: {e}")
         raise HTTPException(
-            status_code=500, detail=f"Failed to execute action: {str(e)}"
+            status_code=500, detail=f"Failed to parse evidence description: {str(e)}"
         )
-
-
-async def _execute_add_evidence_action(
-    params: Dict[str, Any], user_id: str
-) -> Dict[str, Any]:
-    """Execute the add_evidence action."""
-    # Validate required parameters
-    required_params = ["control_id", "evidence_type", "title", "description"]
-    for param in required_params:
-        if param not in params:
-            raise HTTPException(
-                status_code=400, detail=f"Missing required parameter: {param}"
-            )
-
-    control_id = params["control_id"]
-    evidence_type = params["evidence_type"]
-    title = params["title"]
-    description = params["description"]
-    job_template_id = params.get("job_template_id")
-    aws_account_id = params.get("aws_account_id")
-
-    # Create evidence request
-    evidence_data = EvidenceRequest(
-        title=title,
-        description=description,
-        evidence_type=evidence_type,
-        job_template_id=job_template_id,
-        aws_account_id=aws_account_id,
-    )
-
-    # Use evidence service to create evidence
-    evidence_service = EvidenceService()
-    evidence = evidence_service.create_evidence(control_id, user_id, evidence_data)
-
-    return {
-        "message": f"Added **{title}** evidence to the control",
-        "evidence_id": evidence.evidence_id,
-        "control_id": control_id,
-    }
-
-
-async def _execute_identify_aws_resources_action(
-    params: Dict[str, Any], user_id: str
-) -> Dict[str, Any]:
-    """Execute the identify_aws_resources action."""
-    # Validate required parameters
-    if "assessment_id" not in params:
-        raise HTTPException(
-            status_code=400, detail="Missing required parameter: assessment_id"
-        )
-
-    assessment_id = params["assessment_id"]
-
-    # Use AWS resource scanner to identify resources
-    scanner = AWSResourceScannerClient()
-    mcp_context = await scanner.process(
-        user_message="", user_id=user_id, action="identify_aws_resources"
-    )
-
-    aws_resources = []
-    if mcp_context:
-        aws_resources = mcp_context.metadata.get("resources", [])
-
-    if aws_resources:
-        assessment_service = AssessmentService()
-        assessment = assessment_service.get_assessment(assessment_id, user_id)
-
-        if not assessment:
-            raise HTTPException(status_code=404, detail="Assessment not found")
-
-        update_data = AssessmentRequest(
-            product_name=assessment.product_name,
-            product_description=assessment.product_description,
-            status=assessment.status,
-            aws_account_id=assessment.aws_account_id,
-            github_repo_controls=assessment.github_repo_controls,
-            aws_resources=aws_resources,
-        )
-
-        assessment_service.update_assessment(assessment_id, user_id, update_data)
-
-    return {
-        "message": f"Identified {len(aws_resources)} AWS services",
-        "assessment_id": assessment_id,
-        "aws_resources": aws_resources,
-    }

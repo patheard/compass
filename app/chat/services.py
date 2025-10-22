@@ -11,13 +11,45 @@ import boto3
 from fastapi import WebSocket
 from openai import AsyncAzureOpenAI
 
-from app.chat.action_context import ActionContext
-from app.chat.mcp_clients import BaseMCPClient, URLContentMCPClient
 from app.chat.repository import ChatHistoryRepository
+from app.chat.skills import (
+    SkillContextFactory,
+    SkillRegistry,
+    ConversationState,
+    URLContentSkill,
+    create_skill_registry,
+)
 from app.database.models.chat_sessions import ChatSessionMessage
 from app.database.models.users import User
 
 logger = logging.getLogger(__name__)
+
+
+class StreamWithActions:
+    """Wrapper for async generator that also holds actions."""
+
+    def __init__(
+        self,
+        generator: AsyncGenerator[str, None],
+        actions_container: Dict[str, Optional[List[Dict[str, Any]]]],
+    ):
+        self.generator = generator
+        self.actions_container = actions_container
+
+    @property
+    def actions(self) -> Optional[List[Dict[str, Any]]]:
+        """Get actions from the container."""
+        return self.actions_container.get("actions")
+
+    def __aiter__(self):
+        return self.generator.__aiter__()
+
+    async def __anext__(self):
+        return await self.generator.__anext__()
+
+    async def aclose(self):
+        if hasattr(self.generator, "aclose"):
+            await self.generator.aclose()
 
 
 class ChatStreamingService:
@@ -28,7 +60,7 @@ class ChatStreamingService:
         "Authorization process. This process involves evaluating NIST 800-53 revision 5 "
         "controls and documenting how the system meets each control. Use concise language "
         "and provide accurate information.\n\n"
-        "When a URL is provided the contents of the page will be retrieved and provided as "
+        "When a URL is provided, the contents of the page will be retrieved and provided as "
         "context to help answer questions more accurately.\n\n"
         "When unsure, suggest consulting a professional. Never make up answers. "
         "Always respond using markdown.\n\n"
@@ -39,7 +71,9 @@ class ChatStreamingService:
     def __init__(
         self,
         repository: Optional[ChatHistoryRepository] = None,
-        mcp_clients: Optional[List[BaseMCPClient]] = None,
+        skill_registry: Optional[SkillRegistry] = None,
+        skill_context_factory: Optional[SkillContextFactory] = None,
+        url_content_skill: Optional[URLContentSkill] = None,
     ) -> None:
         """Initialize the chat streaming service."""
         self.azure_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
@@ -56,7 +90,10 @@ class ChatStreamingService:
         self.s3_vector_region = os.environ.get("S3_VECTOR_REGION")
         self.s3_vector_top_k = int(os.environ.get("S3_VECTOR_TOP_K", "3"))
         self.repository = repository or ChatHistoryRepository()
-        self.action_context = ActionContext()
+        self.skill_registry = skill_registry or create_skill_registry()
+        self.skill_context_factory = skill_context_factory or SkillContextFactory(
+            repository=self.repository
+        )
         self.max_history_tokens = int(os.environ.get("CHAT_HISTORY_MAX_TOKENS", "2500"))
         self.max_history_messages = int(
             os.environ.get("CHAT_HISTORY_MAX_MESSAGES", "20")
@@ -64,8 +101,8 @@ class ChatStreamingService:
         self.s3_vectors_client = boto3.client(
             "s3vectors", region_name=self.s3_vector_region
         )
-        # Initialize MCP clients with default URLContentMCPClient
-        self.mcp_clients = mcp_clients or [URLContentMCPClient()]
+        # Initialize URL content skill
+        self.url_content_skill = url_content_skill or URLContentSkill()
 
     async def stream_response(
         self,
@@ -93,12 +130,38 @@ class ChatStreamingService:
         if client is None:
             raise RuntimeError("Azure OpenAI client not configured")
 
+        # Use a mutable container to store actions that can be updated from within the generator
+        actions_container: Dict[str, Optional[List[Dict[str, Any]]]] = {"actions": None}
+
         async def _generator() -> AsyncGenerator[str, None]:
             assistant_chunks: List[str] = []
             if client is None:
                 logger.error(
                     "Azure OpenAI client is not configured; no response will be streamed."
                 )
+                return
+
+            # If messages is empty, the conversation was handled by a special handler
+            # (e.g., evidence conversation) and response is already persisted
+            # We need to retrieve the last assistant message and stream it
+            if not messages:
+                # Get the last assistant message from history
+                window = await self.repository.load_recent_history(
+                    user_id=user.user_id,
+                    session_id=session_id,
+                    max_tokens=1000,
+                    max_messages=1,
+                )
+                if window.messages:
+                    last_message = window.messages[-1]
+                    if last_message.role == "assistant":
+                        # Stream the already-persisted response
+                        yield last_message.content
+                        # Store actions for later retrieval
+                        actions_container["actions"] = last_message.get_actions()
+                        logger.info(
+                            f"Retrieved actions from last message: {actions_container['actions']}"
+                        )
                 return
 
             try:
@@ -132,7 +195,9 @@ class ChatStreamingService:
                             "Failed to persist assistant response: %s", exc
                         )
 
-        return session_id, _generator()
+        # Wrap the generator with actions container reference
+        wrapped_generator = StreamWithActions(_generator(), actions_container)
+        return session_id, wrapped_generator
 
     async def stream_to_websocket(
         self,
@@ -172,13 +237,20 @@ class ChatStreamingService:
                     )
                 )
 
-            # Send `end` message
+            # Get actions from generator if available
+            actions = None
+            if isinstance(response_stream, StreamWithActions):
+                actions = response_stream.actions
+                logger.info(f"Actions to send in WebSocket end message: {actions}")
+
+            # Send `end` message with actions
             await websocket.send_text(
                 json.dumps(
                     {
                         "type": "end",
                         "content": "",
                         "session_id": stream_session_id,
+                        "actions": actions,
                     }
                 )
             )
@@ -231,9 +303,15 @@ class ChatStreamingService:
 
         full_response = "".join(chunks)
 
+        # Get actions from generator if available
+        actions = None
+        if isinstance(response_stream, StreamWithActions):
+            actions = response_stream.actions
+
         return {
             "session_id": resolved_session_id,
             "message": full_response,
+            "actions": actions,
         }
 
     # ------------------------------------------------------------------
@@ -326,43 +404,25 @@ class ChatStreamingService:
             api_version=self.azure_api_version,
         )
 
-    async def _process_mcp_clients(
-        self,
-        user_message: str,
-        user_id: str,
-        session_id: Optional[str] = None,
-        current_url: Optional[str] = None,
-    ) -> List[Any]:
-        """Process all MCP clients and collect their contexts.
+    async def _fetch_url_content(self, user_message: str) -> Optional[str]:
+        """Fetch URL content from user message using URL content skill.
 
         Args:
             user_message: The user's message
-            user_id: The user ID
-            session_id: The session ID
-            current_url: The current URL
 
         Returns:
-            List of MCPContext objects from clients that provided context
+            URL content string or None
         """
-        contexts = []
-        for client in self.mcp_clients:
-            try:
-                context = await client(
-                    user_message=user_message,
-                    user_id=user_id,
-                    session_id=session_id,
-                    current_url=current_url,
-                )
-                if context:
-                    contexts.append(context)
-                    logger.info(
-                        f"MCP client '{client.name}' added context: {context.metadata}"
-                    )
-            except Exception as exc:
-                logger.exception(f"Error processing MCP client '{client.name}': {exc}")
-                continue
-
-        return contexts
+        try:
+            content = await self.url_content_skill.fetch_url_content_from_message(
+                user_message
+            )
+            if content:
+                logger.info("URL content skill added context from URLs")
+            return content
+        except Exception as exc:
+            logger.exception(f"Error fetching URL content: {exc}")
+            return None
 
     async def _prepare_session_messages(
         self,
@@ -383,19 +443,79 @@ class ChatStreamingService:
             session_id=session_id,
         )
 
-        # Get context and actions based on current URL
-        context, actions = await self.action_context.get_context_and_actions(
-            current_url, user.user_id
-        )
-
-        # Build system prompt with context and actions
-        system_prompt = self.build_system_prompt(context, current_page, actions)
-
+        # Check for conversation state in recent history
         window = await self.repository.load_recent_history(
             user_id=user.user_id,
             session_id=session_id,
-            max_tokens=self.max_history_tokens,
-            max_messages=self.max_history_messages,
+            max_tokens=500,
+            max_messages=5,
+        )
+
+        conversation_state = ConversationState.from_history(window.messages)
+
+        if conversation_state:
+            # Handle skill-based conversation
+            skill_name = conversation_state.get("skill")
+            skill = self.skill_registry.get_skill_by_name(skill_name)
+
+            if skill:
+                # Build context for skill
+                context = await self.skill_context_factory.create(
+                    user=user,
+                    session_id=session_id,
+                    current_url=current_url,
+                    conversation_history=window.messages,
+                )
+
+                # Persist user message
+                await self.repository.append_message(
+                    user_id=user.user_id,
+                    session_id=session_id,
+                    role="user",
+                    content=user_message,
+                )
+
+                # Let skill handle the conversation
+                result = await skill.handle_conversation(
+                    user_message=user_message,
+                    state=conversation_state,
+                    context=context,
+                )
+
+                # Persist response with actions
+                actions_dict = None
+                if result.actions:
+                    actions_dict = [action.to_dict() for action in result.actions]
+
+                await self.repository.append_message(
+                    user_id=user.user_id,
+                    session_id=session_id,
+                    role="assistant",
+                    content=result.message,
+                    actions=actions_dict,
+                )
+
+                # Return empty messages to bypass OpenAI
+                return session_id, [], []
+
+        # Build context for skill discovery
+        context = await self.skill_context_factory.create(
+            user=user,
+            session_id=session_id,
+            current_url=current_url,
+        )
+
+        # Get available actions from skills
+        actions = await self.skill_registry.get_all_available_actions(context)
+        actions_dict = [action.to_dict() for action in actions]
+
+        # Build system prompt with context and actions
+        context_text = ""
+        if actions_dict:
+            context_text = "Available actions for user"
+
+        system_prompt = self.build_system_prompt(
+            context_text, current_page, actions_dict
         )
 
         history_messages = ChatSessionMessage.serialize_history(window.messages)
@@ -420,13 +540,8 @@ class ChatStreamingService:
                     v.get("metadata", {}).get("chunk_text", "") for v in vectors
                 )
 
-        # Process MCP clients for additional context
-        mcp_contexts = await self._process_mcp_clients(
-            user_message=user_message,
-            user_id=user.user_id,
-            session_id=session_id,
-            current_url=current_url,
-        )
+        # Fetch URL content if any URLs in message
+        url_content = await self._fetch_url_content(user_message)
 
         messages: List[Dict[str, Any]] = [
             {
@@ -443,21 +558,18 @@ class ChatStreamingService:
                 }
             )
 
-        # Add MCP client contexts as system messages
-        for mcp_context in mcp_contexts:
+        # Add URL content as system message
+        if url_content:
             messages.append(
                 {
                     "role": "system",
-                    "content": (
-                        f"Additional context from {mcp_context.client_name}:\n"
-                        f"{mcp_context.content}"
-                    ),
+                    "content": f"Additional context from URLs in message:\n{url_content}",
                 }
             )
 
         messages.extend(history_messages)
 
-        return session_id, messages, actions
+        return session_id, messages, actions_dict
 
     @staticmethod
     def _extract_chunk_content(chunk: Any) -> Optional[str]:

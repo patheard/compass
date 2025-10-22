@@ -1,28 +1,31 @@
-"""AWS resource scanner MCP client for identifying resources in Terraform files."""
-
-from __future__ import annotations
+"""Skill for scanning AWS resources from Terraform files."""
 
 import logging
 import os
 import re
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Set
 
 import boto3
 
-from app.chat.mcp_clients.base import BaseMCPClient, MCPContext
+from app.assessments.validation import AssessmentRequest
+from app.chat.skills.base import Action, AgentSkill, SkillContext, SkillResult
 from app.constants import AWS_RESOURCES
 
 logger = logging.getLogger(__name__)
 
 
-class AWSResourceScannerClient(BaseMCPClient):
-    """MCP client for scanning AWS resources from Terraform files in S3 vectors."""
+class AWSResourceScannerSkill(AgentSkill):
+    """Skill for scanning Terraform files to identify AWS services."""
 
+    name = "aws_scanner"
+    description = "Scan Terraform files to identify AWS services"
+    action_types = ["identify_aws_resources"]
+
+    # Terraform resource pattern
     RESOURCE_PATTERN = re.compile(r'resource\s+"(aws_[^"]+)"')
 
-    def __init__(self, enabled: bool = True) -> None:
-        """Initialize AWS resource scanner client."""
-        super().__init__(enabled)
+    def __init__(self) -> None:
+        """Initialize AWS resource scanner skill."""
         self.s3_vector_bucket = os.environ.get("S3_VECTOR_BUCKET_NAME")
         self.s3_vector_index = os.environ.get("S3_VECTOR_INDEX_NAME")
         self.s3_vector_region = os.environ.get("S3_VECTOR_REGION")
@@ -30,64 +33,96 @@ class AWSResourceScannerClient(BaseMCPClient):
             "s3vectors", region_name=self.s3_vector_region
         )
 
-    @property
-    def name(self) -> str:
-        """Return the name of this MCP client."""
-        return "aws_resource_scanner"
+    async def can_execute(
+        self, action_type: str, params: Dict[str, Any], context: SkillContext
+    ) -> bool:
+        """Check if this skill can handle the action."""
+        return action_type == "identify_aws_resources"
 
-    async def process(
-        self, user_message: str, user_id: str, **kwargs: Any
-    ) -> Optional[MCPContext]:
-        """Process user message and return AWS resource context if requested.
-
-        Only returns context if the user explicitly requests resource identification.
-        This is determined by checking if 'identify_aws_resources' action is set.
-
-        Args:
-            user_message: The user's message text
-            user_id: The user ID
-            **kwargs: Additional context, including 'action' to check for explicit request
-
-        Returns:
-            MCPContext with identified AWS resources if requested, None otherwise
-        """
-        action = kwargs.get("action")
-
-        # Only process if explicitly requested via action
-        if action != "identify_aws_resources":
-            return None
+    async def execute(
+        self, action_type: str, params: Dict[str, Any], context: SkillContext
+    ) -> SkillResult:
+        """Execute the AWS resource scanning."""
+        assessment_id = params.get("assessment_id")
+        if not assessment_id:
+            return SkillResult(success=False, message="Missing assessment_id")
 
         try:
-            resources = await self._identify_aws_resources()
+            # Identify AWS resources from Terraform files
+            aws_resources = await self._identify_aws_resources()
 
-            if not resources:
-                return MCPContext(
-                    content="No AWS resources found in Terraform files.",
-                    metadata={"resource_count": 0, "resources": []},
-                    client_name=self.name,
+            # Update assessment with discovered resources
+            if aws_resources:
+                assessment = context.assessment_service.get_assessment(
+                    assessment_id, context.user_id
                 )
 
-            content = self._format_resource_list(resources)
+                if not assessment:
+                    return SkillResult(success=False, message="Assessment not found")
 
-            return MCPContext(
-                content=content,
-                metadata={
-                    "resource_count": len(resources),
-                    "resources": resources,
+                update_data = AssessmentRequest(
+                    product_name=assessment.product_name,
+                    product_description=assessment.product_description,
+                    status=assessment.status,
+                    aws_account_id=assessment.aws_account_id,
+                    github_repo_controls=assessment.github_repo_controls,
+                    aws_resources=aws_resources,
+                )
+
+                context.assessment_service.update_assessment(
+                    assessment_id, context.user_id, update_data
+                )
+
+            return SkillResult(
+                success=True,
+                message=f"Identified {len(aws_resources)} AWS services",
+                data={
+                    "assessment_id": assessment_id,
+                    "aws_resources": aws_resources,
                 },
-                client_name=self.name,
+                reload_page=True,
             )
 
         except Exception as e:
-            logger.exception(f"Error in AWS resource scanner: {e}")
-            return None
+            logger.exception(f"Error scanning AWS resources: {e}")
+            return SkillResult(success=False, message="Failed to scan AWS resources")
+
+    async def get_available_actions(self, context: SkillContext) -> List[Action]:
+        """Return scan action if on assessment page with AWS account."""
+        actions: List[Action] = []
+
+        # Check if on assessment page
+        assessment_match = re.search(
+            r"/assessments/([a-f0-9-]+)$",
+            context.current_url or "",
+        )
+
+        if assessment_match:
+            assessment_id = assessment_match.group(1)
+            try:
+                assessment = context.assessment_service.get_assessment(
+                    assessment_id, context.user_id
+                )
+
+                if assessment and assessment.aws_account_id:
+                    actions.append(
+                        Action(
+                            action_type="identify_aws_resources",
+                            label="Identify AWS services",
+                            description="Scan Terraform files to identify AWS services",
+                            params={"assessment_id": assessment_id},
+                        )
+                    )
+            except Exception as e:
+                logger.exception(f"Error checking assessment for AWS scanner: {e}")
+
+        return actions
 
     async def _identify_aws_resources(self) -> List[str]:
         """Identify AWS services from Terraform files in S3 vectors.
 
         Returns:
-            List of AWS service names from the AWS_RESOURCES constant that match
-            the resources found in Terraform files.
+            List of AWS service names that match the resources found in Terraform files.
         """
         terraform_chunks = self._query_terraform_files()
         if not terraform_chunks:
@@ -181,15 +216,3 @@ class AWSResourceScannerClient(BaseMCPClient):
 
         logger.info(f"Matched {len(matched)} resources against AWS_RESOURCES constant")
         return list(matched)
-
-    def _format_resource_list(self, resources: List[str]) -> str:
-        """Format the resource list for display.
-
-        Args:
-            resources: List of AWS resource names
-
-        Returns:
-            Formatted string of resources
-        """
-        resource_list = "\n".join(f"- {resource}" for resource in resources)
-        return f"Identified {len(resources)} AWS resources:\n\n{resource_list}"
