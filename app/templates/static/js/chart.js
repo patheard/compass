@@ -37,8 +37,8 @@ function initComplianceChart(canvas) {
         'insufficient_data': '#1f58f6ff',
         'not_applicable': '#898989ff',
         'partially_compliant': '#f9c700ff',
-        'pending': '#898989ff',
-        'unknown': '#898989ff',
+        'pending': '#d6d9dd',
+        'unknown': '#d6d9dd',
     };
 
     // Primary order defined by labelColorMap, then any extra labels encountered.
