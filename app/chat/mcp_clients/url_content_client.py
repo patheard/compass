@@ -81,8 +81,6 @@ class URLContentMCPClient(BaseMCPClient):
         if not contents:
             return None
 
-        print(contents)
-
         # Combine all fetched content
         combined_content = "\n\n---\n\n".join(contents)
 
