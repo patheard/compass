@@ -32,7 +32,7 @@ function initComplianceChart(canvas) {
     // Map compliance labels to colors so the chart reflects semantic categories.
     const labelColorMap = {
         'compliant': '#2e8540',
-        'non_compliant': '#f9c700ff',
+        'non_compliant': '#f97400ff',
         'error': '#cb0f0fff',
         'insufficient_data': '#1f58f6ff',
         'not_applicable': '#898989ff',
@@ -66,8 +66,16 @@ function initComplianceChart(canvas) {
                 legend: {
                     position: 'bottom',
                     labels: {
-                        filter: (legendItem, data) => data.datasets[0].data[legendItem.index] != 0
-                    }
+                        filter: (legendItem, data) => data.datasets[0].data[legendItem.index] != 0,
+                        boxWidth: 20,
+                        padding: 10,
+                    },
+                    maxWidth: null
+                }
+            },
+            layout: {
+                padding: {
+                    bottom: 10
                 }
             }
         }
