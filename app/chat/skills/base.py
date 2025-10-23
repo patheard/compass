@@ -133,3 +133,31 @@ class AgentSkill(ABC):
             success=False,
             message="This skill does not support conversation handling",
         )
+
+    async def should_enhance_prompt(
+        self, user_message: str, context: SkillContext
+    ) -> bool:
+        """Determine if this skill should enhance the system prompt.
+
+        Args:
+            user_message: User's message
+            context: Skill context
+
+        Returns:
+            True if this skill can enhance the prompt for this message
+        """
+        return False
+
+    async def get_prompt_enhancement(
+        self, user_message: str, context: SkillContext
+    ) -> Optional[str]:
+        """Get content to add to system prompt.
+
+        Args:
+            user_message: User's message
+            context: Skill context
+
+        Returns:
+            Content to add to system prompt, or None
+        """
+        return None

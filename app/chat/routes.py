@@ -100,11 +100,7 @@ async def get_context_actions(
 
     # Convert actions to dicts for JSON serialization
     actions_dict = [action.to_dict() for action in actions]
-
-    # Build context text (optional - for backwards compatibility)
-    context_text = ""
-    if actions_dict:
-        context_text = "The following actions are available:"
+    context_text = "The following actions are available:" if actions_dict else ""
 
     return JSONResponse(content={"context": context_text, "actions": actions_dict})
 
@@ -239,45 +235,3 @@ async def execute_chat_action(
     except Exception as e:
         logger.exception(f"Error executing action: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/evidence/parse")
-async def parse_evidence_description(
-    evidence_request: EvidenceDescriptionRequest,
-    current_user: Optional[User] = Depends(get_user_from_session),
-) -> JSONResponse:
-    """Parse natural language evidence description into structured data."""
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Authentication required")
-
-    try:
-        control = control_service.get_control(
-            evidence_request.control_id, current_user.user_id
-        )
-
-        if not control:
-            raise HTTPException(status_code=404, detail="Control not found")
-
-        control_info = (
-            f"{control.nist_control_id}: {control.control_title}\n{control.description}"
-        )
-
-        # Parse the evidence description
-        parsed_evidence = await chat_service.parse_evidence_description(
-            evidence_request.description, control_info
-        )
-
-        return JSONResponse(
-            content={
-                "success": True,
-                "evidence": parsed_evidence,
-            }
-        )
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.exception(f"Error parsing evidence description: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to parse evidence description: {str(e)}"
-        )

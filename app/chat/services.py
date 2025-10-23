@@ -16,7 +16,6 @@ from app.chat.skills import (
     SkillContextFactory,
     SkillRegistry,
     ConversationState,
-    URLContentSkill,
     create_skill_registry,
 )
 from app.database.models.chat_sessions import ChatSessionMessage
@@ -73,7 +72,6 @@ class ChatStreamingService:
         repository: Optional[ChatHistoryRepository] = None,
         skill_registry: Optional[SkillRegistry] = None,
         skill_context_factory: Optional[SkillContextFactory] = None,
-        url_content_skill: Optional[URLContentSkill] = None,
     ) -> None:
         """Initialize the chat streaming service."""
         self.azure_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
@@ -101,8 +99,6 @@ class ChatStreamingService:
         self.s3_vectors_client = boto3.client(
             "s3vectors", region_name=self.s3_vector_region
         )
-        # Initialize URL content skill
-        self.url_content_skill = url_content_skill or URLContentSkill()
 
     async def stream_response(
         self,
@@ -338,16 +334,6 @@ class ChatStreamingService:
         if current_page:
             prompt += f"Current page content:\n{current_page}\n\n"
 
-        if actions:
-            prompt += (
-                "The following actions are available for the user to perform. "
-                "When the user asks about adding evidence or checking compliance, "
-                "you can suggest these actions:\n"
-            )
-            for idx, action in enumerate(actions, 1):
-                prompt += f"{idx}. {action['label']}: {action['description']}\n"
-            prompt += "\n"
-
         return prompt
 
     async def _generate_embeddings(self, text: str) -> Optional[List[float]]:
@@ -403,26 +389,6 @@ class ChatStreamingService:
             api_key=self.azure_api_key,
             api_version=self.azure_api_version,
         )
-
-    async def _fetch_url_content(self, user_message: str) -> Optional[str]:
-        """Fetch URL content from user message using URL content skill.
-
-        Args:
-            user_message: The user's message
-
-        Returns:
-            URL content string or None
-        """
-        try:
-            content = await self.url_content_skill.fetch_url_content_from_message(
-                user_message
-            )
-            if content:
-                logger.info("URL content skill added context from URLs")
-            return content
-        except Exception as exc:
-            logger.exception(f"Error fetching URL content: {exc}")
-            return None
 
     async def _prepare_session_messages(
         self,
@@ -540,8 +506,10 @@ class ChatStreamingService:
                     v.get("metadata", {}).get("chunk_text", "") for v in vectors
                 )
 
-        # Fetch URL content if any URLs in message
-        url_content = await self._fetch_url_content(user_message)
+        # Get prompt enhancements from skills based on user message
+        skill_enhancements = await self.skill_registry.get_prompt_enhancements(
+            user_message, context
+        )
 
         messages: List[Dict[str, Any]] = [
             {
@@ -558,12 +526,12 @@ class ChatStreamingService:
                 }
             )
 
-        # Add URL content as system message
-        if url_content:
+        # Add skill enhancements as system messages
+        for enhancement in skill_enhancements:
             messages.append(
                 {
                     "role": "system",
-                    "content": f"Additional context from URLs in message:\n{url_content}",
+                    "content": enhancement,
                 }
             )
 

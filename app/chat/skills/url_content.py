@@ -64,6 +64,24 @@ class URLContentSkill(AgentSkill):
         """This skill provides no user actions."""
         return []
 
+    async def should_enhance_prompt(
+        self, user_message: str, context: SkillContext
+    ) -> bool:
+        """Check if message contains URLs that should enhance the prompt."""
+        if not self.enabled:
+            return False
+        urls = self._extract_urls(user_message)
+        return len(urls) > 0
+
+    async def get_prompt_enhancement(
+        self, user_message: str, context: SkillContext
+    ) -> Optional[str]:
+        """Fetch URL content to enhance system prompt."""
+        content = await self.fetch_url_content_from_message(user_message)
+        if content:
+            return f"Additional context from URLs in user message:\n{content}"
+        return None
+
     async def fetch_url_content_from_message(self, user_message: str) -> Optional[str]:
         """Extract URLs from message and fetch their content.
 

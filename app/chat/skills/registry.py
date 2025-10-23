@@ -96,3 +96,34 @@ class SkillRegistry:
             List of all registered skills
         """
         return self._skills.copy()
+
+    async def get_prompt_enhancements(
+        self, user_message: str, context: SkillContext
+    ) -> List[str]:
+        """Get prompt enhancements from all relevant skills.
+
+        Args:
+            user_message: User's message
+            context: Skill context
+
+        Returns:
+            List of prompt enhancement strings
+        """
+        enhancements: List[str] = []
+        for skill in self._skills:
+            try:
+                if await skill.should_enhance_prompt(user_message, context):
+                    enhancement = await skill.get_prompt_enhancement(
+                        user_message, context
+                    )
+                    if enhancement:
+                        enhancements.append(enhancement)
+                        logger.debug(
+                            f"Skill '{skill.name}' provided prompt enhancement"
+                        )
+            except Exception as e:
+                logger.exception(
+                    f"Error getting prompt enhancement from skill '{skill.name}': {e}"
+                )
+                continue
+        return enhancements
