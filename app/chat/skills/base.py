@@ -135,6 +135,23 @@ class AgentSkill(ABC):
         """
         pass
 
+    async def get_context_description(
+        self, actions: List[Action], context: SkillContext
+    ) -> Optional[str]:
+        """Return optional context description for this skill's capabilities.
+
+        This description will be shown to the user when this skill has available actions.
+        Should be a concise bullet point describing what the user can do.
+
+        Args:
+            actions: List of available actions from this skill
+            context: Skill context with user info and services
+
+        Returns:
+            Context description string or None if no description needed
+        """
+        return None
+
     async def handle_conversation(
         self, user_message: str, state: Dict[str, Any], context: SkillContext
     ) -> SkillResult:

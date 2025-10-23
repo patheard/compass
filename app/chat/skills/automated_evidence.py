@@ -2,7 +2,7 @@
 
 import logging
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from app.chat.skills.base import Action, AgentSkill, SkillContext, SkillResult
 from app.evidence.validation import EvidenceRequest
@@ -61,6 +61,23 @@ class AutomatedEvidenceSkill(AgentSkill):
         )
 
     async def get_available_actions(self, context: SkillContext) -> List[Action]:
+        """Build automated evidence actions based on available templates."""
+        return await self._build_actions(context)
+
+    async def get_context_description(
+        self, actions: List[Action], context: SkillContext
+    ) -> Optional[str]:
+        """Return context description based on available templates."""
+        if not actions:
+            return None
+
+        descriptions = ""
+        for action in actions:
+            descriptions += f"- **{action.params['title']}**: {action.params['description']}\n"
+
+        return descriptions
+
+    async def _build_actions(self, context: SkillContext) -> List[Action]:
         """Build automated evidence actions based on available templates."""
         actions: List[Action] = []
 

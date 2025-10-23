@@ -78,6 +78,35 @@ class SkillRegistry:
                 continue
         return actions
 
+    async def get_context_descriptions(self, context: SkillContext) -> List[str]:
+        """Collect context descriptions from skills that have available actions.
+
+        Args:
+            context: Skill context
+
+        Returns:
+            List of context description strings
+        """
+        descriptions: List[str] = []
+        for skill in self._skills:
+            try:
+                skill_actions = await skill.get_available_actions(context)
+                if skill_actions:
+                    description = await skill.get_context_description(
+                        skill_actions, context
+                    )
+                    if description:
+                        descriptions.append(description)
+                        logger.debug(
+                            f"Skill '{skill.name}' provided context description"
+                        )
+            except Exception as e:
+                logger.exception(
+                    f"Error getting context description from skill '{skill.name}': {e}"
+                )
+                continue
+        return descriptions
+
     def get_skill_by_name(self, name: str) -> Optional[AgentSkill]:
         """Get skill by name.
 

@@ -64,13 +64,21 @@ class EvidenceCreationSkill(AgentSkill):
             actions.append(
                 Action(
                     action_type="add_custom_evidence",
-                    label="Add custom evidence",
+                    label="Add evidence",
                     description="Describe the evidence you want to attach to this control",
                     params={"control_id": control_id},
                 )
             )
 
         return actions
+
+    async def get_context_description(
+        self, actions: List[Action], context: SkillContext
+    ) -> Optional[str]:
+        """Return context description for evidence creation capability."""
+        if actions:
+            return "- **Add evidence** by describing it in natural language"
+        return None
 
     async def handle_conversation(
         self, user_message: str, state: Dict[str, Any], context: SkillContext

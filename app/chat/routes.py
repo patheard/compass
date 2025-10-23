@@ -100,7 +100,16 @@ async def get_context_actions(
 
     # Convert actions to dicts for JSON serialization
     actions_dict = [action.to_dict() for action in actions]
-    context_text = "The following actions are available:" if actions_dict else ""
+
+    # Get context descriptions from skills
+    context_text = ""
+    if actions_dict:
+        descriptions = await skill_registry.get_context_descriptions(context)
+        if descriptions:
+            context_text = "Available actions:\n" + "\n".join(descriptions)
+        else:
+            # Fallback if no descriptions provided
+            context_text = "The following actions are available:"
 
     return JSONResponse(content={"context": context_text, "actions": actions_dict})
 

@@ -3,7 +3,7 @@
 import logging
 import os
 import re
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Optional, Set
 
 import boto3
 
@@ -117,6 +117,14 @@ class AWSResourceScannerSkill(AgentSkill):
                 logger.exception(f"Error checking assessment for AWS scanner: {e}")
 
         return actions
+
+    async def get_context_description(
+        self, actions: List[Action], context: SkillContext
+    ) -> Optional[str]:
+        """Return context description for AWS scanner capability."""
+        if actions:
+            return "- **Identify AWS services** by scanning Terraform files"
+        return None
 
     async def _identify_aws_resources(self) -> List[str]:
         """Identify AWS services from Terraform files in S3 vectors.
