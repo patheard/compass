@@ -80,8 +80,8 @@
     <gcds-input
         name="nist_control_ids_autocomplete"
         input-id="nist_control_ids_input"
-        label="{{ _('NIST Control IDs') }}"
-        hint="{{ _('Type to search for NIST control IDs this template applies to') }}"
+        label="{{ _('Control IDs') }}"
+        hint="{{ _('Type to search for ITSG-33 control IDs this template applies to') }}"
         data-autocomplete
         data-items='[{% for control in nist_control_ids %}{"value": "{{ control }}", "label": "{{ _(control) }}"}{% if not loop.last %}, {% endif %}{% endfor %}]'
         data-selected='{% if template and template.nist_control_ids %}[{% for control in template.nist_control_ids %}{"value": "{{ control }}", "label": "{{ _(control) }}"}{% if not loop.last %}, {% endif %}{% endfor %}]{% elif selected_nist_control_ids %}[{% for control in selected_nist_control_ids %}{"value": "{{ control }}", "label": "{{ _(control) }}"}{% if not loop.last %}, {% endif %}{% endfor %}]{% else %}[]{% endif %}'>

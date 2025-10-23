@@ -14,7 +14,7 @@ class ControlRequest(BaseInputValidator):
         None,
         min_length=1,
         max_length=20,
-        description="NIST control identifier",
+        description="Control ID",
     )
     control_title: Optional[str] = Field(
         None,
@@ -35,14 +35,14 @@ class ControlRequest(BaseInputValidator):
         """Validate NIST control ID format if provided."""
         if value is not None:
             if not value.strip():
-                raise ValueError("NIST control ID cannot be empty")
+                raise ValueError("Control ID cannot be empty")
 
             import re
 
             pattern = r"^[A-Z]{2,3}-\d{1,2}([\.\(]\d{1,2}\)?)?$"
             if not re.match(pattern, value.strip().upper()):
                 raise ValueError(
-                    "NIST control ID must follow format like AC-1, AU-2, or SC-7.1"
+                    "Control ID must follow format like AC-1, AU-2, or SC-7.1"
                 )
 
             return value.strip().upper()

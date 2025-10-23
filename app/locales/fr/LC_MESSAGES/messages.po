@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: compass 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-20 16:04-0400\n"
+"POT-Creation-Date: 2025-10-23 13:00-0400\n"
 "PO-Revision-Date: 2025-09-16 12:00+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -144,106 +144,106 @@ msgstr "processus agile SA&A"
 #: app/templates/pages/assessments/detail.html:42
 #: app/templates/pages/assessments/detail.html:51
 #: app/templates/pages/controls/detail.html:9
-#: app/templates/pages/controls/detail.html:17
+#: app/templates/pages/controls/detail.html:15
 msgid "Overview"
 msgstr "Aperçu"
 
 #: app/templates/pages/assessments/detail.html:43
-#: app/templates/pages/assessments/detail.html:75
+#: app/templates/pages/assessments/detail.html:74
 #, fuzzy
 msgid "Controls"
 msgstr "Contrôle"
 
 #: app/templates/pages/assessments/detail.html:45
-#: app/templates/pages/assessments/detail.html:147
+#: app/templates/pages/assessments/detail.html:146
 #: app/templates/pages/job_templates/detail.html:26
 msgid "AWS resources"
 msgstr "Ressources AWS"
 
-#: app/templates/pages/assessments/detail.html:71
+#: app/templates/pages/assessments/detail.html:70
 #, fuzzy
 msgid "Controls compliance chart"
 msgstr "Graphique de conformité"
 
-#: app/templates/pages/assessments/detail.html:75
-#: app/templates/pages/controls/detail.html:59
+#: app/templates/pages/assessments/detail.html:74
+#: app/templates/pages/controls/detail.html:55
 #: app/templates/pages/evidence/detail.html:74
 msgid "of"
 msgstr "de"
 
-#: app/templates/pages/assessments/detail.html:75
-#: app/templates/pages/controls/detail.html:59
+#: app/templates/pages/assessments/detail.html:74
+#: app/templates/pages/controls/detail.html:55
 msgid "compliant"
 msgstr "Conforme"
 
-#: app/templates/pages/assessments/detail.html:82
-#: app/templates/pages/assessments/detail.html:124
-#: app/templates/pages/controls/detail.html:66
-#: app/templates/pages/controls/detail.html:108
+#: app/templates/pages/assessments/detail.html:81
+#: app/templates/pages/assessments/detail.html:123
+#: app/templates/pages/controls/detail.html:62
+#: app/templates/pages/controls/detail.html:104
 #: app/templates/pages/evidence/detail.html:152
 #: app/templates/pages/job_templates/detail.html:48
 #: app/templates/pages/job_templates/list.html:33
 msgid "Edit"
 msgstr "Modifier"
 
-#: app/templates/pages/assessments/detail.html:85
-#: app/templates/pages/assessments/detail.html:125
-#: app/templates/pages/controls/detail.html:69
-#: app/templates/pages/controls/detail.html:109
+#: app/templates/pages/assessments/detail.html:84
+#: app/templates/pages/assessments/detail.html:124
+#: app/templates/pages/controls/detail.html:65
+#: app/templates/pages/controls/detail.html:105
 #: app/templates/pages/evidence/detail.html:155
 #: app/templates/pages/job_templates/detail.html:51
 #: app/templates/pages/job_templates/list.html:34
 msgid "Delete"
 msgstr "Supprimer"
 
-#: app/templates/pages/assessments/detail.html:100
+#: app/templates/pages/assessments/detail.html:99
 msgid "ID"
 msgstr "ID"
 
-#: app/templates/pages/assessments/detail.html:101
-#: app/templates/pages/controls/detail.html:82
+#: app/templates/pages/assessments/detail.html:100
+#: app/templates/pages/controls/detail.html:78
 msgid "Title"
 msgstr "Titre"
 
-#: app/templates/pages/assessments/detail.html:102
+#: app/templates/pages/assessments/detail.html:101
 #: app/templates/pages/assessments/form.html:35
-#: app/templates/pages/controls/detail.html:85
+#: app/templates/pages/controls/detail.html:81
 #: app/templates/pages/evidence/form.html:121
 #: app/templates/pages/job_templates/list.html:21
 msgid "Actions"
 msgstr "Actions"
 
-#: app/templates/pages/assessments/detail.html:134
-#: app/templates/pages/controls/detail.html:118
+#: app/templates/pages/assessments/detail.html:133
+#: app/templates/pages/controls/detail.html:114
 msgid "Add"
 msgstr "Ajouter"
 
-#: app/templates/pages/assessments/detail.html:139
+#: app/templates/pages/assessments/detail.html:138
 #, fuzzy
 msgid "Get started by"
 msgstr "Non commencé"
 
-#: app/templates/pages/assessments/detail.html:139
+#: app/templates/pages/assessments/detail.html:138
 #, fuzzy
 msgid "creating a control"
 msgstr "Créer un contrôle"
 
-#: app/templates/pages/assessments/detail.html:139
+#: app/templates/pages/assessments/detail.html:138
 #: app/templates/pages/assessments/form.html:44
 #: app/templates/pages/evidence/form.html:130
 msgid "or"
 msgstr "ou"
 
-#: app/templates/pages/assessments/detail.html:139
+#: app/templates/pages/assessments/detail.html:138
 msgid "importing from GitHub"
 msgstr "importation depuis GitHub"
 
-#: app/templates/pages/assessments/detail.html:149
+#: app/templates/pages/assessments/detail.html:148
 #, fuzzy
 msgid "runs in AWS account ID"
 msgstr "ID de contrôle NIST"
 
-#: app/templates/pages/assessments/detail.html:151
+#: app/templates/pages/assessments/detail.html:150
 msgid "using the following services:"
 msgstr "utilisant les services suivants :"
 
@@ -368,6 +368,7 @@ msgstr "Modifier le contrôle"
 
 #: app/templates/pages/assessments/import_results.html:34
 #: app/templates/pages/assessments/import_results.html:56
+#: app/templates/pages/controls/form.html:35
 #, fuzzy
 msgid "Control ID"
 msgstr "Contrôle"
@@ -418,39 +419,39 @@ msgid "Import"
 msgstr "Importer"
 
 #: app/templates/pages/controls/detail.html:10
-#: app/templates/pages/controls/detail.html:59
-#: app/templates/pages/controls/detail.html:74
+#: app/templates/pages/controls/detail.html:55
+#: app/templates/pages/controls/detail.html:70
 #: app/templates/pages/evidence/detail.html:73
 msgid "Evidence"
 msgstr "Preuve"
 
-#: app/templates/pages/controls/detail.html:33
+#: app/templates/pages/controls/detail.html:22
 #: app/templates/pages/evidence/detail.html:16
 msgid "Status:"
 msgstr "Statut :"
 
-#: app/templates/pages/controls/detail.html:44
+#: app/templates/pages/controls/detail.html:33
 #: app/templates/pages/evidence/detail.html:34
 #, fuzzy
 msgid "Assessment:"
 msgstr "Évaluation de sécurité"
 
-#: app/templates/pages/controls/detail.html:55
+#: app/templates/pages/controls/detail.html:51
 #, fuzzy
 msgid "Evidence compliance chart"
 msgstr "Graphique de conformité"
 
-#: app/templates/pages/controls/detail.html:83
+#: app/templates/pages/controls/detail.html:79
 #: app/templates/pages/job_templates/list.html:19
 #, fuzzy
 msgid "Description"
 msgstr "Cette plateforme fournit des outils d'évaluation de sécurité automatisés."
 
-#: app/templates/pages/controls/detail.html:84
+#: app/templates/pages/controls/detail.html:80
 msgid "Type"
 msgstr "Type"
 
-#: app/templates/pages/controls/detail.html:123
+#: app/templates/pages/controls/detail.html:119
 #, fuzzy
 msgid "Add evidence"
 msgstr "Preuve"
@@ -477,10 +478,6 @@ msgstr ""
 #, fuzzy
 msgid "Assessment"
 msgstr "Évaluation de sécurité"
-
-#: app/templates/pages/controls/form.html:35
-msgid "NIST Control ID"
-msgstr "ID de contrôle NIST"
 
 #: app/templates/pages/controls/form.html:44
 msgid "Control title"
@@ -634,8 +631,8 @@ msgstr "Configuration"
 #: app/templates/pages/job_templates/detail.html:37
 #: app/templates/pages/job_templates/form.html:83
 #, fuzzy
-msgid "NIST Control IDs"
-msgstr "ID de contrôle NIST"
+msgid "Control IDs"
+msgstr "Contrôle"
 
 #: app/templates/pages/job_templates/form.html:6
 #, fuzzy
@@ -689,7 +686,8 @@ msgid "Type to search for AWS resources this template applies to"
 msgstr "Tapez pour rechercher les ressources AWS auxquelles ce modèle s'applique"
 
 #: app/templates/pages/job_templates/form.html:84
-msgid "Type to search for NIST control IDs this template applies to"
+#, fuzzy
+msgid "Type to search for ITSG-33 control IDs this template applies to"
 msgstr ""
 "Tapez pour rechercher les ID de contrôle NIST auxquels ce modèle "
 "s'applique"
@@ -937,4 +935,10 @@ msgstr "Autre"
 
 #~ msgid "evidence compliant"
 #~ msgstr "règles conformes"
+
+#~ msgid "NIST Control ID"
+#~ msgstr "ID de contrôle NIST"
+
+#~ msgid "NIST Control IDs"
+#~ msgstr "ID de contrôle NIST"
 

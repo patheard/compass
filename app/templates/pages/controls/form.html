@@ -32,7 +32,7 @@
     <gcds-input
         name="nist_control_id"
         input-id="nist_control_id"
-        label="{{ _('NIST Control ID') }}"
+        label="{{ _('Control ID') }}"
         required="true"
         maxlength="20"
         value="{% if is_edit %}{{ control.nist_control_id }}{% else %}{{ nist_control_id or '' }}{% endif %}">
