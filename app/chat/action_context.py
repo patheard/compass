@@ -135,7 +135,7 @@ class ActionContext:
             actions.append(
                 {
                     "action_type": "add_custom_evidence",
-                    "label": "Add evidence",
+                    "label": "Add custom evidence",
                     "description": "Describe the evidence you want to attach to this control",
                     "params": {
                         "control_id": control_id,

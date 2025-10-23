@@ -64,7 +64,7 @@ class EvidenceCreationSkill(AgentSkill):
             actions.append(
                 Action(
                     action_type="add_custom_evidence",
-                    label="Add evidence",
+                    label="Add custom evidence",
                     description="Describe the evidence you want to attach to this control",
                     params={"control_id": control_id},
                 )
@@ -81,6 +81,11 @@ class EvidenceCreationSkill(AgentSkill):
 
         if step == "awaiting_description":
             return await self._parse_and_confirm(user_message, control_id, context)
+        elif step == "awaiting_confirmation":
+            # User is requesting changes to the proposed evidence
+            return await self._refine_evidence_from_feedback(
+                user_message, control_id, state, context
+            )
 
         return SkillResult(
             success=False,
@@ -152,10 +157,19 @@ class EvidenceCreationSkill(AgentSkill):
             },
         )
 
+        # Maintain conversation state to allow for refinement
+        state = {
+            "skill": self.name,
+            "step": "awaiting_confirmation",
+            "control_id": control_id,
+            "parsed_evidence": parsed_evidence,
+        }
+
         return SkillResult(
             success=True,
             message=message,
             actions=[confirm_action],
+            conversation_state=state,
         )
 
     async def _confirm_evidence(
@@ -190,6 +204,7 @@ class EvidenceCreationSkill(AgentSkill):
             message=f"Added **{parsed['title']}** evidence to the control.",
             data={"evidence_id": evidence.evidence_id},
             reload_page=True,
+            conversation_state=None,
         )
 
     async def _refine_evidence(
@@ -199,6 +214,84 @@ class EvidenceCreationSkill(AgentSkill):
         return SkillResult(
             success=False,
             message="Evidence refinement not yet implemented",
+        )
+
+    async def _refine_evidence_from_feedback(
+        self,
+        user_message: str,
+        control_id: str,
+        state: Dict[str, Any],
+        context: SkillContext,
+    ) -> SkillResult:
+        """Refine evidence based on user feedback."""
+        previous_evidence = state.get("parsed_evidence")
+        if not previous_evidence:
+            return SkillResult(
+                success=False,
+                message="Previous evidence data not found. Please start over.",
+            )
+
+        # Get control info for context
+        control = context.control_service.get_control(control_id, context.user_id)
+        if not control:
+            return SkillResult(success=False, message="Control not found")
+
+        control_info = f"{control.nist_control_id}: {control.control_title}\n{control.control_description}"
+
+        # Build context for refinement
+        refinement_context = (
+            f"Previous evidence details:\n"
+            f"Title: {previous_evidence['title']}\n"
+            f"Type: {previous_evidence['evidence_type']}\n"
+            f"Description: {previous_evidence['description']}\n\n"
+            f"User feedback: {user_message}\n\n"
+            f"Control context: {control_info}"
+        )
+
+        # Parse refined evidence description
+        try:
+            parsed_evidence = await self._parse_evidence_description(
+                refinement_context, control_info
+            )
+        except Exception as e:
+            logger.exception(f"Error parsing refined evidence description: {e}")
+            return SkillResult(
+                success=False,
+                message="Failed to parse refined evidence. Please try again.",
+            )
+
+        # Create confirmation message
+        message = (
+            f"Here are the updated evidence details:\n\n"
+            f"**Title:** {parsed_evidence['title']}\n\n"
+            f"**Type:** {parsed_evidence['evidence_type']}\n\n"
+            f"**Description:** {parsed_evidence['description']}\n\n"
+        )
+
+        # Create confirmation action
+        confirm_action = Action(
+            action_type="confirm_add_evidence",
+            label="Yes, add evidence",
+            description="Add the evidence with these details",
+            params={
+                "control_id": control_id,
+                "parsed_evidence": parsed_evidence,
+            },
+        )
+
+        # Maintain conversation state for further refinement if needed
+        state = {
+            "skill": self.name,
+            "step": "awaiting_confirmation",
+            "control_id": control_id,
+            "parsed_evidence": parsed_evidence,
+        }
+
+        return SkillResult(
+            success=True,
+            message=message,
+            actions=[confirm_action],
+            conversation_state=state,
         )
 
     def _build_client(self) -> Optional[AsyncAzureOpenAI]:

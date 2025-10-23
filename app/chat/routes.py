@@ -200,22 +200,35 @@ async def execute_chat_action(
         )
 
         # Handle conversation state
-        if result.conversation_state:
-            state_action = ConversationState.create_state_action(
-                result.conversation_state
-            )
+        # Always persist a message when conversation_state is explicitly set (including None)
+        if hasattr(result, "conversation_state"):
+            actions_to_persist = None
+            if result.conversation_state:
+                # Create state marker action to continue conversation
+                state_action = ConversationState.create_state_action(
+                    result.conversation_state
+                )
+                actions_to_persist = [state_action.to_dict()]
+            # If conversation_state is None/empty, persist message without state marker
+            # This clears any existing conversation state
             await context.repository.append_message(
                 user_id=current_user.user_id,
                 session_id=context.session_id,
                 role="assistant",
                 content=result.message,
-                actions=[state_action.to_dict()],
+                actions=actions_to_persist,
             )
 
         # Convert actions to dicts for JSON serialization
+        # Filter out internal state markers from user-facing actions
         actions_dict = None
         if result.actions:
-            actions_dict = [action.to_dict() for action in result.actions]
+            visible_actions = [
+                action.to_dict()
+                for action in result.actions
+                if action.action_type != "_state_marker"
+            ]
+            actions_dict = visible_actions if visible_actions else None
 
         # Ensure data dict exists and includes session_id
         response_data = result.data or {}

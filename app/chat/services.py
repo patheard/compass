@@ -24,6 +24,27 @@ from app.database.models.users import User
 logger = logging.getLogger(__name__)
 
 
+def filter_internal_actions(
+    actions: Optional[List[Dict[str, Any]]],
+) -> Optional[List[Dict[str, Any]]]:
+    """Filter out internal actions like state markers from user-facing action lists.
+
+    Args:
+        actions: List of action dictionaries
+
+    Returns:
+        Filtered list without internal actions, or None if no visible actions remain
+    """
+    if not actions:
+        return None
+
+    visible_actions = [
+        action for action in actions if action.get("action_type") != "_state_marker"
+    ]
+
+    return visible_actions if visible_actions else None
+
+
 class StreamWithActions:
     """Wrapper for async generator that also holds actions."""
 
@@ -153,8 +174,10 @@ class ChatStreamingService:
                     if last_message.role == "assistant":
                         # Stream the already-persisted response
                         yield last_message.content
-                        # Store actions for later retrieval
-                        actions_container["actions"] = last_message.get_actions()
+                        # Store actions for later retrieval (filter out internal actions)
+                        actions_container["actions"] = filter_internal_actions(
+                            last_message.get_actions()
+                        )
                         logger.info(
                             f"Retrieved actions from last message: {actions_container['actions']}"
                         )
@@ -236,7 +259,7 @@ class ChatStreamingService:
             # Get actions from generator if available
             actions = None
             if isinstance(response_stream, StreamWithActions):
-                actions = response_stream.actions
+                actions = filter_internal_actions(response_stream.actions)
                 logger.info(f"Actions to send in WebSocket end message: {actions}")
 
             # Send `end` message with actions
@@ -302,7 +325,7 @@ class ChatStreamingService:
         # Get actions from generator if available
         actions = None
         if isinstance(response_stream, StreamWithActions):
-            actions = response_stream.actions
+            actions = filter_internal_actions(response_stream.actions)
 
         return {
             "session_id": resolved_session_id,
@@ -452,6 +475,18 @@ class ChatStreamingService:
                 actions_dict = None
                 if result.actions:
                     actions_dict = [action.to_dict() for action in result.actions]
+
+                # Handle conversation state
+                # If conversation_state is present in result (even if None/empty), handle it
+                if hasattr(result, "conversation_state") and result.conversation_state:
+                    # Create state marker action to continue conversation
+                    state_action = ConversationState.create_state_action(
+                        result.conversation_state
+                    )
+                    # Append state marker to actions
+                    if actions_dict is None:
+                        actions_dict = []
+                    actions_dict.append(state_action.to_dict())
 
                 await self.repository.append_message(
                     user_id=user.user_id,

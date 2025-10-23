@@ -15,14 +15,19 @@ class ConversationState:
     def from_history(
         messages: List[ChatSessionMessage],
     ) -> Optional[Dict[str, Any]]:
-        """Extract conversation state from recent messages.
+        """Extract conversation state from most recent assistant message.
+
+        Only checks the most recent assistant message for state. This ensures
+        that any new assistant message without a state marker clears the
+        conversation state.
 
         Args:
             messages: List of recent chat messages
 
         Returns:
-            Conversation state dict if found, else None
+            Conversation state dict if found in most recent assistant message, else None
         """
+        # Find the most recent assistant message
         for message in reversed(messages):
             if message.role == "assistant":
                 actions = message.get_actions()
@@ -32,7 +37,12 @@ class ConversationState:
                         if action.get("action_type") == "_state_marker":
                             params = action.get("params", {})
                             if ConversationState.STATE_KEY in params:
-                                return params[ConversationState.STATE_KEY]
+                                state = params[ConversationState.STATE_KEY]
+                                # Treat empty dict or None as no state
+                                if state:
+                                    return state
+                # Found most recent assistant message, stop searching
+                return None
         return None
 
     @staticmethod
