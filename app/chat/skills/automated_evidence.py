@@ -73,7 +73,9 @@ class AutomatedEvidenceSkill(AgentSkill):
 
         descriptions = ""
         for action in actions:
-            descriptions += f"- **{action.params['title']}**: {action.params['description']}\n"
+            descriptions += (
+                f"- **{action.params['title']}**: {action.params['description']}\n"
+            )
 
         return descriptions
 

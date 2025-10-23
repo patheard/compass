@@ -53,6 +53,10 @@ class EvidenceCreationSkill(AgentSkill):
         """Return add_custom_evidence action if on control page."""
         actions: List[Action] = []
 
+        logger.info(
+            f"EvidenceCreationSkill.get_available_actions called with URL: {context.current_url}"
+        )
+
         # Check if on control page
         control_match = re.search(
             r"/assessments/([a-f0-9-]+)/controls/([a-f0-9-]+)$",
@@ -61,6 +65,9 @@ class EvidenceCreationSkill(AgentSkill):
 
         if control_match:
             control_id = control_match.group(2)
+            logger.info(
+                f"EvidenceCreationSkill: URL matched, adding add_custom_evidence action with control_id={control_id}"
+            )
             actions.append(
                 Action(
                     action_type="add_custom_evidence",
@@ -69,7 +76,14 @@ class EvidenceCreationSkill(AgentSkill):
                     params={"control_id": control_id},
                 )
             )
+        else:
+            logger.info(
+                "EvidenceCreationSkill: URL did not match control page pattern"
+            )
 
+        logger.info(
+            f"EvidenceCreationSkill.get_available_actions returning {len(actions)} actions"
+        )
         return actions
 
     async def get_context_description(

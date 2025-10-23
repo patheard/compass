@@ -89,6 +89,8 @@ async def get_context_actions(
     if not current_user:
         raise HTTPException(status_code=401, detail="Authentication required")
 
+    logger.info(f"get_context_actions called with current_url: {current_url}")
+
     # Build context for skill discovery
     context = await skill_context_factory.create(
         user=current_user,
@@ -98,8 +100,14 @@ async def get_context_actions(
     # Get all available actions from skills
     actions = await skill_registry.get_all_available_actions(context)
 
+    logger.info(f"get_context_actions found {len(actions)} total actions")
+
     # Convert actions to dicts for JSON serialization
     actions_dict = [action.to_dict() for action in actions]
+
+    logger.info(
+        f"get_context_actions action_types: {[a.get('action_type') for a in actions_dict]}"
+    )
 
     # Get context descriptions from skills
     context_text = ""
