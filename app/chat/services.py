@@ -26,20 +26,28 @@ logger = logging.getLogger(__name__)
 
 
 class StreamWithActions:
-    """Wrapper for async generator that also holds actions."""
+    """Wrapper for async generator that also holds actions.
 
-    def __init__(
-        self,
-        generator: AsyncGenerator[str, None],
-        actions_container: Dict[str, Optional[List[Dict[str, Any]]]],
-    ):
+    This wrapper allows passing actions alongside a streaming response,
+    which are populated after the stream completes.
+    """
+
+    def __init__(self, generator: AsyncGenerator[str, None]):
         self.generator = generator
-        self.actions_container = actions_container
+        self._actions: Optional[List[Dict[str, Any]]] = None
 
     @property
     def actions(self) -> Optional[List[Dict[str, Any]]]:
-        """Get actions from the container."""
-        return self.actions_container.get("actions")
+        """Get actions associated with this stream."""
+        return self._actions
+
+    def set_actions(self, actions: Optional[List[Dict[str, Any]]]) -> None:
+        """Set actions after they are available.
+
+        Args:
+            actions: List of action dictionaries
+        """
+        self._actions = actions
 
     def __aiter__(self):
         return self.generator.__aiter__()
@@ -127,76 +135,84 @@ class ChatStreamingService:
         if client is None:
             raise RuntimeError("Azure OpenAI client not configured")
 
-        # Use a mutable container to store actions that can be updated from within the generator
-        actions_container: Dict[str, Optional[List[Dict[str, Any]]]] = {"actions": None}
+        # Create wrapped generator that can hold actions
+        wrapped_generator = StreamWithActions(
+            self._generate_response(
+                client=client,
+                user=user,
+                session_id=session_id,
+                messages=messages,
+            )
+        )
 
-        async def _generator() -> AsyncGenerator[str, None]:
-            assistant_chunks: List[str] = []
-            if client is None:
-                logger.error(
-                    "Azure OpenAI client is not configured; no response will be streamed."
-                )
-                return
-
-            # If messages is empty, the conversation was handled by a special handler
-            # (e.g., evidence conversation) and response is already persisted
-            # We need to retrieve the last assistant message and stream it
-            if not messages:
-                # Get the last assistant message from history
-                window = await self.repository.load_recent_history(
-                    user_id=user.user_id,
-                    session_id=session_id,
-                    max_tokens=1000,
-                    max_messages=1,
-                )
-                if window.messages:
-                    last_message = window.messages[-1]
-                    if last_message.role == "assistant":
-                        # Stream the already-persisted response
-                        yield last_message.content
-                        # Store actions for later retrieval (filter out internal actions)
-                        actions_container["actions"] = Action.filter_internal(
-                            last_message.get_actions()
-                        )
-                        logger.info(
-                            f"Retrieved actions from last message: {actions_container['actions']}"
-                        )
-                return
-
-            try:
-                stream = await client.chat.completions.create(
-                    model=self.completions_model_name,
-                    messages=messages,
-                    stream=True,
-                )
-
-                async for chunk in stream:
-                    content = self._extract_chunk_content(chunk)
-                    if content:
-                        assistant_chunks.append(content)
-                        yield content
-            except Exception as exc:
-                logger.exception("Azure OpenAI streaming failed: %s", exc)
-            finally:
-                assistant_text = "".join(assistant_chunks).strip()
-                if assistant_text:
-                    try:
-                        # Persist the message
-                        await self.repository.append_message(
-                            user_id=user.user_id,
-                            session_id=session_id,
-                            role="assistant",
-                            content=assistant_text,
-                            actions=None,
-                        )
-                    except Exception as exc:
-                        logger.exception(
-                            "Failed to persist assistant response: %s", exc
-                        )
-
-        # Wrap the generator with actions container reference
-        wrapped_generator = StreamWithActions(_generator(), actions_container)
         return session_id, wrapped_generator
+
+    async def _generate_response(
+        self,
+        *,
+        client: AsyncAzureOpenAI,
+        user: User,
+        session_id: str,
+        messages: List[Dict[str, Any]],
+    ) -> AsyncGenerator[str, None]:
+        """Generate streaming response from OpenAI or retrieve persisted response.
+
+        Args:
+            client: Azure OpenAI client
+            user: User object
+            session_id: Session ID
+            messages: Messages to send to OpenAI
+
+        Yields:
+            Response text chunks
+        """
+        # If messages is empty, the conversation was handled by a special handler
+        # (e.g., evidence conversation) and response is already persisted
+        # We need to retrieve the last assistant message and stream it
+        if not messages:
+            # Get the last assistant message from history
+            window = await self.repository.load_recent_history(
+                user_id=user.user_id,
+                session_id=session_id,
+                max_tokens=1000,
+                max_messages=1,
+            )
+            if window.messages:
+                last_message = window.messages[-1]
+                if last_message.role == "assistant":
+                    # Stream the already-persisted response
+                    yield last_message.content
+            return
+
+        assistant_chunks: List[str] = []
+        try:
+            stream = await client.chat.completions.create(
+                model=self.completions_model_name,
+                messages=messages,
+                stream=True,
+            )
+
+            async for chunk in stream:
+                content = self._extract_chunk_content(chunk)
+                if content:
+                    assistant_chunks.append(content)
+                    yield content
+        except Exception as exc:
+            logger.exception("Azure OpenAI streaming failed: %s", exc)
+        finally:
+            assistant_text = "".join(assistant_chunks).strip()
+            if assistant_text:
+                try:
+                    # Persist the message
+                    await self.repository.append_message(
+                        user_id=user.user_id,
+                        session_id=session_id,
+                        role="assistant",
+                        content=assistant_text,
+                        actions=None,
+                    )
+                except Exception as exc:
+                    logger.exception("Failed to persist assistant response: %s", exc)
 
     async def stream_to_websocket(
         self,
@@ -236,9 +252,10 @@ class ChatStreamingService:
                     )
                 )
 
-            # Get actions from generator if available
-            actions = None
+            # Get actions from the last persisted message
+            actions = await self._get_message_actions(user.user_id, stream_session_id)
             if isinstance(response_stream, StreamWithActions):
+                response_stream.set_actions(actions)
                 actions = Action.filter_internal(response_stream.actions)
                 logger.info(f"Actions to send in WebSocket end message: {actions}")
 
@@ -302,9 +319,10 @@ class ChatStreamingService:
 
         full_response = "".join(chunks)
 
-        # Get actions from generator if available
-        actions = None
+        # Get actions from the last persisted message
+        actions = await self._get_message_actions(user.user_id, resolved_session_id)
         if isinstance(response_stream, StreamWithActions):
+            response_stream.set_actions(actions)
             actions = Action.filter_internal(response_stream.actions)
 
         return {
@@ -316,6 +334,30 @@ class ChatStreamingService:
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+    async def _get_message_actions(
+        self, user_id: str, session_id: str
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Get actions from the last assistant message.
+
+        Args:
+            user_id: User ID
+            session_id: Session ID
+
+        Returns:
+            Actions from last message, or None if not found
+        """
+        window = await self.repository.load_recent_history(
+            user_id=user_id,
+            session_id=session_id,
+            max_tokens=1000,
+            max_messages=1,
+        )
+        if window.messages:
+            last_message = window.messages[-1]
+            if last_message.role == "assistant":
+                return last_message.get_actions()
+        return None
+
     def build_system_prompt(
         self, context: str, current_page: str, actions: List[Dict[str, Any]]
     ) -> str:
@@ -698,6 +740,14 @@ class ChatStreamingService:
 
     @staticmethod
     def _extract_chunk_content(chunk: Any) -> Optional[str]:
+        """Extract text content from Azure OpenAI streaming response chunks.
+
+        Args:
+            chunk: Streaming chunk from Azure OpenAI API
+
+        Returns:
+            Text content from chunk delta, or None if not found or error occurs
+        """
         try:
             choice = chunk.choices[0]
             delta = getattr(choice, "delta", None)
