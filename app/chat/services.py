@@ -18,31 +18,11 @@ from app.chat.skills import (
     ConversationState,
     create_skill_registry,
 )
+from app.chat.skills.base import Action
 from app.database.models.chat_sessions import ChatSessionMessage
 from app.database.models.users import User
 
 logger = logging.getLogger(__name__)
-
-
-def filter_internal_actions(
-    actions: Optional[List[Dict[str, Any]]],
-) -> Optional[List[Dict[str, Any]]]:
-    """Filter out internal actions like state markers from user-facing action lists.
-
-    Args:
-        actions: List of action dictionaries
-
-    Returns:
-        Filtered list without internal actions, or None if no visible actions remain
-    """
-    if not actions:
-        return None
-
-    visible_actions = [
-        action for action in actions if action.get("action_type") != "_state_marker"
-    ]
-
-    return visible_actions if visible_actions else None
 
 
 class StreamWithActions:
@@ -175,7 +155,7 @@ class ChatStreamingService:
                         # Stream the already-persisted response
                         yield last_message.content
                         # Store actions for later retrieval (filter out internal actions)
-                        actions_container["actions"] = filter_internal_actions(
+                        actions_container["actions"] = Action.filter_internal(
                             last_message.get_actions()
                         )
                         logger.info(
@@ -259,7 +239,7 @@ class ChatStreamingService:
             # Get actions from generator if available
             actions = None
             if isinstance(response_stream, StreamWithActions):
-                actions = filter_internal_actions(response_stream.actions)
+                actions = Action.filter_internal(response_stream.actions)
                 logger.info(f"Actions to send in WebSocket end message: {actions}")
 
             # Send `end` message with actions
@@ -325,7 +305,7 @@ class ChatStreamingService:
         # Get actions from generator if available
         actions = None
         if isinstance(response_stream, StreamWithActions):
-            actions = filter_internal_actions(response_stream.actions)
+            actions = Action.filter_internal(response_stream.actions)
 
         return {
             "session_id": resolved_session_id,
@@ -433,6 +413,76 @@ class ChatStreamingService:
         )
 
         # Check for conversation state in recent history
+        conversation_state = await self._get_conversation_state(
+            user.user_id, session_id
+        )
+
+        if conversation_state:
+            return await self._handle_skill_conversation(
+                user=user,
+                session_id=session_id,
+                user_message=user_message,
+                conversation_state=conversation_state,
+                current_url=current_url,
+            )
+
+        return await self._handle_standard_message(
+            user=user,
+            session_id=session_id,
+            user_message=user_message,
+            current_page=current_page,
+            current_url=current_url,
+        )
+
+    async def _get_conversation_state(
+        self, user_id: str, session_id: str
+    ) -> Optional[Dict[str, Any]]:
+        """Get conversation state from recent history.
+
+        Args:
+            user_id: User ID
+            session_id: Session ID
+
+        Returns:
+            Conversation state if found, None otherwise
+        """
+        window = await self.repository.load_recent_history(
+            user_id=user_id,
+            session_id=session_id,
+            max_tokens=500,
+            max_messages=5,
+        )
+        return ConversationState.from_history(window.messages)
+
+    async def _handle_skill_conversation(
+        self,
+        *,
+        user: User,
+        session_id: str,
+        user_message: str,
+        conversation_state: Dict[str, Any],
+        current_url: Optional[str],
+    ) -> tuple[str, List[Dict[str, Any]], List[Dict[str, Any]]]:
+        """Handle skill-based conversation flow.
+
+        Args:
+            user: User object
+            session_id: Session ID
+            user_message: User's message
+            conversation_state: Current conversation state
+            current_url: Current page URL
+
+        Returns:
+            Tuple of (session_id, messages, actions) - messages will be empty for skill conversations
+        """
+        skill_name = conversation_state.get("skill")
+        skill = self.skill_registry.get_skill_by_name(skill_name)
+
+        if not skill:
+            # No skill found, fall through to standard message handling
+            return session_id, [], []
+
+        # Build context for skill
         window = await self.repository.load_recent_history(
             user_id=user.user_id,
             session_id=session_id,
@@ -440,64 +490,98 @@ class ChatStreamingService:
             max_messages=5,
         )
 
-        conversation_state = ConversationState.from_history(window.messages)
+        context = await self.skill_context_factory.create(
+            user=user,
+            session_id=session_id,
+            current_url=current_url,
+            conversation_history=window.messages,
+        )
 
-        if conversation_state:
-            # Handle skill-based conversation
-            skill_name = conversation_state.get("skill")
-            skill = self.skill_registry.get_skill_by_name(skill_name)
+        # Persist user message
+        await self.repository.append_message(
+            user_id=user.user_id,
+            session_id=session_id,
+            role="user",
+            content=user_message,
+        )
 
-            if skill:
-                # Build context for skill
-                context = await self.skill_context_factory.create(
-                    user=user,
-                    session_id=session_id,
-                    current_url=current_url,
-                    conversation_history=window.messages,
-                )
+        # Let skill handle the conversation
+        result = await skill.handle_conversation(
+            user_message=user_message,
+            state=conversation_state,
+            context=context,
+        )
 
-                # Persist user message
-                await self.repository.append_message(
-                    user_id=user.user_id,
-                    session_id=session_id,
-                    role="user",
-                    content=user_message,
-                )
+        # Persist response with actions and state
+        actions_dict = self._prepare_skill_result_actions(result)
 
-                # Let skill handle the conversation
-                result = await skill.handle_conversation(
-                    user_message=user_message,
-                    state=conversation_state,
-                    context=context,
-                )
+        await self.repository.append_message(
+            user_id=user.user_id,
+            session_id=session_id,
+            role="assistant",
+            content=result.message,
+            actions=actions_dict,
+        )
 
-                # Persist response with actions
-                actions_dict = None
-                if result.actions:
-                    actions_dict = [action.to_dict() for action in result.actions]
+        # Return empty messages to bypass OpenAI
+        return session_id, [], []
 
-                # Handle conversation state
-                # If conversation_state is present in result (even if None/empty), handle it
-                if hasattr(result, "conversation_state") and result.conversation_state:
-                    # Create state marker action to continue conversation
-                    state_action = ConversationState.create_state_action(
-                        result.conversation_state
-                    )
-                    # Append state marker to actions
-                    if actions_dict is None:
-                        actions_dict = []
-                    actions_dict.append(state_action.to_dict())
+    def _prepare_skill_result_actions(
+        self, result: Any
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Prepare actions from skill result, including conversation state markers.
 
-                await self.repository.append_message(
-                    user_id=user.user_id,
-                    session_id=session_id,
-                    role="assistant",
-                    content=result.message,
-                    actions=actions_dict,
-                )
+        Args:
+            result: SkillResult from skill execution
 
-                # Return empty messages to bypass OpenAI
-                return session_id, [], []
+        Returns:
+            List of action dictionaries or None
+        """
+        actions_dict = None
+        if result.actions:
+            actions_dict = [action.to_dict() for action in result.actions]
+
+        # Handle conversation state
+        if hasattr(result, "conversation_state") and result.conversation_state:
+            # Create state marker action to continue conversation
+            state_action = ConversationState.create_state_action(
+                result.conversation_state
+            )
+            # Append state marker to actions
+            if actions_dict is None:
+                actions_dict = []
+            actions_dict.append(state_action.to_dict())
+
+        return actions_dict
+
+    async def _handle_standard_message(
+        self,
+        *,
+        user: User,
+        session_id: str,
+        user_message: str,
+        current_page: Optional[str],
+        current_url: Optional[str],
+    ) -> tuple[str, List[Dict[str, Any]], List[Dict[str, Any]]]:
+        """Handle standard message with OpenAI completion.
+
+        Args:
+            user: User object
+            session_id: Session ID
+            user_message: User's message
+            current_page: Current page content
+            current_url: Current page URL
+
+        Returns:
+            Tuple of (session_id, messages, actions)
+        """
+        # Load history for context
+        window = await self.repository.load_recent_history(
+            user_id=user.user_id,
+            session_id=session_id,
+            max_tokens=self.max_history_tokens,
+            max_messages=self.max_history_messages,
+        )
 
         # Build context for skill discovery
         context = await self.skill_context_factory.create(
@@ -511,16 +595,15 @@ class ChatStreamingService:
         actions_dict = [action.to_dict() for action in actions]
 
         # Build system prompt with context and actions
-        context_text = ""
-        if actions_dict:
-            context_text = "Available actions for user"
-
+        context_text = "Available actions for user" if actions_dict else ""
         system_prompt = self.build_system_prompt(
             context_text, current_page, actions_dict
         )
 
+        # Prepare history messages
         history_messages = ChatSessionMessage.serialize_history(window.messages)
 
+        # Persist user message
         persisted_user_message = await self.repository.append_message(
             user_id=user.user_id,
             session_id=session_id,
@@ -531,7 +614,31 @@ class ChatStreamingService:
             {"role": "user", "content": persisted_user_message.content}
         )
 
-        # Generate embeddings and query S3 vectors for additional context
+        # Get vector context and skill enhancements
+        vector_context = await self._get_vector_context(user_message)
+        skill_enhancements = await self.skill_registry.get_prompt_enhancements(
+            user_message, context
+        )
+
+        # Build final messages list
+        messages = self._build_messages_list(
+            system_prompt=system_prompt,
+            vector_context=vector_context,
+            skill_enhancements=skill_enhancements,
+            history_messages=history_messages,
+        )
+
+        return session_id, messages, actions_dict
+
+    async def _get_vector_context(self, user_message: str) -> str:
+        """Get vector search context for user message.
+
+        Args:
+            user_message: User's message
+
+        Returns:
+            Vector context string, empty if not available
+        """
         vector_context = ""
         embeddings = await self._generate_embeddings(user_message)
         if embeddings:
@@ -540,12 +647,27 @@ class ChatStreamingService:
                 vector_context = "\n\n".join(
                     v.get("metadata", {}).get("chunk_text", "") for v in vectors
                 )
+        return vector_context
 
-        # Get prompt enhancements from skills based on user message
-        skill_enhancements = await self.skill_registry.get_prompt_enhancements(
-            user_message, context
-        )
+    def _build_messages_list(
+        self,
+        *,
+        system_prompt: str,
+        vector_context: str,
+        skill_enhancements: List[str],
+        history_messages: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        """Build final messages list for OpenAI completion.
 
+        Args:
+            system_prompt: Base system prompt
+            vector_context: Vector search context
+            skill_enhancements: Skill-provided prompt enhancements
+            history_messages: Conversation history
+
+        Returns:
+            List of message dictionaries for OpenAI API
+        """
         messages: List[Dict[str, Any]] = [
             {
                 "role": "system",
@@ -572,7 +694,7 @@ class ChatStreamingService:
 
         messages.extend(history_messages)
 
-        return session_id, messages, actions_dict
+        return messages
 
     @staticmethod
     def _extract_chunk_content(chunk: Any) -> Optional[str]:

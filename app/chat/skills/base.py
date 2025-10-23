@@ -32,6 +32,27 @@ class Action:
             "params": self.params,
         }
 
+    @staticmethod
+    def filter_internal(
+        actions: Optional[List[Dict[str, Any]]],
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Filter out internal actions like state markers from user-facing action lists.
+
+        Args:
+            actions: List of action dictionaries
+
+        Returns:
+            Filtered list without internal actions, or None if no visible actions remain
+        """
+        if not actions:
+            return None
+
+        visible_actions = [
+            action for action in actions if action.get("action_type") != "_state_marker"
+        ]
+
+        return visible_actions if visible_actions else None
+
 
 @dataclass
 class SkillContext:
@@ -39,17 +60,15 @@ class SkillContext:
 
     user_id: str
     session_id: str
+    assessment_service: AssessmentService
+    control_service: ControlService
+    evidence_service: EvidenceService
+    job_template_service: JobTemplateService
+    repository: ChatHistoryRepository
     current_url: Optional[str] = None
     current_page: Optional[str] = None
     conversation_history: List[ChatSessionMessage] = field(default_factory=list)
     csrf_token: Optional[str] = None
-
-    # Service dependencies injected
-    assessment_service: AssessmentService = field(default_factory=AssessmentService)
-    control_service: ControlService = field(default_factory=ControlService)
-    evidence_service: EvidenceService = field(default_factory=EvidenceService)
-    job_template_service: JobTemplateService = field(default_factory=JobTemplateService)
-    repository: ChatHistoryRepository = field(default_factory=ChatHistoryRepository)
 
 
 @dataclass
