@@ -5,6 +5,7 @@ from app.chat.skills.aws_scanner import AWSResourceScannerSkill
 from app.chat.skills.base import Action, AgentSkill, SkillContext, SkillResult
 from app.chat.skills.context import SkillContextFactory
 from app.chat.skills.evidence_creation import EvidenceCreationSkill
+from app.chat.skills.github_clone import GitHubCloneSkill
 from app.chat.skills.registry import SkillRegistry
 from app.chat.skills.state import ConversationState
 from app.chat.skills.url_content import URLContentSkill
@@ -20,6 +21,7 @@ __all__ = [
     "AutomatedEvidenceSkill",
     "AWSResourceScannerSkill",
     "EvidenceCreationSkill",
+    "GitHubCloneSkill",
     "URLContentSkill",
     "create_skill_registry",
 ]
@@ -37,6 +39,7 @@ def create_skill_registry() -> SkillRegistry:
     registry.register(AutomatedEvidenceSkill())
     registry.register(AWSResourceScannerSkill())
     registry.register(EvidenceCreationSkill())
+    registry.register(GitHubCloneSkill())
     registry.register(URLContentSkill())
 
     return registry

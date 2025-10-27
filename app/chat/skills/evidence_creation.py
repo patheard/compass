@@ -77,9 +77,7 @@ class EvidenceCreationSkill(AgentSkill):
                 )
             )
         else:
-            logger.info(
-                "EvidenceCreationSkill: URL did not match control page pattern"
-            )
+            logger.info("EvidenceCreationSkill: URL did not match control page pattern")
 
         logger.info(
             f"EvidenceCreationSkill.get_available_actions returning {len(actions)} actions"
