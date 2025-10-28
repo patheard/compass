@@ -41,6 +41,21 @@ resource "aws_lambda_function_url" "compass" {
   authorization_type = "NONE"
 }
 
+resource "aws_lambda_permission" "compass_invoke_function_url" {
+  statement_id           = "AllowInvokeFunctionUrl"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = module.compass.function_name
+  function_url_auth_type = "NONE"
+  principal              = "*"
+}
+
+resource "aws_lambda_permission" "compass_invoke_function" {
+  statement_id  = "AllowInvokeFunction"
+  action        = "lambda:InvokeFunction"
+  function_name = module.compass.function_name
+  principal     = "*"
+}
+
 #
 # Function warmer
 #
