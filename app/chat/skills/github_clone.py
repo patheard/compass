@@ -36,6 +36,11 @@ class GitHubCloneSkill(AgentSkill):
         r"https://github\.com/([^/]+)/([^/]+)/(tree|blob)/([^/]+)(/.*)?$"
     )
 
+    # Pattern matches root repository URLs:
+    # - https://github.com/<org>/<repo>
+    # - https://github.com/<org>/<repo>/
+    GITHUB_ROOT_URL_PATTERN = re.compile(r"https://github\.com/([^/]+)/([^/]+)/?$")
+
     # Text file extensions to include
     DEFAULT_ALLOWED_EXTENSIONS = {
         ".py",
@@ -197,9 +202,28 @@ class GitHubCloneSkill(AgentSkill):
         Returns:
             List of dictionaries with parsed URL components
         """
-        matches = self.GITHUB_URL_PATTERN.finditer(text)
         urls = []
 
+        # First, check for root repository URLs
+        root_matches = self.GITHUB_ROOT_URL_PATTERN.finditer(text)
+        for match in root_matches:
+            org = match.group(1)
+            repo = match.group(2)
+
+            logger.info(f"Found GitHub root URL: org={org}, repo={repo}")
+
+            urls.append(
+                {
+                    "org": org,
+                    "repo": repo,
+                    "branch": None,  # Will use default branch
+                    "path": "",
+                    "full_url": match.group(0),
+                }
+            )
+
+        # Then check for tree/blob URLs
+        matches = self.GITHUB_URL_PATTERN.finditer(text)
         for match in matches:
             org = match.group(1)
             repo = match.group(2)
@@ -227,7 +251,7 @@ class GitHubCloneSkill(AgentSkill):
                 }
             )
 
-        logger.info(f"Extracted {len(urls)} tree URL(s)")
+        logger.info(f"Extracted {len(urls)} URL(s)")
         return urls
 
     async def _process_github_url(
@@ -258,21 +282,30 @@ class GitHubCloneSkill(AgentSkill):
 
             # Clone repository
             repo_url = f"https://github.com/{url_info['org']}/{url_info['repo']}.git"
-            logger.info(
-                f"Cloning repository: {repo_url} (branch: {url_info['branch']})"
-            )
 
-            git.Repo.clone_from(
-                repo_url,
-                temp_dir,
-                branch=url_info["branch"],
-                depth=1,  # Shallow clone for efficiency
-            )
+            # If branch is not specified (root URL), clone default branch
+            if url_info["branch"]:
+                logger.info(
+                    f"Cloning repository: {repo_url} (branch: {url_info['branch']})"
+                )
+                git.Repo.clone_from(
+                    repo_url,
+                    temp_dir,
+                    branch=url_info["branch"],
+                    depth=1,  # Shallow clone for efficiency
+                )
+            else:
+                logger.info(f"Cloning repository: {repo_url} (default branch)")
+                git.Repo.clone_from(
+                    repo_url,
+                    temp_dir,
+                    depth=1,  # Shallow clone for efficiency
+                )
 
             logger.info(f"Successfully cloned repository to {temp_dir}")
 
             # Navigate to specified path
-            target_path = temp_dir / url_info["path"]
+            target_path = temp_dir / url_info["path"] if url_info["path"] else temp_dir
             logger.info(f"Target path: {target_path} (exists: {target_path.exists()})")
 
             if not target_path.exists():
@@ -290,7 +323,13 @@ class GitHubCloneSkill(AgentSkill):
             logger.info(f"Extracted {len(file_contents)} characters of file content")
 
             # Format output
-            header = f"Files from {url_info['org']}/{url_info['repo']} (branch: {url_info['branch']}, path: {url_info['path'] or 'root'}):\n"
+            branch_info = (
+                f"branch: {url_info['branch']}"
+                if url_info["branch"]
+                else "default branch"
+            )
+            path_info = url_info["path"] if url_info["path"] else "root"
+            header = f"Files from {url_info['org']}/{url_info['repo']} ({branch_info}, path: {path_info}):\n"
             return header + file_contents
 
         except git.GitCommandError as exc:

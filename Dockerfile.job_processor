@@ -15,6 +15,8 @@ RUN --mount=from=uv,source=/uv,target=/bin/uv \
 
 FROM public.ecr.aws/lambda/python:3.13 AS final
 
+ENV GIT_PYTHON_REFRESH=quiet
+
 COPY --from=builder ${LAMBDA_TASK_ROOT} ${LAMBDA_TASK_ROOT}
 
 COPY ./app ${LAMBDA_TASK_ROOT}/app

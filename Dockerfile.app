@@ -22,6 +22,9 @@ ENV PORT=8000
 COPY --from=builder ${LAMBDA_TASK_ROOT} ${LAMBDA_TASK_ROOT}
 COPY ./app ${LAMBDA_TASK_ROOT}/app
 
+# Install git for GitPython operations
+RUN microdnf install -y git && microdnf clean all
+
 # Add the Lambda web adapter
 COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 /lambda-adapter /opt/extensions/lambda-adapter
 
