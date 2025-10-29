@@ -1,4 +1,4 @@
-.PHONY: localstack-s3-bucket deploy-lambda docker dynamodb-admin dynamodb-admin-install fmt i18n-compile i18n-extract i18n-update install lint local run security deploy-lambda
+.PHONY: localstack-s3-bucket deploy-lambda docker dynamodb-admin dynamodb-admin-install fmt i18n-compile i18n-extract i18n-update install lint local run security test deploy-lambda
 
 localstack-s3-bucket:
 	AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy \
@@ -41,6 +41,9 @@ run: local
 
 security:
 	uv run bandit -r app/
+
+test:
+	uv run pytest tests/ -v --cov=app --cov-report=term-missing --cov-report=html
 
 docker:
 	set -o allexport; . .env; set +o allexport; \

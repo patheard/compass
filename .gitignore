@@ -6,3 +6,8 @@ __pycache__
 .terraform/
 .terragrunt-cache/
 *_DESIGN.md
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/

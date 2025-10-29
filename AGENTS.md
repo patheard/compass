@@ -8,8 +8,9 @@
 - Dependency management is done with `uv`.
 - This is a Python 3.13 project using FastAPI.
 - Add type hints to all code.
+- Add and update unit tests for all code changes.
 - When making frontend page changes follow the examples in the `./app/templates` directory.
-- Before completing a task, run `make fmt`, `make lint` and `make security` and fix any issues found before considering the task finished.
+- Before completing a task, run `make fmt`, `make lint`, `make test` and `make security` and fix any issues found before considering the task finished.
 
 ## Terraform
 - Terraform and Terragrunt are used to manage AWS infrastructure.
